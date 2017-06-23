@@ -43,6 +43,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.*;
+import com.vaadin.ui.CustomField;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
