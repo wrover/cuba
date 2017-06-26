@@ -19,14 +19,14 @@ package com.haulmont.cuba.gui.components;
 public interface CustomField extends Field {
     String NAME = "customField";
 
-    void setContent(Component component);
-    Component getContent();
+    void setCompositionRoot(Component component);
+    Component getCompositionRoot();
 
-    void setValueValidator(ValueValidator validator);
-    ValueValidator getValueValidator();
+    void setValueSource(ValueSource validator);
+    ValueSource getValueSource();
 
-    interface ValueValidator {
-        Object validateGetValue(Object value);
-        Object validateSetValue(Object value);
+    interface ValueSource {
+        Object getValue(Object value);
+        Object setValue(Object value);
     }
 }

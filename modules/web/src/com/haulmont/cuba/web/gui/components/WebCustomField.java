@@ -22,8 +22,8 @@ import com.haulmont.cuba.gui.components.CustomField;
 
 public class WebCustomField extends WebAbstractField<com.vaadin.ui.CustomField<Object>> implements CustomField {
 
-    protected Component content;
-    protected ValueValidator valueValidator;
+    protected Component compositionRoot;
+    protected ValueSource valueSource;
 
     public WebCustomField() {
         createComponent();
@@ -33,7 +33,7 @@ public class WebCustomField extends WebAbstractField<com.vaadin.ui.CustomField<O
         component = new com.vaadin.ui.CustomField<Object>() {
             @Override
             protected com.vaadin.ui.Component initContent() {
-                return content.unwrap(com.vaadin.ui.Component.class);
+                return compositionRoot.unwrap(com.vaadin.ui.Component.class);
             }
 
             @Override
@@ -44,29 +44,29 @@ public class WebCustomField extends WebAbstractField<com.vaadin.ui.CustomField<O
     }
 
     @Override
-    public void setContent(Component component) {
-        content = component;
+    public void setCompositionRoot(Component component) {
+        compositionRoot = component;
     }
 
     @Override
-    public Component getContent() {
-        return content;
+    public Component getCompositionRoot() {
+        return compositionRoot;
     }
 
     @Override
-    public void setValueValidator(ValueValidator validator) {
-        this.valueValidator = validator;
+    public void setValueSource(ValueSource validator) {
+        this.valueSource = validator;
     }
 
     @Override
-    public ValueValidator getValueValidator() {
-        return valueValidator;
+    public ValueSource getValueSource() {
+        return valueSource;
     }
 
     @Override
     public void setValue(Object value) {
-        if (valueValidator != null) {
-            super.setValue(valueValidator.validateSetValue(value));
+        if (valueSource != null) {
+            super.setValue(valueSource.setValue(value));
         } else {
             super.setValue(value);
         }
@@ -74,8 +74,8 @@ public class WebCustomField extends WebAbstractField<com.vaadin.ui.CustomField<O
 
     @Override
     public Object getValue() {
-        if (valueValidator != null) {
-            return valueValidator.validateGetValue(super.getValue());
+        if (valueSource != null) {
+            return valueSource.getValue(super.getValue());
         }
         return super.getValue();
     }
@@ -84,11 +84,11 @@ public class WebCustomField extends WebAbstractField<com.vaadin.ui.CustomField<O
     public void setWidth(String width) {
         super.setWidth(width);
 
-        if (content != null) {
+        if (compositionRoot != null) {
             if (getWidth() < 0) {
-                content.setWidthAuto();
+                compositionRoot.setWidthAuto();
             } else {
-                content.setWidthFull();
+                compositionRoot.setWidthFull();
             }
         }
     }
@@ -97,11 +97,11 @@ public class WebCustomField extends WebAbstractField<com.vaadin.ui.CustomField<O
     public void setHeight(String height) {
         super.setHeight(height);
 
-        if (content != null) {
+        if (compositionRoot != null) {
             if (getHeight() < 0) {
-                content.setHeightAuto();
+                compositionRoot.setHeightAuto();
             } else {
-                content.setHeightFull();
+                compositionRoot.setHeightFull();
             }
         }
     }
