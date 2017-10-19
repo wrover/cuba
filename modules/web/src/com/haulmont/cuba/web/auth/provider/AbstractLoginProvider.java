@@ -24,13 +24,13 @@ import com.haulmont.cuba.web.auth.AuthInfo;
 /**
  * {@link LoginProvider} that implements the "Chain of Responsibility" pattern.
  * It checks if the user is already authenticated or not.
- * If the user is not yet authenticated it checks if it can to authenticate him.
- * Regardless of the outcome it passes authorization details to next LoginProvider.
+ * If the user is not yet authenticated it checks if it can authenticate him.
+ * Regardless of the outcome it passes authorization details to a next LoginProvider.
  *
  * Provider can implement {@link #providerHook(AuthInfo)} to put there some logic that
  *  has to be called after all providers had their chance to analyze authentication info.
  *
- * Defining and initializing the next provider is a responsibility of the system that uses
+ * Defining and initializing the next provider is a responsibility of a system that uses
  *  login providers.
  */
 abstract public class AbstractLoginProvider implements LoginProvider {

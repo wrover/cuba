@@ -50,6 +50,9 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Locale;
 
+/**
+ * {@link IdpAuthProvider} that best suites to situation when Service Provider is also a CUBA application.
+ */
 @Component(IdpAuthProvider.NAME)
 public class DefaultIdpAuthProviderBean implements IdpAuthProvider {
 

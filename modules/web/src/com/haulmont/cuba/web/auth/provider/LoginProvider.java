@@ -38,9 +38,9 @@ public interface LoginProvider {
     /**
      * Process user's input and authenticates the user if possible
      *
-     * @param authenticated        is the user already authenticated
+     * @param authenticated     is the user already authenticated
      * @param authInfo          input provided by the user
-     * @return                  whether the user is authenticates
+     * @return                  whether the user is authenticated
      * @throws LoginException   if the input provided by the user is incorrect
      */
     boolean process(boolean authenticated, AuthInfo authInfo) throws LoginException;

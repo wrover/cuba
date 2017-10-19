@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * {@link LoginProvider} that authenticates the user if LDAP is enabled for the current application
- *  and the user is not included in the list of people who don't use LDAP.
+ * {@link LoginProvider} that authenticates the user if LDAP integration is enabled for the current application
+ *  and the user is not included in the list of people who don't use LDAP authentication.
  */
 @Component("cuba_LdapProvider")
 public class LdapLoginProvider extends AbstractLoginProvider implements Ordered {
@@ -96,11 +96,11 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
     }
 
     /**
-     * Convert userName to db form
-     * In database users stores in form DOMAIN&#92;userName
+     * Converts userName to db form.
+     * In database users are stored in the format DOMAIN&#92;userName
      *
      * @param login Login string
-     * @return login in form DOMAIN&#92;userName
+     * @return login in the format DOMAIN&#92;userName
      */
     private String convertLoginString(String login) {
         int slashPos = login.indexOf("\\");
