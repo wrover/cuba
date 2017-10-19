@@ -75,13 +75,6 @@ public interface WebConfig extends Config {
     int getHttpSessionExpirationTimeoutSec();
 
     /**
-     *  @return Comma-separated list of URLs for CubaHttpFilter to bypass.
-     */
-    @Property("cuba.web.cubaHttpFilterBypassUrls")
-    @Default("/ws/,/dispatch/,/rest/,/idp/")
-    String getCubaHttpFilterBypassUrls();
-
-    /**
      * @return Default main window mode.
      * Takes place until the user did not change its own preference through user settings.
      */
@@ -221,7 +214,7 @@ public interface WebConfig extends Config {
 
     /**
      * Reinitialize session after login to protect from Session Fixation attacks. <br>
-     * This parameter is ignored if {@link WebAuthConfig#getExternalAuthentication()} is set to true.
+     * This parameter is ignored if {@link WebAuthConfig#getUseIdpAuthentication()} is set to true.
      */
     @Property("cuba.web.useSessionFixationProtection")
     @DefaultBoolean(true)

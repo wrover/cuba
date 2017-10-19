@@ -19,15 +19,11 @@ package com.haulmont.cuba.web;
 
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.cuba.core.global.ClientType;
-import com.haulmont.cuba.security.auth.AbstractClientCredentials;
-import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
-import com.haulmont.cuba.security.auth.RememberMeCredentials;
-import com.haulmont.cuba.security.auth.TrustedClientCredentials;
+import com.haulmont.cuba.security.auth.*;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.SessionParams;
 import com.haulmont.cuba.security.global.UserSession;
-import com.haulmont.cuba.web.auth.CubaAuthProvider;
-import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
+import com.haulmont.cuba.web.auth.IdpAuthProvider;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -42,20 +38,41 @@ import java.util.Map;
  */
 @Component(Connection.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class DefaultConnection extends AbstractConnection implements ExternallyAuthenticatedConnection {
+public class DefaultConnection extends AbstractConnection {
 
     @Inject
     protected WebAuthConfig webAuthConfig;
     @Inject
-    protected CubaAuthProvider authProvider;
+    protected IdpAuthProvider idpAuthProvider;
 
     @Override
+    @Deprecated
     public void login(String login, String password, Locale locale) throws LoginException {
         if (locale == null) {
             throw new IllegalArgumentException("Locale is null");
         }
 
         update(doLogin(login, password, locale, getLoginParams()), SessionMode.AUTHENTICATED);
+    }
+
+    @Override
+    public void login(Credentials credentials) throws LoginException {
+
+        if (!(credentials instanceof AbstractClientCredentials)) {
+            throw new IllegalArgumentException(String.format("Credentials of class %s are not supported", credentials.getClass()));
+        }
+
+        AbstractClientCredentials clientCredentials = (AbstractClientCredentials) credentials;
+
+        if (clientCredentials.getLocale() == null) {
+            throw new IllegalArgumentException("Locale is null");
+        }
+
+        setCredentialsParams(clientCredentials, getLoginParams());
+
+        AuthenticationDetails details = authenticationService.login(credentials);
+
+        update(details.getSession(), SessionMode.AUTHENTICATED);
     }
 
     @Override
@@ -80,6 +97,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
      * @return created user session
      * @throws LoginException in case of unsuccessful login
      */
+    @Deprecated
     protected UserSession doLogin(String login, String password, Locale locale, Map<String, Object> loginParams)
             throws LoginException {
         AbstractClientCredentials credentials = new LoginPasswordCredentials(login, password, locale);
@@ -100,6 +118,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     }
 
     @Override
+    @Deprecated
     public void loginByRememberMe(String login, String rememberMeToken, Locale locale) throws LoginException {
         if (locale == null) {
             throw new IllegalArgumentException("Locale is null");
@@ -119,6 +138,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
      * @return created user session
      * @throws LoginException in case of unsuccessful login
      */
+    @Deprecated
     protected UserSession doLoginByRememberMe(String login, String rememberMeToken, Locale locale, Map<String, Object> loginParams)
             throws LoginException {
         AbstractClientCredentials credentials = new RememberMeCredentials(login, rememberMeToken, locale);
@@ -126,7 +146,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
         return authenticationService.login(credentials).getSession();
     }
 
-    @Override
+    @Deprecated
     public void loginAfterExternalAuthentication(String login, Locale locale) throws LoginException {
         if (locale == null) {
             throw new IllegalArgumentException("Locale is null");
@@ -134,16 +154,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
 
         String password = webAuthConfig.getTrustedClientPassword();
         UserSession userSession = doLoginTrusted(login, password, locale, getLoginParams());
-        update(userSession, SessionMode.AUTHENTICATED, sessionInitEvent -> {
-            UserSession session = sessionInitEvent.getUserSession();
-            session.setAttribute(EXTERNAL_AUTH_USER_SESSION_ATTRIBUTE, true);
-            authProvider.userSessionLoggedIn(session);
-        });
-    }
-
-    @Override
-    public String logoutExternalAuthentication() {
-        return authProvider.logout();
+        update(userSession, SessionMode.AUTHENTICATED);
     }
 
     /**
@@ -157,6 +168,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
      * @return created user session
      * @throws LoginException in case of unsuccessful login
      */
+    @Deprecated
     protected UserSession doLoginTrusted(String login, String password, Locale locale, Map<String, Object> loginParams)
             throws LoginException {
         AbstractClientCredentials credentials = new TrustedClientCredentials(login, password, locale);

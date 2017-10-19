@@ -30,7 +30,7 @@ import com.haulmont.cuba.gui.theme.ThemeConstantsRepository;
 import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
-import com.haulmont.cuba.web.auth.CubaAuthProvider;
+import com.haulmont.cuba.web.auth.IdpAuthProvider;
 import com.haulmont.cuba.web.auth.RequestContext;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
@@ -113,7 +113,7 @@ public abstract class App {
     protected SettingsClient settingsClient;
 
     @Inject
-    protected CubaAuthProvider authProvider;
+    protected IdpAuthProvider idpAuthProvider;
 
     protected AppCookies cookies;
 
@@ -257,7 +257,7 @@ public abstract class App {
         Locale targetLocale = resolveLocale(requestLocale);
         setLocale(targetLocale);
 
-        if (webAuthConfig.getExternalAuthentication()) {
+        if (isPrincipalRequired()) {
             principal = RequestContext.get().getRequest().getUserPrincipal();
         }
     }
@@ -364,11 +364,10 @@ public abstract class App {
     public void pingExternalAuthentication() {
         if (getConnection().isConnected() && connection.isAuthenticated()) {
             try {
-                // Ping external authentication
-                if (webAuthConfig.getExternalAuthentication()) {
+                if (webAuthConfig.getUseIdpAuthentication()) {
                     UserSession session = getConnection().getSession();
                     if (session != null) {
-                        authProvider.pingUserSession(session);
+                        idpAuthProvider.pingUserSession(session);
                     }
                 }
             } catch (NoUserSessionException ignored) {
@@ -588,5 +587,9 @@ public abstract class App {
             String url = ControllerUtils.getLocationWithoutParams() + "?restartApp";
             AppUI.getCurrent().getPage().open(url, "_self");
         }
+    }
+
+    protected boolean isPrincipalRequired() {
+        return webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getUseIdpAuthentication();
     }
 }

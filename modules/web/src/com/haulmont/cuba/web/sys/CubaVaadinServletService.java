@@ -286,7 +286,7 @@ public class CubaVaadinServletService extends VaadinServletService {
 
     @Override
     protected VaadinSession createVaadinSession(VaadinRequest request) throws ServiceException {
-        if (testMode && !webAuthConfig.getExternalAuthentication()) {
+        if (testMode && !webAuthConfig.getUseIdpAuthentication()) {
             return new VaadinSession(this) {
                 @Override
                 public String createConnectorId(ClientConnector connector) {

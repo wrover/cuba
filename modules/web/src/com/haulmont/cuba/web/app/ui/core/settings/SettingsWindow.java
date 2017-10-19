@@ -37,14 +37,13 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.app.UserSettingsTools;
+import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.vaadin.ui.ComboBox;
 import org.apache.commons.lang.StringUtils;
 
 import javax.inject.Inject;
 import java.util.*;
-
-import static com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection.EXTERNAL_AUTH_USER_SESSION_ATTRIBUTE;
 
 public class SettingsWindow extends AbstractWindow {
 
@@ -104,6 +103,9 @@ public class SettingsWindow extends AbstractWindow {
     protected WebConfig webConfig;
 
     @Inject
+    protected WebAuthConfig webAuthConfig;
+
+    @Inject
     protected UserSettingService userSettingService;
 
     @Override
@@ -148,10 +150,7 @@ public class SettingsWindow extends AbstractWindow {
                     });
                 }));
 
-        if (!user.equals(userSession.getCurrentOrSubstitutedUser())
-                || Boolean.TRUE.equals(userSession.getAttribute(EXTERNAL_AUTH_USER_SESSION_ATTRIBUTE))) {
-            changePasswordBtn.setEnabled(false);
-        }
+        changePasswordBtn.setEnabled(isChangePasswordEnabled(user));
 
         Map<String, Locale> locales = globalConfig.getAvailableLocales();
         TreeMap<String, Object> options = new TreeMap<>();
@@ -268,5 +267,14 @@ public class SettingsWindow extends AbstractWindow {
     protected void saveLocaleSettings() {
         String userLocale = appLangField.getValue();
         userManagementService.saveOwnLocale(userLocale);
+    }
+
+    protected boolean isChangePasswordEnabled(User user) {
+        boolean ldapUser = webAuthConfig.getLdapAuthenticationEnabled()
+                && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(userSession.getUser().getLogin());
+
+        boolean passwordSavedInExternalSystem = webAuthConfig.getUseIdpAuthentication() || ldapUser;
+
+        return user.equals(userSession.getCurrentOrSubstitutedUser()) && !passwordSavedInExternalSystem;
     }
 }

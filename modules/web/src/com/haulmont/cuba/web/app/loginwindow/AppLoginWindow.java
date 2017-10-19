@@ -18,21 +18,15 @@ package com.haulmont.cuba.web.app.loginwindow;
 
 import com.haulmont.bali.util.URLEncodeUtils;
 import com.haulmont.cuba.core.global.GlobalConfig;
-import com.haulmont.cuba.core.global.PasswordEncryption;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.security.app.UserManagementService;
-import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
-import com.haulmont.cuba.web.Connection;
 import com.haulmont.cuba.web.WebConfig;
-import com.haulmont.cuba.web.auth.CubaAuthProvider;
-import com.haulmont.cuba.web.auth.DomainAliasesResolver;
-import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
-import org.apache.commons.lang.StringEscapeUtils;
+import com.haulmont.cuba.web.auth.AuthInfo;
+import com.haulmont.cuba.web.auth.LoginCookies;
+import com.haulmont.cuba.web.auth.LoginManager;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,34 +42,6 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
     protected static final ThreadLocal<AuthInfo> authInfoThreadLocal = new ThreadLocal<>();
 
-    public static final String COOKIE_REMEMBER_ME = "rememberMe";
-    public static final String COOKIE_LOGIN = "rememberMe.Login";
-    public static final String COOKIE_PASSWORD = "rememberMe.Password";
-
-    public static class AuthInfo {
-        private String login;
-        private String password;
-        private Boolean rememberMe;
-
-        public AuthInfo(String login, String password, Boolean rememberMe) {
-            this.login = login;
-            this.password = password;
-            this.rememberMe = rememberMe;
-        }
-
-        public String getLogin() {
-            return login;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public Boolean getRememberMe() {
-            return rememberMe;
-        }
-    }
-
     @Inject
     protected GlobalConfig globalConfig;
 
@@ -87,18 +53,6 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
     @Inject
     protected UserSessionSource userSessionSource;
-
-    @Inject
-    protected PasswordEncryption passwordEncryption;
-
-    @Inject
-    protected DomainAliasesResolver domainAliasesResolver;
-
-    @Inject
-    protected CubaAuthProvider authProvider;
-
-    @Inject
-    protected UserManagementService userManagementService;
 
     @Inject
     protected Embedded logoImage;
@@ -121,10 +75,10 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
     @Inject
     protected LookupField localesSelect;
 
-    protected boolean loginByRememberMe = false;
+    @Inject
+    protected  LoginManager loginManager;
 
-    protected ValueChangeListener loginChangeListener;
-
+    @Deprecated
     protected Boolean bruteForceProtectionEnabled;
 
     @Override
@@ -168,7 +122,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
             app.setLocale(selectedLocale);
 
             authInfoThreadLocal.set(new AuthInfo(loginField.getValue(), passwordField.getValue(),
-                    rememberMeCheckBox.getValue()));
+                    rememberMeCheckBox.getValue(), localesSelect.getValue()));
             try {
                 app.createTopLevelWindow();
             } finally {
@@ -187,8 +141,6 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
     }
 
     protected void initRememberMe() {
-        loginChangeListener = e -> loginByRememberMe = false;
-
         if (!webConfig.getRememberMeEnabled()) {
             rememberMeCheckBox.setValue(false);
 
@@ -199,22 +151,20 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
         App app = App.getInstance();
 
-        String rememberMeCookie = app.getCookieValue(COOKIE_REMEMBER_ME);
+        String rememberMeCookie = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_USED);
         if (Boolean.parseBoolean(rememberMeCookie)) {
-            String encodedLogin = app.getCookieValue(COOKIE_LOGIN) != null ? app.getCookieValue(COOKIE_LOGIN) : "";
-            String login = URLEncodeUtils.decodeUtf8(encodedLogin);
+            String encodedLogin = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
+            String rememberMeToken = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
 
-            String rememberMeToken = app.getCookieValue(COOKIE_PASSWORD) != null ? app.getCookieValue(COOKIE_PASSWORD) : "";
             if (StringUtils.isNotEmpty(rememberMeToken)) {
+
+                String login = encodedLogin == null ? "" : URLEncodeUtils.decodeUtf8(encodedLogin);
+
                 rememberMeCheckBox.setValue(true);
                 loginField.setValue(login);
 
                 passwordField.setValue(rememberMeToken);
-                loginByRememberMe = true;
             }
-
-            loginField.addValueChangeListener(loginChangeListener);
-            passwordField.addValueChangeListener(loginChangeListener);
         }
     }
 
@@ -234,7 +184,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
         App app = App.getInstance();
 
-        if (webAuthConfig.getExternalAuthentication()) {
+        if (webAuthConfig.getLdapAuthenticationEnabled()) {
             loginField.setValue(app.getPrincipal() == null ? "" : app.getPrincipal().getName());
             passwordField.setValue("");
         } else {
@@ -254,32 +204,6 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
         }
     }
 
-    /**
-     * Convert userName to db form
-     * In database users stores in form DOMAIN&#92;userName
-     *
-     * @param login Login string
-     * @return login in form DOMAIN&#92;userName
-     */
-    protected String convertLoginString(String login) {
-        int slashPos = login.indexOf("\\");
-        if (slashPos >= 0) {
-            String domainAlias = login.substring(0, slashPos);
-            String domain = domainAliasesResolver.getDomainName(domainAlias).toUpperCase();
-            String userName = login.substring(slashPos + 1);
-            login = domain + "\\" + userName;
-        } else {
-            int atSignPos = login.indexOf("@");
-            if (atSignPos >= 0) {
-                String domainAlias = login.substring(atSignPos + 1);
-                String domain = domainAliasesResolver.getDomainName(domainAlias).toUpperCase();
-                String userName = login.substring(0, atSignPos);
-                login = domain + "\\" + userName;
-            }
-        }
-        return login;
-    }
-
     protected void showUnhandledExceptionOnLogin(@SuppressWarnings("unused") Exception e) {
         String title = messages.getMainMessage("loginWindow.loginFailed", userSessionSource.getLocale());
         String message = messages.getMainMessage("loginWindow.pleaseContactAdministrator", userSessionSource.getLocale());
@@ -291,91 +215,11 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
         String title = messages.getMainMessage("loginWindow.loginFailed", userSessionSource.getLocale());
 
         showNotification(title, message, NotificationType.ERROR);
-
-        if (loginByRememberMe) {
-            loginByRememberMe = false;
-
-            loginField.removeValueChangeListener(loginChangeListener);
-            passwordField.removeValueChangeListener(loginChangeListener);
-        }
     }
 
     public void login() {
-        doLogin();
-
-        App app = App.getInstance();
-        Connection connection = app.getConnection();
-
-        if (connection.isAuthenticated()) {
-            if (webConfig.getRememberMeEnabled()) {
-                if (Boolean.TRUE.equals(rememberMeCheckBox.getValue())) {
-                    if (!loginByRememberMe) {
-                        app.addCookie(COOKIE_REMEMBER_ME, Boolean.TRUE.toString());
-
-                        String login = loginField.getValue();
-
-                        String encodedLogin = URLEncodeUtils.encodeUtf8(login);
-
-                        app.addCookie(COOKIE_LOGIN, StringEscapeUtils.escapeJava(encodedLogin));
-
-                        UserSession session = connection.getSession();
-                        if (session == null) {
-                            throw new IllegalStateException("Unable to get session after login");
-                        }
-
-                        User user = session.getUser();
-
-                        String rememberMeToken = userManagementService.generateRememberMeToken(user.getId());
-
-                        app.addCookie(COOKIE_PASSWORD, rememberMeToken);
-                    }
-                } else {
-                    app.removeCookie(COOKIE_REMEMBER_ME);
-                    app.removeCookie(COOKIE_LOGIN);
-                    app.removeCookie(COOKIE_PASSWORD);
-                }
-            }
-        }
-    }
-
-    protected void doLogin() {
-        String login = loginField.getValue();
-        String password = passwordField.getValue() != null ? passwordField.getValue() : "";
-
-        if (StringUtils.isEmpty(login) || StringUtils.isEmpty(password)) {
-            showNotification(messages.getMainMessage("loginWindow.emptyLoginOrPassword"), NotificationType.WARNING);
-            return;
-        }
-
-        App app = App.getInstance();
-
         try {
-            Connection connection = app.getConnection();
-
-            Locale selectedLocale = localesSelect.getValue();
-            app.setLocale(selectedLocale);
-
-            if (loginByRememberMe && webConfig.getRememberMeEnabled()) {
-                doLoginByRememberMe(login, password, selectedLocale);
-            } else if (webAuthConfig.getExternalAuthentication()
-                    && !webAuthConfig.getStandardAuthenticationUsers().contains(login)) {
-                // we use resolved locale for error messages
-                // try to login as externally authenticated user, fallback to regular authentication if enabled
-                authenticateExternally(login, password, selectedLocale);
-                login = convertLoginString(login);
-                ((ExternallyAuthenticatedConnection) connection).loginAfterExternalAuthentication(login, selectedLocale);
-            } else {
-                doLogin(login, passwordEncryption.getPlainHash(password), selectedLocale);
-            }
-
-            // locale could be set on the server
-            if (connection.getSession() != null) {
-                Locale loggedInLocale = userSessionSource.getLocale();
-
-                if (globalConfig.getLocaleSelectVisible()) {
-                    app.addCookie(App.COOKIE_LOCALE, loggedInLocale.toLanguageTag());
-                }
-            }
+            loginManager.login(getAuthInfo());
         } catch (LoginException e) {
             log.info("Login failed: {}", e.toString());
 
@@ -386,22 +230,6 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
             showUnhandledExceptionOnLogin(e);
         }
-    }
-
-    protected void doLogin(String login, String password, Locale locale) throws LoginException {
-        App app = App.getInstance();
-
-        app.getConnection().login(login, password, locale);
-    }
-
-    protected void doLoginByRememberMe(String login, String rememberMeToken, Locale locale) throws LoginException {
-        App app = App.getInstance();
-
-        app.getConnection().loginByRememberMe(login, rememberMeToken, locale);
-    }
-
-    protected void authenticateExternally(String login, String passwordValue, Locale locale) throws LoginException {
-        authProvider.authenticate(login, passwordValue, locale);
     }
 
     @Deprecated
@@ -419,4 +247,17 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
     protected String registerUnsuccessfulLoginAttempt(String login, String ipAddress) {
         return null;
     }
+
+    /**
+     * Override this method if you extended the login screen and added more input elements
+     */
+    protected AuthInfo getAuthInfo() {
+        return new AuthInfo(
+                loginField.getValue(),
+                passwordField.getValue(),
+                rememberMeCheckBox.getValue(),
+                localesSelect.getValue()
+        );
+    }
+
 }

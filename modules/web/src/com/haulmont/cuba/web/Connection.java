@@ -16,6 +16,7 @@
  */
 package com.haulmont.cuba.web;
 
+import com.haulmont.cuba.security.auth.Credentials;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
@@ -45,7 +46,10 @@ public interface Connection {
      * @param locale            user locale
      * @throws LoginException   in case of unsuccessful login due to wrong credentials or other issues
      */
+    @Deprecated
     void login(String login, String password, Locale locale) throws LoginException;
+
+    void login(Credentials credentials) throws LoginException;
 
     /**
      * Log in to the system.
@@ -61,6 +65,7 @@ public interface Connection {
      * @param locale            user locale
      * @throws LoginException   in case of unsuccessful login due to wrong credentials or other issues
      */
+    @Deprecated
     void loginByRememberMe(String login, String rememberMeToken, Locale locale) throws LoginException;
 
     /**

@@ -22,11 +22,12 @@ import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.gui.WindowManager.OpenType;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowInfo;
+import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
-import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
+import com.haulmont.cuba.web.auth.IdpAuthProvider;
 import com.vaadin.server.*;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
@@ -55,6 +56,9 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     @Inject
     protected UserSessionSource userSessionSource;
+
+    @Inject
+    protected IdpAuthProvider idpAuthProvider;
 
     public DefaultApp() {
     }
@@ -85,9 +89,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
             // substitution listeners are cleared by connection on logout
             connection.addSubstitutionListener(this);
 
-            if (connection.isAuthenticated()
-                    && !webAuthConfig.getExternalAuthentication()
-                    && webConfig.getUseSessionFixationProtection()) {
+            if (isReinitializeSession()) {
                 VaadinService.reinitializeSession(VaadinService.getCurrentRequest());
 
                 WrappedSession session = VaadinSession.getCurrent().getSession();
@@ -124,8 +126,9 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
         } else {
             boolean redirectedToExternalAuth = false;
 
-            if (webAuthConfig.getExternalAuthentication()) {
-                String loggedOutUrl = ((ExternallyAuthenticatedConnection) connection).logoutExternalAuthentication();
+            if (webAuthConfig.getUseIdpAuthentication()) {
+                String loggedOutUrl = idpAuthProvider.logout();
+
                 if (!Strings.isNullOrEmpty(loggedOutUrl)) {
                     AppUI currentUi = AppUI.getCurrent();
                     // it can be null if we handle request in a custom RequestHandler
@@ -180,40 +183,41 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
      * Perform actions after successful login
      */
     protected void afterLoggedIn() {
-        if (connection.isAuthenticated() && !webAuthConfig.getExternalAuthentication()) {
-            User user = userSessionSource.getUserSession().getUser();
-            // Change password on logon
-            if (Boolean.TRUE.equals(user.getChangePasswordAtNextLogon())) {
-                WebWindowManager wm = getWindowManager();
-                for (Window window : wm.getOpenWindows()) {
-                    window.setEnabled(false);
-                }
+        if (isChangePasswordAtNextLogin()) {
 
-                WindowInfo changePasswordDialog = windowConfig.getWindowInfo("sec$User.changePassword");
-
-                Window changePasswordWindow = wm.openWindow(changePasswordDialog,
-                        OpenType.DIALOG.closeable(false),
-                        ParamsMap.of("cancelEnabled", Boolean.FALSE));
-
-                changePasswordWindow.addCloseListener(actionId -> {
-                    for (Window window : wm.getOpenWindows()) {
-                        window.setEnabled(true);
-                    }
-                });
+            WebWindowManager wm = getWindowManager();
+            for (Window window : wm.getOpenWindows()) {
+                window.setEnabled(false);
             }
+
+            WindowInfo changePasswordDialog = windowConfig.getWindowInfo("sec$User.changePassword");
+
+            Window changePasswordWindow = wm.openWindow(changePasswordDialog,
+                    OpenType.DIALOG.closeable(false),
+                    ParamsMap.of("cancelEnabled", Boolean.FALSE));
+
+            changePasswordWindow.addCloseListener(actionId -> {
+                for (Window window : wm.getOpenWindows()) {
+                    window.setEnabled(true);
+                }
+            });
         }
     }
 
     @Override
     public boolean loginOnStart() {
-        if (tryLoginOnStart
-                && principal != null
-                && webAuthConfig.getExternalAuthentication()) {
+        if (isLoginOnStart()) {
 
             String userName = principal.getName();
             log.debug("Trying to login after external authentication as {}", userName);
             try {
-                ((ExternallyAuthenticatedConnection) connection).loginAfterExternalAuthentication(userName, getLocale());
+
+                connection.login(
+                        new TrustedClientCredentials(userName, webAuthConfig.getTrustedClientPassword(), getLocale())
+                );
+
+                UserSession session = getConnection().getSession();
+                idpAuthProvider.userSessionLoggedIn(session);
 
                 return true;
             } catch (LoginException e) {
@@ -246,5 +250,31 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
                 );
             }
         }
+    }
+
+    protected boolean isChangePasswordAtNextLogin() {
+        if (connection.isAuthenticated()
+                && !webAuthConfig.getUseIdpAuthentication()
+                && !webAuthConfig.getLdapAuthenticationEnabled()) {
+
+            User user = userSessionSource.getUserSession().getUser();
+
+            return Boolean.TRUE.equals(user.getChangePasswordAtNextLogon());
+
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean isReinitializeSession() {
+        return connection.isAuthenticated()
+                && !webAuthConfig.getUseIdpAuthentication()
+                && webConfig.getUseSessionFixationProtection();
+    }
+
+    protected boolean isLoginOnStart() {
+        return tryLoginOnStart
+                && principal != null
+                && webAuthConfig.getUseIdpAuthentication();
     }
 }
