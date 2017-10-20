@@ -51,13 +51,13 @@ import java.util.Arrays;
 import java.util.Locale;
 
 /**
- * {@link IdpAuthProvider} that best suites to situation when Service Provider is also a CUBA application.
+ * {@link IdpAuthManager} that best suites to situation when Service Provider is also a CUBA application.
  */
-@Component(IdpAuthProvider.NAME)
-public class DefaultIdpAuthProviderBean implements IdpAuthProvider {
+@Component(IdpAuthManager.NAME)
+public class DefaultIdpAuthManagerBean implements IdpAuthManager {
 
 
-    private final Logger log = LoggerFactory.getLogger(DefaultIdpAuthProviderBean.class);
+    private final Logger log = LoggerFactory.getLogger(DefaultIdpAuthManagerBean.class);
 
     @Inject
     protected WebAuthConfig webAuthConfig;

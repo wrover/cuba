@@ -24,7 +24,7 @@ import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.SessionParams;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
-import com.haulmont.cuba.web.auth.IdpAuthProvider;
+import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -44,7 +44,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     @Inject
     protected WebAuthConfig webAuthConfig;
     @Inject
-    protected IdpAuthProvider idpAuthProvider;
+    protected IdpAuthManager idpAuthManager;
 
     @Override
     @Deprecated
@@ -162,7 +162,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     @Override
     @Deprecated
     public String logoutExternalAuthentication() {
-        return idpAuthProvider.logout();
+        return idpAuthManager.logout();
     }
 
     /**

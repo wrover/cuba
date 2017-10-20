@@ -21,10 +21,9 @@ import com.haulmont.bali.util.URLEncodeUtils;
 import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.security.global.IdpSession;
-import com.haulmont.cuba.web.auth.DefaultIdpAuthProviderBean;
-import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
-import com.haulmont.cuba.web.auth.IdpAuthProvider;
-import com.haulmont.cuba.web.auth.WebAuthConfig;
+import com.haulmont.cuba.web.auth.*;
+import com.haulmont.cuba.web.auth.DefaultIdpAuthManagerBean;
+import com.haulmont.cuba.web.auth.IdpAuthManager;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +64,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
     @Inject
     protected Configuration configuration;
     @Inject
-    protected DefaultIdpAuthProviderBean idpAuthProvider;
+    protected DefaultIdpAuthManagerBean idpAuthManager;
     @Inject
     protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
@@ -147,14 +146,14 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
         }
 
         HttpSession session = httpRequest.getSession(true);
-        Lock sessionLock = (Lock) session.getAttribute(IdpAuthProvider.IDP_SESSION_LOCK_ATTRIBUTE);
+        Lock sessionLock = (Lock) session.getAttribute(IdpAuthManager.IDP_SESSION_LOCK_ATTRIBUTE);
         if (sessionLock == null) {
             sessionCheckLock.lock();
             try {
-                sessionLock = (Lock) session.getAttribute(IdpAuthProvider.IDP_SESSION_LOCK_ATTRIBUTE);
+                sessionLock = (Lock) session.getAttribute(IdpAuthManager.IDP_SESSION_LOCK_ATTRIBUTE);
                 if (sessionLock == null) {
                     sessionLock = new ReentrantLock();
-                    session.setAttribute(IdpAuthProvider.IDP_SESSION_LOCK_ATTRIBUTE, sessionLock);
+                    session.setAttribute(IdpAuthManager.IDP_SESSION_LOCK_ATTRIBUTE, sessionLock);
                 }
             } finally {
                 sessionCheckLock.unlock();
@@ -165,7 +164,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
         sessionLock.lock();
 
         try {
-            session.getAttribute(IdpAuthProvider.IDP_SESSION_LOCK_ATTRIBUTE);
+            session.getAttribute(IdpAuthManager.IDP_SESSION_LOCK_ATTRIBUTE);
         } catch (IllegalStateException e) {
             // Someone might have invalidated the session between fetching the lock and acquiring it.
             sessionLock.unlock();
@@ -177,13 +176,13 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
 
         try {
             if ("GET".equals(httpRequest.getMethod())
-                    && httpRequest.getParameter(IdpAuthProvider.IDP_TICKET_REQUEST_PARAM) != null) {
-                String idpTicket = httpRequest.getParameter(IdpAuthProvider.IDP_TICKET_REQUEST_PARAM);
+                    && httpRequest.getParameter(IdpAuthManager.IDP_TICKET_REQUEST_PARAM) != null) {
+                String idpTicket = httpRequest.getParameter(IdpAuthManager.IDP_TICKET_REQUEST_PARAM);
 
                 IdpSession idpSession;
                 try {
-                    idpSession = idpAuthProvider.getIdpSession(idpTicket);
-                } catch (DefaultIdpAuthProviderBean.IdpActivationException e) {
+                    idpSession = idpAuthManager.getIdpSession(idpTicket);
+                } catch (DefaultIdpAuthManagerBean.IdpActivationException e) {
                     log.error("Unable to obtain IDP session by ticket", e);
                     httpResponse.setStatus(500);
                     return;
@@ -199,8 +198,8 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
                 session.invalidate();
 
                 session = httpRequest.getSession(true);
-                session.setAttribute(IdpAuthProvider.IDP_SESSION_LOCK_ATTRIBUTE, sessionLock);
-                session.setAttribute(IdpAuthProvider.IDP_SESSION_ATTRIBUTE, idpSession);
+                session.setAttribute(IdpAuthManager.IDP_SESSION_LOCK_ATTRIBUTE, sessionLock);
+                session.setAttribute(IdpAuthManager.IDP_SESSION_ATTRIBUTE, idpSession);
 
                 log.debug("IDP session {} obtained, redirect to application", idpSession);
 
@@ -209,7 +208,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
                 return;
             }
 
-            if (session.getAttribute(IdpAuthProvider.IDP_SESSION_ATTRIBUTE) == null) {
+            if (session.getAttribute(IdpAuthManager.IDP_SESSION_ATTRIBUTE) == null) {
                 if ("GET".equals(httpRequest.getMethod())
                         && !StringUtils.startsWith(httpRequest.getRequestURI(), httpRequest.getContextPath() + "/PUSH")) {
                     httpResponse.sendRedirect(getIdpRedirectUrl());
@@ -217,13 +216,13 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
                 return;
             }
 
-            boundIdpSession = (IdpSession) session.getAttribute(IdpAuthProvider.IDP_SESSION_ATTRIBUTE);
+            boundIdpSession = (IdpSession) session.getAttribute(IdpAuthManager.IDP_SESSION_ATTRIBUTE);
         } finally {
             sessionLock.unlock();
         }
 
         HttpServletRequest authenticatedRequest = new IdpServletRequestWrapper(httpRequest,
-                new DefaultIdpAuthProviderBean.IdpSessionPrincipalImpl(boundIdpSession));
+                new DefaultIdpAuthManagerBean.IdpSessionPrincipalImpl(boundIdpSession));
 
         chain.doFilter(authenticatedRequest, response);
     }
@@ -244,7 +243,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
 
     static class IdpServletRequestWrapper extends HttpServletRequestWrapper {
 
-        private final DefaultIdpAuthProviderBean.IdpSessionPrincipalImpl principal;
+        private final DefaultIdpAuthManagerBean.IdpSessionPrincipalImpl principal;
 
         /**
          * Constructs a request object wrapping the given request.
@@ -252,7 +251,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
          * @param request The request to wrap
          * @throws IllegalArgumentException if the request is null
          */
-        public IdpServletRequestWrapper(HttpServletRequest request, DefaultIdpAuthProviderBean.IdpSessionPrincipalImpl principal) {
+        public IdpServletRequestWrapper(HttpServletRequest request, DefaultIdpAuthManagerBean.IdpSessionPrincipalImpl principal) {
             super(request);
             this.principal = principal;
         }

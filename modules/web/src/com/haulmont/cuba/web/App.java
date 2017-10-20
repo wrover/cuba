@@ -31,7 +31,7 @@ import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
-import com.haulmont.cuba.web.auth.IdpAuthProvider;
+import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.haulmont.cuba.web.auth.RequestContext;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
@@ -114,7 +114,7 @@ public abstract class App {
     protected SettingsClient settingsClient;
 
     @Inject
-    protected IdpAuthProvider idpAuthProvider;
+    protected IdpAuthManager idpAuthManager;
 
     @Inject
     protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
@@ -371,7 +371,7 @@ public abstract class App {
                 if (externalAuthenticationSettingsHelper.isIdpUsed()) {
                     UserSession session = getConnection().getSession();
                     if (session != null) {
-                        idpAuthProvider.pingUserSession(session);
+                        idpAuthManager.pingUserSession(session);
                     }
                 }
             } catch (NoUserSessionException ignored) {

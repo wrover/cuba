@@ -28,7 +28,7 @@ import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
 import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
-import com.haulmont.cuba.web.auth.IdpAuthProvider;
+import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.vaadin.server.*;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
     protected UserSessionSource userSessionSource;
 
     @Inject
-    protected IdpAuthProvider idpAuthProvider;
+    protected IdpAuthManager idpAuthManager;
 
     @Inject
     protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
@@ -131,7 +131,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
             boolean redirectedToExternalAuth = false;
 
             if (externalAuthenticationSettingsHelper.isIdpUsed()) {
-                String loggedOutUrl = idpAuthProvider.logout();
+                String loggedOutUrl = idpAuthManager.logout();
 
                 if (!Strings.isNullOrEmpty(loggedOutUrl)) {
                     AppUI currentUi = AppUI.getCurrent();
@@ -221,7 +221,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
                 );
 
                 UserSession session = getConnection().getSession();
-                idpAuthProvider.userSessionLoggedIn(session);
+                idpAuthManager.userSessionLoggedIn(session);
 
                 return true;
             } catch (LoginException e) {

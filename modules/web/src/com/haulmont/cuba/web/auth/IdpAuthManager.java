@@ -21,7 +21,7 @@ import com.haulmont.cuba.security.global.UserSession;
 
 import javax.annotation.Nullable;
 
-public interface IdpAuthProvider {
+public interface IdpAuthManager {
 
     String NAME = "cuba_IdpAuthProvider";
 
