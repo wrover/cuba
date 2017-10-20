@@ -23,6 +23,7 @@ import com.haulmont.cuba.security.auth.*;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.SessionParams;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.IdpAuthProvider;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -38,7 +39,7 @@ import java.util.Map;
  */
 @Component(Connection.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class DefaultConnection extends AbstractConnection {
+public class DefaultConnection extends AbstractConnection implements ExternallyAuthenticatedConnection {
 
     @Inject
     protected WebAuthConfig webAuthConfig;
@@ -146,6 +147,7 @@ public class DefaultConnection extends AbstractConnection {
         return authenticationService.login(credentials).getSession();
     }
 
+    @Override
     @Deprecated
     public void loginAfterExternalAuthentication(String login, Locale locale) throws LoginException {
         if (locale == null) {
@@ -155,6 +157,12 @@ public class DefaultConnection extends AbstractConnection {
         String password = webAuthConfig.getTrustedClientPassword();
         UserSession userSession = doLoginTrusted(login, password, locale, getLoginParams());
         update(userSession, SessionMode.AUTHENTICATED);
+    }
+
+    @Override
+    @Deprecated
+    public String logoutExternalAuthentication() {
+        return idpAuthProvider.logout();
     }
 
     /**
