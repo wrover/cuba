@@ -121,8 +121,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
             App app = App.getInstance();
             app.setLocale(selectedLocale);
 
-            authInfoThreadLocal.set(new AuthInfo(loginField.getValue(), passwordField.getValue(),
-                    rememberMeCheckBox.getValue(), localesSelect.getValue()));
+            authInfoThreadLocal.set(getAuthInfo());
             try {
                 app.createTopLevelWindow();
             } finally {
@@ -176,39 +175,33 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
             rememberMeCheckBox.setValue(authInfo.getRememberMe());
 
             localesSelect.requestFocus();
-
-            authInfoThreadLocal.set(null);
-
-            return;
-        }
-
-        App app = App.getInstance();
-
-        if (webAuthConfig.getLdapAuthenticationEnabled()) {
-            loginField.setValue(app.getPrincipal() == null ? "" : app.getPrincipal().getName());
-            passwordField.setValue("");
         } else {
-            String defaultUser = webConfig.getLoginDialogDefaultUser();
-            if (!StringUtils.isBlank(defaultUser) && !"<disabled>".equals(defaultUser)) {
-                loginField.setValue(defaultUser);
-            } else {
-                loginField.setValue("");
-            }
+            if (webAuthConfig.getLdapAuthenticationEnabled()) {
 
-            String defaultPassw = webConfig.getLoginDialogDefaultPassword();
-            if (!StringUtils.isBlank(defaultPassw) && !"<disabled>".equals(defaultPassw)) {
-                passwordField.setValue(defaultPassw);
-            } else {
+                App app = App.getInstance();
+
+                loginField.setValue(app.getPrincipal() == null ? "" : app.getPrincipal().getName());
                 passwordField.setValue("");
+            } else {
+                String defaultUser = webConfig.getLoginDialogDefaultUser();
+                if (!StringUtils.isBlank(defaultUser) && !"<disabled>".equals(defaultUser)) {
+                    loginField.setValue(defaultUser);
+                } else {
+                    loginField.setValue("");
+                }
+
+                String defaultPassw = webConfig.getLoginDialogDefaultPassword();
+                if (!StringUtils.isBlank(defaultPassw) && !"<disabled>".equals(defaultPassw)) {
+                    passwordField.setValue(defaultPassw);
+                } else {
+                    passwordField.setValue("");
+                }
             }
         }
     }
 
     protected void showUnhandledExceptionOnLogin(@SuppressWarnings("unused") Exception e) {
-        String title = messages.getMainMessage("loginWindow.loginFailed", userSessionSource.getLocale());
-        String message = messages.getMainMessage("loginWindow.pleaseContactAdministrator", userSessionSource.getLocale());
-
-        showNotification(title, message, NotificationType.ERROR);
+        showLoginException(messages.getMainMessage("loginWindow.pleaseContactAdministrator", userSessionSource.getLocale()));
     }
 
     protected void showLoginException(String message) {

@@ -60,15 +60,18 @@ public class LoginManagerBean implements LoginManager {
 
         App.getInstance().setLocale(authInfo.getLocale());
 
-        boolean authorized = getFirstProvider().process(false, authInfo);
+        boolean authenticated = getFirstProvider().process(false, authInfo);
 
-        // locale could be set on the server
-        if (authorized) {
+        if (authenticated) {
+            // locale could be set on the server
             Locale loggedInLocale = userSessionSource.getLocale();
 
             if (globalConfig.getLocaleSelectVisible()) {
                 App.getInstance().addCookie(App.COOKIE_LOCALE, loggedInLocale.toLanguageTag());
             }
+        } else {
+            throw new IllegalStateException("Credentials have passed through all providers but " +
+                    "the user wasn't authenticated.");
         }
     }
 
