@@ -23,6 +23,7 @@ import com.haulmont.cuba.security.auth.*;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.SessionParams;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.auth.CubaAuthProvider;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
@@ -45,6 +46,8 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     protected WebAuthConfig webAuthConfig;
     @Inject
     protected IdpAuthManager idpAuthManager;
+    @Inject
+    protected CubaAuthProvider cubaAuthProvider;
 
     @Override
     @Deprecated
@@ -156,13 +159,17 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
 
         String password = webAuthConfig.getTrustedClientPassword();
         UserSession userSession = doLoginTrusted(login, password, locale, getLoginParams());
-        update(userSession, SessionMode.AUTHENTICATED);
+        update(userSession, SessionMode.AUTHENTICATED, sessionInitEvent -> {
+            UserSession session = sessionInitEvent.getUserSession();
+            session.setAttribute(EXTERNAL_AUTH_USER_SESSION_ATTRIBUTE, true);
+            cubaAuthProvider.userSessionLoggedIn(session);
+        });
     }
 
     @Override
     @Deprecated
     public String logoutExternalAuthentication() {
-        return idpAuthManager.logout();
+        return cubaAuthProvider.logout();
     }
 
     /**

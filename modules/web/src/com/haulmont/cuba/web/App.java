@@ -30,6 +30,7 @@ import com.haulmont.cuba.gui.theme.ThemeConstantsRepository;
 import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.auth.CubaAuthProvider;
 import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.haulmont.cuba.web.auth.RequestContext;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
@@ -114,6 +115,9 @@ public abstract class App {
 
     @Inject
     protected IdpAuthManager idpAuthManager;
+
+    @Inject
+    protected CubaAuthProvider cubaAuthProvider;
 
     protected AppCookies cookies;
 
@@ -364,10 +368,14 @@ public abstract class App {
     public void pingExternalAuthentication() {
         if (getConnection().isConnected() && connection.isAuthenticated()) {
             try {
-                if (webAuthConfig.getUseIdpAuthentication()) {
+                if (webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication()) {
                     UserSession session = getConnection().getSession();
                     if (session != null) {
-                        idpAuthManager.pingUserSession(session);
+                        if (webAuthConfig.getUseIdpAuthentication()) {
+                            idpAuthManager.pingUserSession(session);
+                        } else {
+                            cubaAuthProvider.pingUserSession(session);
+                        }
                     }
                 }
             } catch (NoUserSessionException ignored) {

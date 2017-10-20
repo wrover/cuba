@@ -17,9 +17,7 @@
 package com.haulmont.cuba.web.auth.provider;
 
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.web.auth.AuthInfo;
-import com.haulmont.cuba.web.auth.CubaAuthProvider;
-import com.haulmont.cuba.web.auth.WebAuthConfig;
+import com.haulmont.cuba.web.auth.*;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
@@ -39,12 +37,17 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
     protected CubaAuthProvider cubaAuthProvider;
     @Inject
     protected WebAuthConfig webAuthConfig;
+    @Inject
+    protected DomainAliasesResolver domainAliasesResolver;
 
     @Override
     protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
 
         if (webAuthConfig.getExternalAuthentication()) {
             cubaAuthProvider.authenticate(authInfo.getLogin(), authInfo.getPassword(), authInfo.getLocale());
+            ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
+                    convertLoginString(authInfo.getLogin()), authInfo.getLocale()
+            );
             return true;
         } else {
             return false;
@@ -54,5 +57,31 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
     @Override
     public int getOrder() {
         return HIGHEST_PLATFORM_PRECEDENCE + 15;
+    }
+
+    /**
+     * Convert userName to db form
+     * In database users stores in form DOMAIN&#92;userName
+     *
+     * @param login Login string
+     * @return login in form DOMAIN&#92;userName
+     */
+    protected String convertLoginString(String login) {
+        int slashPos = login.indexOf("\\");
+        if (slashPos >= 0) {
+            String domainAlias = login.substring(0, slashPos);
+            String domain = domainAliasesResolver.getDomainName(domainAlias).toUpperCase();
+            String userName = login.substring(slashPos + 1);
+            login = domain + "\\" + userName;
+        } else {
+            int atSignPos = login.indexOf("@");
+            if (atSignPos >= 0) {
+                String domainAlias = login.substring(atSignPos + 1);
+                String domain = domainAliasesResolver.getDomainName(domainAlias).toUpperCase();
+                String userName = login.substring(0, atSignPos);
+                login = domain + "\\" + userName;
+            }
+        }
+        return login;
     }
 }

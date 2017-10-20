@@ -27,6 +27,7 @@ import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
+import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.vaadin.server.*;
 import com.vaadin.ui.UI;
@@ -126,8 +127,12 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
         } else {
             boolean redirectedToExternalAuth = false;
 
-            if (webAuthConfig.getUseIdpAuthentication()) {
-                String loggedOutUrl = idpAuthManager.logout();
+            if (webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication()) {
+
+
+                String loggedOutUrl = webAuthConfig.getUseIdpAuthentication()
+                        ? idpAuthManager.logout()
+                        : ((ExternallyAuthenticatedConnection) connection).logoutExternalAuthentication();
 
                 if (!Strings.isNullOrEmpty(loggedOutUrl)) {
                     AppUI currentUi = AppUI.getCurrent();
@@ -212,12 +217,16 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
             log.debug("Trying to login after external authentication as {}", userName);
             try {
 
-                connection.login(
-                        new TrustedClientCredentials(userName, webAuthConfig.getTrustedClientPassword(), getLocale())
-                );
+                if (webAuthConfig.getUseIdpAuthentication()) {
+                    connection.login(
+                            new TrustedClientCredentials(userName, webAuthConfig.getTrustedClientPassword(), getLocale())
+                    );
 
-                UserSession session = getConnection().getSession();
-                idpAuthManager.userSessionLoggedIn(session);
+                    UserSession session = getConnection().getSession();
+                    idpAuthManager.userSessionLoggedIn(session);
+                } else {
+                    ((ExternallyAuthenticatedConnection) connection).loginAfterExternalAuthentication(userName, getLocale());
+                }
 
                 return true;
             } catch (LoginException e) {
@@ -275,6 +284,6 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
     protected boolean isLoginOnStart() {
         return tryLoginOnStart
                 && principal != null
-                && webAuthConfig.getUseIdpAuthentication();
+                && (webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication());
     }
 }
