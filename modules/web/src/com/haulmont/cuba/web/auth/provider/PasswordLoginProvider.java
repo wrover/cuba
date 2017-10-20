@@ -34,7 +34,7 @@ import javax.inject.Inject;
 public class PasswordLoginProvider extends AbstractLoginProvider implements Ordered {
 
     @Inject
-    private PasswordEncryption passwordEncryption;
+    protected PasswordEncryption passwordEncryption;
 
     @Override
     protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {

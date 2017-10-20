@@ -39,7 +39,7 @@ import javax.inject.Inject;
 public class RememberMeLoginProvider extends AbstractLoginProvider implements Ordered {
 
     @Inject
-    private UserManagementService userManagementService;
+    protected UserManagementService userManagementService;
     @Inject
     protected WebConfig webConfig;
 

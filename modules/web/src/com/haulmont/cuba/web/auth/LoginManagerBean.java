@@ -35,11 +35,11 @@ import java.util.Locale;
 public class LoginManagerBean implements LoginManager {
 
     @Inject
-    private UserSessionSource userSessionSource;
+    protected UserSessionSource userSessionSource;
     @Inject
-    private GlobalConfig globalConfig;
+    protected GlobalConfig globalConfig;
     @Inject
-    private Messages messages;
+    protected Messages messages;
 
     @Inject
     protected List<LoginProvider> loginProviders;

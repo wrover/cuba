@@ -35,7 +35,7 @@ import com.haulmont.cuba.web.auth.AuthInfo;
  */
 abstract public class AbstractLoginProvider implements LoginProvider {
 
-    private LoginProvider nextLoginProvider;
+    protected LoginProvider nextLoginProvider;
 
     @Override
     public final boolean process(boolean authenticated, AuthInfo authInfo) throws LoginException {
