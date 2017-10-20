@@ -273,7 +273,9 @@ public class SettingsWindow extends AbstractWindow {
         boolean ldapUser = webAuthConfig.getLdapAuthenticationEnabled()
                 && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(userSession.getUser().getLogin());
 
-        boolean passwordSavedInExternalSystem = webAuthConfig.getUseIdpAuthentication() || ldapUser;
+        boolean passwordSavedInExternalSystem = webAuthConfig.getUseIdpAuthentication()
+                || webAuthConfig.getExternalAuthentication()
+                || ldapUser;
 
         return user.equals(userSession.getCurrentOrSubstitutedUser()) && !passwordSavedInExternalSystem;
     }

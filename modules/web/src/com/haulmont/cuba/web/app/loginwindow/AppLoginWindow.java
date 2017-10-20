@@ -173,7 +173,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
             localesSelect.requestFocus();
         } else {
-            if (webAuthConfig.getLdapAuthenticationEnabled()) {
+            if (webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getExternalAuthentication()) {
 
                 App app = App.getInstance();
 

@@ -263,7 +263,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     protected boolean isChangePasswordAtNextLogin() {
         if (connection.isAuthenticated() && !(
-                webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getLdapAuthenticationEnabled()
+                webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getExternalAuthentication()
         )) {
 
             User user = userSessionSource.getUserSession().getUser();
@@ -277,7 +277,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     protected boolean isReinitializeSession() {
         return connection.isAuthenticated()
-                && !webAuthConfig.getUseIdpAuthentication()
+                && !(webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication())
                 && webConfig.getUseSessionFixationProtection();
     }
 

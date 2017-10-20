@@ -598,6 +598,8 @@ public abstract class App {
     }
 
     protected boolean isPrincipalRequired() {
-        return webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getLdapAuthenticationEnabled();
+        return webAuthConfig.getUseIdpAuthentication()
+                || webAuthConfig.getLdapAuthenticationEnabled()
+                || webAuthConfig.getExternalAuthentication();
     }
 }
