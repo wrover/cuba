@@ -27,7 +27,6 @@ import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
-import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.vaadin.server.*;
 import com.vaadin.ui.UI;
@@ -60,9 +59,6 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     @Inject
     protected IdpAuthManager idpAuthManager;
-
-    @Inject
-    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     public DefaultApp() {
     }
@@ -130,7 +126,7 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
         } else {
             boolean redirectedToExternalAuth = false;
 
-            if (externalAuthenticationSettingsHelper.isIdpUsed()) {
+            if (webAuthConfig.getUseIdpAuthentication()) {
                 String loggedOutUrl = idpAuthManager.logout();
 
                 if (!Strings.isNullOrEmpty(loggedOutUrl)) {
@@ -257,7 +253,9 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
     }
 
     protected boolean isChangePasswordAtNextLogin() {
-        if (connection.isAuthenticated() && !externalAuthenticationSettingsHelper.isIdpOrLdapUsed()) {
+        if (connection.isAuthenticated() && !(
+                webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getLdapAuthenticationEnabled()
+        )) {
 
             User user = userSessionSource.getUserSession().getUser();
 
@@ -270,13 +268,13 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     protected boolean isReinitializeSession() {
         return connection.isAuthenticated()
-                && !externalAuthenticationSettingsHelper.isIdpUsed()
+                && !webAuthConfig.getUseIdpAuthentication()
                 && webConfig.getUseSessionFixationProtection();
     }
 
     protected boolean isLoginOnStart() {
         return tryLoginOnStart
                 && principal != null
-                && externalAuthenticationSettingsHelper.isIdpUsed();
+                && webAuthConfig.getUseIdpAuthentication();
     }
 }

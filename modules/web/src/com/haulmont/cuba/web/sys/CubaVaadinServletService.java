@@ -26,7 +26,6 @@ import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.WebConfig;
-import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.RequestContext;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.toolkit.ui.CubaFileUpload;
@@ -69,8 +68,6 @@ public class CubaVaadinServletService extends VaadinServletService {
 
     protected boolean testMode;
 
-    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
-
     public CubaVaadinServletService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
         super(servlet, deploymentConfiguration);
@@ -79,7 +76,6 @@ public class CubaVaadinServletService extends VaadinServletService {
         webConfig = configuration.getConfig(WebConfig.class);
         webAuthConfig = configuration.getConfig(WebAuthConfig.class);
 
-        externalAuthenticationSettingsHelper = AppBeans.get(ExternalAuthenticationSettingsHelper.class);
         testMode = configuration.getConfig(GlobalConfig.class).getTestMode();
 
         ServletContext sc = servlet.getServletContext();
@@ -291,7 +287,7 @@ public class CubaVaadinServletService extends VaadinServletService {
 
     @Override
     protected VaadinSession createVaadinSession(VaadinRequest request) throws ServiceException {
-        if (testMode && !externalAuthenticationSettingsHelper.isIdpUsed()) {
+        if (testMode && !webAuthConfig.getUseIdpAuthentication()) {
             return new VaadinSession(this) {
                 @Override
                 public String createConnectorId(ClientConnector connector) {

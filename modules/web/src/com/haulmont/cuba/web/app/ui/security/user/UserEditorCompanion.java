@@ -19,7 +19,6 @@ package com.haulmont.cuba.web.app.ui.security.user;
 
 import com.haulmont.cuba.gui.app.security.user.edit.UserEditor;
 import com.haulmont.cuba.gui.components.PasswordField;
-import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 
 import javax.inject.Inject;
@@ -27,11 +26,9 @@ import javax.inject.Inject;
 public class UserEditorCompanion implements UserEditor.Companion {
     @Inject
     protected WebAuthConfig config;
-    @Inject
-    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     @Override
     public void initPasswordField(PasswordField passwordField) {
-        passwordField.setRequired(!externalAuthenticationSettingsHelper.isIdpOrLdapUsed());
+        passwordField.setRequired(!config.getUseIdpAuthentication() && !config.getLdapAuthenticationEnabled());
     }
 }

@@ -75,9 +75,6 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
     @Inject
     protected  LoginManager loginManager;
 
-    @Inject
-    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
-
     @Deprecated
     protected Boolean bruteForceProtectionEnabled;
 
@@ -176,7 +173,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
             localesSelect.requestFocus();
         } else {
-            if (externalAuthenticationSettingsHelper.isLdapUsed()) {
+            if (webAuthConfig.getLdapAuthenticationEnabled()) {
 
                 App app = App.getInstance();
 

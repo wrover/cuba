@@ -43,12 +43,7 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
     @Override
     protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
 
-        boolean customProviderUsed = webAuthConfig.getExternalAuthentication() && !(
-                webAuthConfig.getExternalAuthenticationProviderClass().equalsIgnoreCase("com.haulmont.cuba.web.auth.IdpAuthProvider")
-                        || webAuthConfig.getExternalAuthenticationProviderClass().equalsIgnoreCase("com.haulmont.cuba.web.auth.LdapAuthProvider")
-        );
-
-        if (customProviderUsed) {
+        if (webAuthConfig.getExternalAuthentication()) {
             cubaAuthProvider.authenticate(authInfo.getLogin(), authInfo.getPassword(), authInfo.getLocale());
             return true;
         } else {

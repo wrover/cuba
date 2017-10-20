@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 
 public interface IdpAuthManager {
 
-    String NAME = "cuba_IdpAuthProvider";
+    String NAME = "cuba_IdpAuthManager";
 
     String IDP_SESSION_ATTRIBUTE = "IDP_SESSION";
     String IDP_SESSION_LOCK_ATTRIBUTE = "IDP_SESSION_LOCK";

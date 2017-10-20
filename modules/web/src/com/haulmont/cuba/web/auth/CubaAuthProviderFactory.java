@@ -42,18 +42,13 @@ public class CubaAuthProviderFactory {
 
     public CubaAuthProvider createAuthProvider() {
         WebAuthConfig authConfig = configuration.getConfig(WebAuthConfig.class);
-        boolean externalAuthUsed = authConfig.getExternalAuthentication();
         String providerClassName = authConfig.getExternalAuthenticationProviderClass();
-
-        boolean customProviderUsed = externalAuthUsed && !(
-                providerClassName.equalsIgnoreCase("com.haulmont.cuba.web.auth.IdpAuthProvider")
-                        || providerClassName.equalsIgnoreCase("com.haulmont.cuba.web.auth.LdapAuthProvider")
-        );
 
         try {
             ClassLoader classLoader = applicationContext.getClassLoader();
-            Class<?> providerClass = classLoader.loadClass(customProviderUsed ? providerClassName : "com.haulmont.cuba.web.auth.StubCubaAuthProvider");
-            return (CubaAuthProvider) providerClass.newInstance();
+            Class<?> providerClass = classLoader.loadClass(providerClassName);
+            CubaAuthProvider cubaAuthProvider = (CubaAuthProvider) providerClass.newInstance();
+            return cubaAuthProvider;
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new IllegalStateException("Unable to instantiate cuba_AuthProvider with class '" + providerClassName + "'");
         }

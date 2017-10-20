@@ -65,8 +65,6 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
     protected Configuration configuration;
     @Inject
     protected DefaultIdpAuthManagerBean idpAuthManager;
-    @Inject
-    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     @PostConstruct
     public void init() {
@@ -238,7 +236,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
     }
 
     protected boolean isIdpEnabled() {
-        return externalAuthenticationSettingsHelper.isIdpUsed();
+        return configuration.getConfig(WebAuthConfig.class).getUseIdpAuthentication();
     }
 
     static class IdpServletRequestWrapper extends HttpServletRequestWrapper {
