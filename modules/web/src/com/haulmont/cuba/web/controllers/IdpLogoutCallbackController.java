@@ -23,6 +23,7 @@ import com.haulmont.cuba.security.app.TrustedClientService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.security.idp.IdpService;
+import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +56,15 @@ public class IdpLogoutCallbackController {
     @Inject
     protected IdpService idpService;
 
+    @Inject
+    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
+
     @RequestMapping(value = "logout", method = RequestMethod.POST)
     public void logout(@RequestParam(name = "idpSessionId") String idpSessionId,
                        @RequestParam(name = "trustedServicePassword") String trustedServicePassword,
                        HttpServletResponse response) {
 
-        if (!webAuthConfig.getUseIdpAuthentication() || Strings.isNullOrEmpty(webAuthConfig.getIdpBaseURL())) {
+        if (!externalAuthenticationSettingsHelper.isIdpUsed() || Strings.isNullOrEmpty(webAuthConfig.getIdpBaseURL())) {
             log.warn("IDP options is not set, but logout callback url is requested");
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             return;

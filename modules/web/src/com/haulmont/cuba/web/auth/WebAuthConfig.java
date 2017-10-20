@@ -38,6 +38,30 @@ public interface WebAuthConfig extends Config {
     String getActiveDirectoryAliases();
 
     /**
+     * @deprecated
+     * Please use {@link #getUseIdpAuthentication()} to enable CUBA IDP and {@link #getLdapAuthenticationEnabled()}
+     *  to enable LDAP integration.
+     * {@link com.haulmont.cuba.web.sys.filter.CubaFilter} and {@link com.haulmont.cuba.web.auth.provider.LoginProvider}
+     *  can be used to implement custom authorization logic.
+     * Scheduled to be removed in CUBA 7.0
+     */
+    @Deprecated
+    @Property("cuba.web.externalAuthentication")
+    @DefaultBoolean(false)
+    boolean getExternalAuthentication();
+
+    /**
+     * @deprecated
+     * Please use {@link com.haulmont.cuba.web.sys.filter.CubaFilter} or {@link com.haulmont.cuba.web.auth.provider.LoginProvider}
+     *  to implement your custom authentication logic.
+     * Scheduled to be removed in CUBA 7.0
+     */
+    @Deprecated
+    @Property("cuba.web.externalAuthenticationProviderClass")
+    @DefaultString("com.haulmont.cuba.web.auth.LdapAuthProvider")
+    String getExternalAuthenticationProviderClass();
+
+    /**
      * @return Password used by LoginService.loginTrusted() method.
      * Trusted client may login without providing a user password. This is used for external authentication.
      *

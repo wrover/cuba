@@ -22,6 +22,7 @@ import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.security.global.IdpSession;
 import com.haulmont.cuba.web.auth.DefaultIdpAuthProviderBean;
+import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.IdpAuthProvider;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.apache.commons.lang.StringUtils;
@@ -65,6 +66,8 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
     protected Configuration configuration;
     @Inject
     protected DefaultIdpAuthProviderBean idpAuthProvider;
+    @Inject
+    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     @PostConstruct
     public void init() {
@@ -236,7 +239,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
     }
 
     protected boolean isIdpEnabled() {
-        return configuration.getConfig(WebAuthConfig.class).getUseIdpAuthentication();
+        return externalAuthenticationSettingsHelper.isIdpUsed();
     }
 
     static class IdpServletRequestWrapper extends HttpServletRequestWrapper {

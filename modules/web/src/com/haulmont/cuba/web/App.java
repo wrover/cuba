@@ -30,6 +30,7 @@ import com.haulmont.cuba.gui.theme.ThemeConstantsRepository;
 import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.IdpAuthProvider;
 import com.haulmont.cuba.web.auth.RequestContext;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
@@ -114,6 +115,9 @@ public abstract class App {
 
     @Inject
     protected IdpAuthProvider idpAuthProvider;
+
+    @Inject
+    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     protected AppCookies cookies;
 
@@ -364,7 +368,7 @@ public abstract class App {
     public void pingExternalAuthentication() {
         if (getConnection().isConnected() && connection.isAuthenticated()) {
             try {
-                if (webAuthConfig.getUseIdpAuthentication()) {
+                if (externalAuthenticationSettingsHelper.isIdpUsed()) {
                     UserSession session = getConnection().getSession();
                     if (session != null) {
                         idpAuthProvider.pingUserSession(session);
@@ -590,6 +594,6 @@ public abstract class App {
     }
 
     protected boolean isPrincipalRequired() {
-        return webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getUseIdpAuthentication();
+        return externalAuthenticationSettingsHelper.isIdpOrLdapUsed();
     }
 }

@@ -16,7 +16,7 @@
 
 package com.haulmont.cuba.web.auth;
 
-public abstract class LoginCookies {
+public final class LoginCookies {
 
     public static final String COOKIE_REMEMBER_ME_USED = "rememberMe";
     public static final String COOKIE_REMEMBER_ME_LOGIN = "rememberMe.Login";

@@ -23,10 +23,7 @@ import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.WebConfig;
-import com.haulmont.cuba.web.auth.WebAuthConfig;
-import com.haulmont.cuba.web.auth.AuthInfo;
-import com.haulmont.cuba.web.auth.LoginCookies;
-import com.haulmont.cuba.web.auth.LoginManager;
+import com.haulmont.cuba.web.auth.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +74,9 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
     @Inject
     protected  LoginManager loginManager;
+
+    @Inject
+    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     @Deprecated
     protected Boolean bruteForceProtectionEnabled;
@@ -176,7 +176,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
             localesSelect.requestFocus();
         } else {
-            if (webAuthConfig.getLdapAuthenticationEnabled()) {
+            if (externalAuthenticationSettingsHelper.isLdapUsed()) {
 
                 App app = App.getInstance();
 

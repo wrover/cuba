@@ -37,6 +37,7 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.app.UserSettingsTools;
+import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.vaadin.ui.ComboBox;
@@ -107,6 +108,9 @@ public class SettingsWindow extends AbstractWindow {
 
     @Inject
     protected UserSettingService userSettingService;
+
+    @Inject
+    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     @Override
     public void init(Map<String, Object> params) {
@@ -270,10 +274,10 @@ public class SettingsWindow extends AbstractWindow {
     }
 
     protected boolean isChangePasswordEnabled(User user) {
-        boolean ldapUser = webAuthConfig.getLdapAuthenticationEnabled()
+        boolean ldapUser = externalAuthenticationSettingsHelper.isLdapUsed()
                 && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(userSession.getUser().getLogin());
 
-        boolean passwordSavedInExternalSystem = webAuthConfig.getUseIdpAuthentication() || ldapUser;
+        boolean passwordSavedInExternalSystem = externalAuthenticationSettingsHelper.isIdpUsed() || ldapUser;
 
         return user.equals(userSession.getCurrentOrSubstitutedUser()) && !passwordSavedInExternalSystem;
     }

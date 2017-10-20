@@ -20,6 +20,7 @@ import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.auth.DomainAliasesResolver;
+import com.haulmont.cuba.web.auth.ExternalAuthenticationSettingsHelper;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.AuthInfo;
 import org.apache.commons.lang.StringUtils;
@@ -50,6 +51,8 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
     protected DomainAliasesResolver domainAliasesResolver;
     @Inject
     protected Messages messages;
+    @Inject
+    protected ExternalAuthenticationSettingsHelper externalAuthenticationSettingsHelper;
 
     protected LdapContextSource ldapContextSource;
 
@@ -58,7 +61,7 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
     @PostConstruct
     public void init() {
 
-        if (!webAuthConfig.getLdapAuthenticationEnabled()) return;
+        if (!externalAuthenticationSettingsHelper.isLdapUsed()) return;
 
         ldapContextSource = new LdapContextSource();
 
@@ -79,7 +82,7 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
     @Override
     protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
 
-        if (webAuthConfig.getLdapAuthenticationEnabled()
+        if (externalAuthenticationSettingsHelper.isLdapUsed()
                 && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(authInfo.getLogin())) {
 
             authenticateInExternalSystem(authInfo.getLogin(), authInfo.getPassword(), authInfo.getLocale());
