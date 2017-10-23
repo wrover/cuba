@@ -21,6 +21,10 @@ import org.springframework.context.ApplicationEvent;
 
 import java.util.Locale;
 
+/**
+ * User session logged in event. Published by application UI tier when CUBA user session is created.
+ * Triggered after standard session initialization, right before UI initialization.
+ */
 public class ExternalAuthenticationInitEvent extends ApplicationEvent {
 
     /**

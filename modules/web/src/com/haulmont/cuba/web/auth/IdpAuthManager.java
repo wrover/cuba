@@ -17,9 +17,11 @@
 
 package com.haulmont.cuba.web.auth;
 
-import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.security.global.IdpSession;
 
 import javax.annotation.Nullable;
+import java.security.Principal;
+import java.util.Locale;
 
 public interface IdpAuthManager {
 
@@ -29,20 +31,47 @@ public interface IdpAuthManager {
     String IDP_SESSION_LOCK_ATTRIBUTE = "IDP_SESSION_LOCK";
     String IDP_TICKET_REQUEST_PARAM = "idp_ticket";
 
-    /**
-     * Logout from external authentication
-     *
-     * @return target url of external identity provider or null
-     */
-    @Nullable
-    String logout();
+    IdpSession getIdpSession(String idpTicket) throws IdpActivationException;
 
-    /**
-     * Handler for user session logged in event. Called by application UI tier when CUBA user session is created.
-     * Triggered after standard session initialization, right before UI initialization.
-     *
-     * @param userSession user session
-     */
-    void userSessionLoggedIn(UserSession userSession);
+    class IdpActivationException extends Exception {
+        public IdpActivationException(String message) {
+            super(message);
+        }
+
+        public IdpActivationException(Throwable cause) {
+            super(cause);
+        }
+
+        public IdpActivationException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    class IdpSessionPrincipal implements Principal {
+        private final IdpSession idpSession;
+
+        public IdpSessionPrincipal(IdpSession idpSession) {
+            this.idpSession = idpSession;
+        }
+
+        @Override
+        public String getName() {
+            return idpSession.getLogin();
+        }
+
+        public IdpSession getIdpSession() {
+            return idpSession;
+        }
+
+        @Nullable
+        public Locale getLocale() {
+            String locale = idpSession.getLocale();
+            if (locale == null) {
+                return null;
+            }
+
+            return Locale.forLanguageTag(locale);
+        }
+    }
 
 }

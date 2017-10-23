@@ -21,9 +21,8 @@ import com.haulmont.bali.util.URLEncodeUtils;
 import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.security.global.IdpSession;
-import com.haulmont.cuba.web.auth.*;
-import com.haulmont.cuba.web.auth.DefaultIdpAuthManagerBean;
 import com.haulmont.cuba.web.auth.IdpAuthManager;
+import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
     @Inject
     protected Configuration configuration;
     @Inject
-    protected DefaultIdpAuthManagerBean idpAuthManager;
+    protected IdpAuthManager idpAuthManager;
 
     @PostConstruct
     public void init() {
@@ -180,7 +179,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
                 IdpSession idpSession;
                 try {
                     idpSession = idpAuthManager.getIdpSession(idpTicket);
-                } catch (DefaultIdpAuthManagerBean.IdpActivationException e) {
+                } catch (IdpAuthManager.IdpActivationException e) {
                     log.error("Unable to obtain IDP session by ticket", e);
                     httpResponse.setStatus(500);
                     return;
@@ -220,7 +219,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
         }
 
         HttpServletRequest authenticatedRequest = new IdpServletRequestWrapper(httpRequest,
-                new DefaultIdpAuthManagerBean.IdpSessionPrincipalImpl(boundIdpSession));
+                new IdpAuthManager.IdpSessionPrincipal(boundIdpSession));
 
         chain.doFilter(authenticatedRequest, response);
     }
@@ -241,7 +240,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
 
     static class IdpServletRequestWrapper extends HttpServletRequestWrapper {
 
-        private final DefaultIdpAuthManagerBean.IdpSessionPrincipalImpl principal;
+        private final IdpAuthManager.IdpSessionPrincipal principal;
 
         /**
          * Constructs a request object wrapping the given request.
@@ -249,7 +248,7 @@ public class IdpCubaFilter implements CubaFilter, Ordered {
          * @param request The request to wrap
          * @throws IllegalArgumentException if the request is null
          */
-        public IdpServletRequestWrapper(HttpServletRequest request, DefaultIdpAuthManagerBean.IdpSessionPrincipalImpl principal) {
+        public IdpServletRequestWrapper(HttpServletRequest request, IdpAuthManager.IdpSessionPrincipal principal) {
             super(request);
             this.principal = principal;
         }

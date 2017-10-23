@@ -30,6 +30,7 @@ import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.security.idp.IdpService;
 import com.haulmont.cuba.web.event.ExternalAuthenticationInitEvent;
+import com.haulmont.cuba.web.event.LogoutEvent;
 import com.haulmont.cuba.web.event.PingSessionEvent;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -47,20 +48,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.Locale;
 
 /**
  * {@link IdpAuthManager} that best suites to situation when Service Provider is also a CUBA application.
  */
 @Component(IdpAuthManager.NAME)
 public class DefaultIdpAuthManagerBean implements IdpAuthManager {
-
 
     private final Logger log = LoggerFactory.getLogger(DefaultIdpAuthManagerBean.class);
 
@@ -75,36 +73,6 @@ public class DefaultIdpAuthManagerBean implements IdpAuthManager {
 
     @Inject
     protected AuthenticationService authenticationService;
-
-    @Override
-    public void userSessionLoggedIn(UserSession session) {
-        RequestContext requestContext = RequestContext.get();
-
-        if (requestContext != null) {
-            Principal principal = requestContext.getRequest().getUserPrincipal();
-
-            if (principal instanceof IdpSessionPrincipal) {
-                IdpSession idpSession = ((IdpSessionPrincipal) principal).getIdpSession();
-                session.setAttribute(IdpService.IDP_USER_SESSION_ATTRIBUTE, idpSession.getId());
-            }
-        }
-    }
-
-    @Override
-    public String logout() {
-        RequestContext requestContext = RequestContext.get();
-        if (requestContext != null) {
-            requestContext.getSession().removeAttribute(IDP_SESSION_ATTRIBUTE);
-        }
-
-        String idpBaseURL = webAuthConfig.getIdpBaseURL();
-        if (Strings.isNullOrEmpty(idpBaseURL)) {
-            log.error("Application property cuba.web.idp.url is not set");
-            return null;
-        }
-
-        return getIdpLogoutUrl();
-    }
 
     public IdpSession getIdpSession(String idpTicket) throws IdpActivationException {
         String idpBaseURL = webAuthConfig.getIdpBaseURL();
@@ -184,9 +152,35 @@ public class DefaultIdpAuthManagerBean implements IdpAuthManager {
                 throw new RuntimeException("Error on trusted client login", e);
             }
 
-            userSessionLoggedIn(event.getConnection().getSession());
+            UserSession session = event.getConnection().getSession();
+
+            RequestContext requestContext = RequestContext.get();
+
+            if (requestContext != null) {
+                Principal principal = requestContext.getRequest().getUserPrincipal();
+
+                if (principal instanceof IdpSessionPrincipal) {
+                    IdpSession idpSession = ((IdpSessionPrincipal) principal).getIdpSession();
+                    session.setAttribute(IdpService.IDP_USER_SESSION_ATTRIBUTE, idpSession.getId());
+                }
+            }
 
             event.setAuthenticated(true);
+        }
+    }
+
+    @EventListener
+    public void onLogoutEvent(LogoutEvent event) {
+        RequestContext requestContext = RequestContext.get();
+        if (requestContext != null) {
+            requestContext.getSession().removeAttribute(IDP_SESSION_ATTRIBUTE);
+        }
+
+        String idpBaseURL = webAuthConfig.getIdpBaseURL();
+        if (Strings.isNullOrEmpty(idpBaseURL)) {
+            log.error("Application property cuba.web.idp.url is not set");
+        } else {
+            event.setLoggedOutUrl(getIdpLogoutUrl());
         }
     }
 
@@ -247,51 +241,5 @@ public class DefaultIdpAuthManagerBean implements IdpAuthManager {
 
         return idpBaseURL + "logout?sp=" +
                 URLEncodeUtils.encodeUtf8(globalConfig.getWebAppUrl());
-    }
-
-    public static class IdpSessionPrincipalImpl implements Principal, IdpSessionPrincipal {
-        private final IdpSession idpSession;
-
-        public IdpSessionPrincipalImpl(IdpSession idpSession) {
-            this.idpSession = idpSession;
-        }
-
-        @Override
-        public String getName() {
-            return idpSession.getLogin();
-        }
-
-        @Override
-        public IdpSession getIdpSession() {
-            return idpSession;
-        }
-
-        @Nullable
-        public Locale getLocale() {
-            String locale = idpSession.getLocale();
-            if (locale == null) {
-                return null;
-            }
-
-            return Locale.forLanguageTag(locale);
-        }
-    }
-
-    public static class IdpActivationException extends Exception {
-        public IdpActivationException(String message) {
-            super(message);
-        }
-
-        public IdpActivationException(Throwable cause) {
-            super(cause);
-        }
-
-        public IdpActivationException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    public interface IdpSessionPrincipal {
-        IdpSession getIdpSession();
     }
 }

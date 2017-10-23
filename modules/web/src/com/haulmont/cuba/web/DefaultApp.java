@@ -28,8 +28,8 @@ import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
-import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.haulmont.cuba.web.event.ExternalAuthenticationInitEvent;
+import com.haulmont.cuba.web.event.LogoutEvent;
 import com.vaadin.server.*;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
@@ -58,9 +58,6 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     @Inject
     protected UserSessionSource userSessionSource;
-
-    @Inject
-    protected IdpAuthManager idpAuthManager;
 
     @Inject
     protected Events events;
@@ -133,10 +130,15 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
             if (webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication()) {
 
+                String loggedOutUrl;
 
-                String loggedOutUrl = webAuthConfig.getUseIdpAuthentication()
-                        ? idpAuthManager.logout()
-                        : ((ExternallyAuthenticatedConnection) connection).logoutExternalAuthentication();
+                if (webAuthConfig.getUseIdpAuthentication()) {
+                    LogoutEvent event = new LogoutEvent(connection);
+                    events.publish(event);
+                    loggedOutUrl = event.getLoggedOutUrl();
+                } else {
+                    loggedOutUrl = ((ExternallyAuthenticatedConnection) connection).logoutExternalAuthentication();
+                }
 
                 if (!Strings.isNullOrEmpty(loggedOutUrl)) {
                     AppUI currentUi = AppUI.getCurrent();
