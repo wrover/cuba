@@ -21,7 +21,6 @@ import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.App;
-import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import com.haulmont.cuba.web.auth.provider.AbstractLoginProvider;
 import com.haulmont.cuba.web.auth.provider.LoginProvider;
@@ -59,9 +58,9 @@ public class LoginManagerBean implements LoginManager {
 
 //        checkParameters(credentials);
 
-        if (credentials instanceof LocalizedCredentials) {
-            App.getInstance().setLocale(((LocalizedCredentials) credentials).getLocale());
-        }
+//        if (credentials instanceof LocalizedCredentials) {
+//            App.getInstance().setLocale(((LocalizedCredentials) credentials).getLocale());
+//        }
 
         boolean authenticated = getFirstProvider().process(false, credentials);
 
