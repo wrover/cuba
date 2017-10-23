@@ -19,13 +19,11 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.core.global.PasswordEncryption;
 import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.Locale;
 
 /**
  * {@link LoginProvider} that authenticates the user based on provided login and password.
@@ -47,15 +45,11 @@ public class LoginPasswordLoginProvider extends AbstractLoginProvider implements
             com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials loginPasswordCredentials =
                     (com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials) credentials;
 
-            Locale locale = credentials instanceof LocalizedCredentials
-                    ? ((LocalizedCredentials) credentials).getLocale()
-                    : null;
-
             getConnection().login(
                     new LoginPasswordCredentials(
                             loginPasswordCredentials.getLogin(),
                             passwordEncryption.getPlainHash(loginPasswordCredentials.getPassword()),
-                            locale
+                            getLocale(credentials)
                     )
             );
 

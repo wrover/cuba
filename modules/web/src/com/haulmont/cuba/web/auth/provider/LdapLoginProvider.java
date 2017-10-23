@@ -22,7 +22,6 @@ import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.auth.DomainAliasesResolver;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.credentials.LdapCredentials;
-import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.Ordered;
@@ -86,15 +85,11 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
         if (credentials instanceof LdapCredentials) {
             LdapCredentials ldapCredentials = (LdapCredentials) credentials;
 
-            Locale locale = credentials instanceof LocalizedCredentials
-                    ? ((LocalizedCredentials) credentials).getLocale()
-                    : null;
-
-            authenticateInExternalSystem(ldapCredentials.getLogin(), ldapCredentials.getPassword(), locale);
+            authenticateInExternalSystem(ldapCredentials.getLogin(), ldapCredentials.getPassword(), getLocale(credentials));
             String login = convertLoginString(ldapCredentials.getLogin());
 
             getConnection().login(
-                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), locale)
+                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), getLocale(credentials))
             );
 
             result = true;

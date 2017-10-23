@@ -24,7 +24,6 @@ import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.auth.LoginCookies;
-import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import com.haulmont.cuba.web.auth.credentials.RememberMeLoginPasswordCredentials;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -33,7 +32,6 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.Locale;
 
 /**
  * {@link LoginProvider} that checks if the user tries to authenticate by "Remember me" functionality
@@ -55,15 +53,11 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
             RememberMeLoginPasswordCredentials rememberMeCredentials = (RememberMeLoginPasswordCredentials) credentials;
 
             if (rememberMeCredentials.isRememberMe()) {
-                Locale locale = credentials instanceof LocalizedCredentials
-                        ? ((LocalizedCredentials) credentials).getLocale()
-                        : null;
-
                 getConnection().login(
                         new RememberMeCredentials(
                                 rememberMeCredentials.getLogin(),
                                 rememberMeCredentials.getPassword(),
-                                locale
+                                getLocale(credentials)
                         )
                 );
 

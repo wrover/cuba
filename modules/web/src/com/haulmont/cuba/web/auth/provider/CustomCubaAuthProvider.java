@@ -22,13 +22,11 @@ import com.haulmont.cuba.web.auth.DomainAliasesResolver;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.credentials.LdapCredentials;
-import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.Locale;
 
 /**
  * @deprecated
@@ -55,13 +53,9 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
         if (credentials instanceof LdapCredentials) {
             LdapCredentials ldapCredentials = (LdapCredentials) credentials;
 
-            Locale locale = credentials instanceof LocalizedCredentials
-                    ? ((LocalizedCredentials) credentials).getLocale()
-                    : null;
-
-            cubaAuthProvider.authenticate(ldapCredentials.getLogin(), ldapCredentials.getPassword(), locale);
+            cubaAuthProvider.authenticate(ldapCredentials.getLogin(), ldapCredentials.getPassword(), getLocale(credentials));
             ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
-                    convertLoginString(ldapCredentials.getLogin()), locale
+                    convertLoginString(ldapCredentials.getLogin()), getLocale(credentials)
             );
             result = true;
         }
