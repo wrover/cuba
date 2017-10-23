@@ -26,7 +26,8 @@ import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.auth.LoginCookies;
 import com.haulmont.cuba.web.auth.LoginManager;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
-import com.haulmont.cuba.web.auth.credentials.*;
+import com.haulmont.cuba.web.auth.credentials.DefaultLoginCredentials;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,12 +172,11 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
         LoginCredentials credentials = credentialsThreadLocal.get();
         if (credentials != null) {
 
-            if (credentials instanceof LoginPasswordCredentials) {
-                loginField.setValue(((LoginPasswordCredentials) credentials).getLogin());
-                passwordField.setValue(((LoginPasswordCredentials) credentials).getPassword());
+            if (credentials instanceof DefaultLoginCredentials) {
+                loginField.setValue(((DefaultLoginCredentials) credentials).getLogin());
+                passwordField.setValue(((DefaultLoginCredentials) credentials).getPassword());
+                rememberMeCheckBox.setValue(((DefaultLoginCredentials) credentials).getRememberMe());
             }
-
-            rememberMeCheckBox.setValue(credentials instanceof RememberMeCredentials);
 
             localesSelect.requestFocus();
         } else {
@@ -245,59 +245,13 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
         return null;
     }
 
-    @SuppressWarnings("SuspiciousMethodCalls")
     protected LoginCredentials getCredentials() {
-        LoginCredentials credentials;
-
-        if (isRememberMeUsed() && Boolean.TRUE.equals(rememberMeCheckBox.getValue())) {
-            credentials = new RememberMeCredentials(
-                    loginField.getValue(),
-                    passwordField.getValue(),
-                    localesSelect.getValue()
-            );
-        } else if ((webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getExternalAuthentication())
-                && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(loginField.getValue())) {
-
-            credentials = new LdapCredentials(
-                    loginField.getValue(),
-                    passwordField.getValue(),
-                    localesSelect.getValue()
-            );
-        } else {
-            credentials = new LoginPasswordCredentials(
-                    loginField.getValue(),
-                    passwordField.getValue(),
-                    localesSelect.getValue()
-            );
-        }
-
-        return credentials;
-    }
-
-    protected boolean isRememberMeUsed() {
-        boolean result = false;
-
-        App app = App.getInstance();
-
-        if (webConfig.getRememberMeEnabled()) {
-            String rememberMeCookie = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_USED);
-            if (Boolean.parseBoolean(rememberMeCookie)) {
-                String encodedLogin = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
-
-                if (StringUtils.isNotEmpty(encodedLogin)) {
-                    String login = URLEncodeUtils.decodeUtf8(encodedLogin);
-                    String rememberMeToken = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
-
-                    if (StringUtils.isNotEmpty(rememberMeToken)) {
-                        result = login.equals(loginField.getValue())
-                                && rememberMeToken.equals(passwordField.getValue());
-                    }
-                }
-
-            }
-        }
-
-        return result;
+        return new DefaultLoginCredentials(
+                loginField.getValue(),
+                passwordField.getValue(),
+                rememberMeCheckBox.getValue(),
+                localesSelect.getValue()
+        );
     }
 
 }

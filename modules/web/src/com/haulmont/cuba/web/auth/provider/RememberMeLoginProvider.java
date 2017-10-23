@@ -24,8 +24,10 @@ import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.auth.LoginCookies;
+import com.haulmont.cuba.web.auth.credentials.DefaultLoginCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
@@ -44,25 +46,25 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
 
     @Override
     protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+        if (credentials instanceof DefaultLoginCredentials) {
 
-        boolean result = false;
+            DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
 
-        if (credentials instanceof com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) {
-            com.haulmont.cuba.web.auth.credentials.RememberMeCredentials rememberMeCredentials =
-                    (com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) credentials;
-
-            getConnection().login(
-                    new RememberMeCredentials(
-                            rememberMeCredentials.getLogin(),
-                            rememberMeCredentials.getRememberMeToken(),
-                            rememberMeCredentials.getLocale()
-                    )
-            );
-
-            result = true;
+            if (isRememberMeUsed(defaultLoginCredentials)) {
+                getConnection().login(
+                        new RememberMeCredentials(
+                                defaultLoginCredentials.getLogin(),
+                                defaultLoginCredentials.getPassword(),
+                                defaultLoginCredentials.getLocale()
+                        )
+                );
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
-
-        return result;
     }
 
     /**
@@ -74,28 +76,29 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
     protected void afterAll(boolean authenticated, LoginCredentials credentials) {
         super.afterAll(authenticated, credentials);
 
-        if (webConfig.getRememberMeEnabled()) {
+        if (webConfig.getRememberMeEnabled() && credentials instanceof DefaultLoginCredentials) {
 
-            if (credentials instanceof com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) {
-                com.haulmont.cuba.web.auth.credentials.RememberMeCredentials rememberMeCredentials =
-                        (com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) credentials;
+            DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
 
-                getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_USED, Boolean.TRUE.toString());
+            if (Boolean.TRUE.equals(defaultLoginCredentials.getRememberMe())) {
+                if (!isRememberMeUsed(defaultLoginCredentials)) {
+                    getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_USED, Boolean.TRUE.toString());
 
-                String encodedLogin = URLEncodeUtils.encodeUtf8(rememberMeCredentials.getLogin());
+                    String encodedLogin = URLEncodeUtils.encodeUtf8(defaultLoginCredentials.getLogin());
 
-                getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN, StringEscapeUtils.escapeJava(encodedLogin));
+                    getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN, StringEscapeUtils.escapeJava(encodedLogin));
 
-                UserSession session = getConnection().getSession();
-                if (session == null) {
-                    throw new IllegalStateException("Unable to get session after login");
+                    UserSession session = getConnection().getSession();
+                    if (session == null) {
+                        throw new IllegalStateException("Unable to get session after login");
+                    }
+
+                    User user = session.getUser();
+
+                    String rememberMeToken = userManagementService.generateRememberMeToken(user.getId());
+
+                    getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD, rememberMeToken);
                 }
-
-                User user = session.getUser();
-
-                String rememberMeToken = userManagementService.generateRememberMeToken(user.getId());
-
-                getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD, rememberMeToken);
             } else {
                 getApp().removeCookie(LoginCookies.COOKIE_REMEMBER_ME_USED);
                 getApp().removeCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
@@ -108,4 +111,28 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
     public int getOrder() {
         return HIGHEST_PLATFORM_PRECEDENCE + 20;
     }
+
+    protected boolean isRememberMeUsed(DefaultLoginCredentials loginCredentials) {
+        boolean result = false;
+
+        if (webConfig.getRememberMeEnabled()) {
+            String rememberMeCookie = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_USED);
+            if (Boolean.parseBoolean(rememberMeCookie)) {
+                String encodedLogin = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
+
+                if (StringUtils.isNotEmpty(encodedLogin)) {
+                    String login = URLEncodeUtils.decodeUtf8(encodedLogin);
+                    String rememberMeToken = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
+
+                    if (StringUtils.isNotEmpty(rememberMeToken)) {
+                        result = login.equals(loginCredentials.getLogin()) && rememberMeToken.equals(loginCredentials.getPassword());
+                    }
+                }
+
+            }
+        }
+
+        return result;
+    }
+
 }

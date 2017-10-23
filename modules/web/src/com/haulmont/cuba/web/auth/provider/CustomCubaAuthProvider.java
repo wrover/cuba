@@ -21,7 +21,7 @@ import com.haulmont.cuba.web.auth.CubaAuthProvider;
 import com.haulmont.cuba.web.auth.DomainAliasesResolver;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
-import com.haulmont.cuba.web.auth.credentials.LdapCredentials;
+import com.haulmont.cuba.web.auth.credentials.DefaultLoginCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
@@ -48,19 +48,20 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
     @Override
     protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
-        boolean result = false;
-
-        if (credentials instanceof LdapCredentials) {
-            LdapCredentials ldapCredentials = (LdapCredentials) credentials;
-
-            cubaAuthProvider.authenticate(ldapCredentials.getLogin(), ldapCredentials.getPassword(), ldapCredentials.getLocale());
-            ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
-                    convertLoginString(ldapCredentials.getLogin()), ldapCredentials.getLocale()
+        if (credentials instanceof DefaultLoginCredentials && webAuthConfig.getExternalAuthentication()) {
+            DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
+            cubaAuthProvider.authenticate(
+                    defaultLoginCredentials.getLogin(),
+                    defaultLoginCredentials.getPassword(),
+                    defaultLoginCredentials.getLocale()
             );
-            result = true;
+            ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
+                    convertLoginString(defaultLoginCredentials.getLogin()), defaultLoginCredentials.getLocale()
+            );
+            return true;
+        } else {
+            return false;
         }
-
-        return result;
     }
 
     @Override

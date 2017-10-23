@@ -21,7 +21,7 @@ import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.auth.DomainAliasesResolver;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
-import com.haulmont.cuba.web.auth.credentials.LdapCredentials;
+import com.haulmont.cuba.web.auth.credentials.DefaultLoginCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.Ordered;
@@ -79,23 +79,35 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
 
     @Override
     protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+        if (credentials instanceof DefaultLoginCredentials) {
 
-        boolean result = false;
+            DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
 
-        if (credentials instanceof LdapCredentials) {
-            LdapCredentials ldapCredentials = (LdapCredentials) credentials;
+            if (webAuthConfig.getLdapAuthenticationEnabled()
+                    && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(defaultLoginCredentials.getLogin())) {
 
-            authenticateInExternalSystem(ldapCredentials.getLogin(), ldapCredentials.getPassword(), ldapCredentials.getLocale());
-            String login = convertLoginString(ldapCredentials.getLogin());
+                authenticateInExternalSystem(
+                        defaultLoginCredentials.getLogin(),
+                        defaultLoginCredentials.getPassword(),
+                        defaultLoginCredentials.getLocale()
+                );
+                String login = convertLoginString(defaultLoginCredentials.getLogin());
 
-            getConnection().login(
-                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), ldapCredentials.getLocale())
-            );
+                getConnection().login(
+                        new TrustedClientCredentials(
+                                login,
+                                webAuthConfig.getTrustedClientPassword(),
+                                defaultLoginCredentials.getLocale()
+                        )
+                );
 
-            result = true;
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
-
-        return result;
     }
 
     /**

@@ -18,18 +18,34 @@ package com.haulmont.cuba.web.auth.credentials;
 
 import java.util.Locale;
 
-public class RememberMeCredentials extends LoginPasswordCredentials {
+public class DefaultLoginCredentials implements LoginCredentials {
 
-    public RememberMeCredentials(String login, String rememberMeToken, Locale locale) {
-        super(login, rememberMeToken, locale);
+    private final String login;
+    private final String password;
+    private final Boolean rememberMe;
+    private final Locale locale;
+
+    public DefaultLoginCredentials(String login, String password, Boolean rememberMe, Locale locale) {
+        this.login = login;
+        this.password = password;
+        this.rememberMe = rememberMe;
+        this.locale = locale;
     }
 
-    public String getRememberMeToken() {
+    public String getLogin() {
+        return login;
+    }
+
+    public String getPassword() {
         return password;
     }
 
-    public void setRememberMeToken(String rememberMeToken) {
-        this.password = rememberMeToken;
+    public Boolean getRememberMe() {
+        return rememberMe;
+    }
+
+    public Locale getLocale() {
+        return locale;
     }
 
 }
