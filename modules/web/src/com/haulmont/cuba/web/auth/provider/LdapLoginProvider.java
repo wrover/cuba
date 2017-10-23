@@ -19,6 +19,7 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.DomainAliasesResolver;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.credentials.DefaultLoginCredentials;
@@ -78,7 +79,7 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
     }
 
     @Override
-    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+    protected AuthenticationStatus tryToAuthenticate(LoginCredentials credentials) throws LoginException {
         if (credentials instanceof DefaultLoginCredentials) {
 
             DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
@@ -93,7 +94,7 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
                 );
                 String login = convertLoginString(defaultLoginCredentials.getLogin());
 
-                getConnection().login(
+                UserSession session = login(
                         new TrustedClientCredentials(
                                 login,
                                 webAuthConfig.getTrustedClientPassword(),
@@ -101,12 +102,12 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
                         )
                 );
 
-                return true;
+                return AuthenticationStatus.successful(session);
             } else {
-                return false;
+                return AuthenticationStatus.notSuccessful();
             }
         } else {
-            return false;
+            return AuthenticationStatus.notSuccessful();
         }
     }
 

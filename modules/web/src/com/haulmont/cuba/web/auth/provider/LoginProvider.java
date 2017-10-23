@@ -38,11 +38,11 @@ public interface LoginProvider {
     /**
      * Process user's input and authenticates the user if possible
      *
-     * @param authenticated     is the user already authenticated
-     * @param credentials          input provided by the user
+     * @param status            is the user already authenticated
+     * @param credentials       input provided by the user
      * @return                  whether the user is authenticated
      * @throws LoginException   if the input provided by the user is incorrect
      */
-    boolean process(boolean authenticated, LoginCredentials credentials) throws LoginException;
+    AuthenticationStatus process(AuthenticationStatus status, LoginCredentials credentials) throws LoginException;
 
 }

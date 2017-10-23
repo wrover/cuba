@@ -16,14 +16,13 @@
  */
 package com.haulmont.cuba.web.auth;
 
-import com.haulmont.cuba.security.auth.Credentials;
 import com.haulmont.cuba.security.global.LoginException;
 
 import java.util.Locale;
 
 /**
  * @deprecated
- * Please use {@link com.haulmont.cuba.web.DefaultConnection#login(Credentials)}
+ * Please use {@link com.haulmont.cuba.web.DefaultConnection#login(com.haulmont.cuba.web.auth.credentials.LoginCredentials)}
  *  with {@link com.haulmont.cuba.security.auth.TrustedClientCredentials} to perform login
  *  when external integrations are used.
  * Scheduled to be removed in CUBA 7.0

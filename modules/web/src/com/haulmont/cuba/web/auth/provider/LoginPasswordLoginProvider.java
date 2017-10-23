@@ -19,6 +19,7 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.core.global.PasswordEncryption;
 import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.credentials.DefaultLoginCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.springframework.core.Ordered;
@@ -37,12 +38,12 @@ public class LoginPasswordLoginProvider extends AbstractLoginProvider implements
     protected PasswordEncryption passwordEncryption;
 
     @Override
-    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+    protected AuthenticationStatus tryToAuthenticate(LoginCredentials credentials) throws LoginException {
         if (credentials instanceof DefaultLoginCredentials) {
 
             DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
 
-            getConnection().login(
+            UserSession session = login(
                     new LoginPasswordCredentials(
                             defaultLoginCredentials.getLogin(),
                             passwordEncryption.getPlainHash(defaultLoginCredentials.getPassword()),
@@ -50,9 +51,9 @@ public class LoginPasswordLoginProvider extends AbstractLoginProvider implements
                     )
             );
 
-            return true;
+            return AuthenticationStatus.successful(session);
         } else {
-            return false;
+            return AuthenticationStatus.notSuccessful();
         }
     }
 

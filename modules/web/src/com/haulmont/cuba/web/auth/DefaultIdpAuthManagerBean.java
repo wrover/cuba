@@ -23,12 +23,12 @@ import com.haulmont.bali.util.URLEncodeUtils;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.auth.AuthenticationService;
-import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.IdpSession;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.security.idp.IdpService;
+import com.haulmont.cuba.web.auth.credentials.TrustedCredentials;
 import com.haulmont.cuba.web.event.ExternalAuthenticationInitEvent;
 import com.haulmont.cuba.web.event.LogoutEvent;
 import com.haulmont.cuba.web.event.PingSessionEvent;
@@ -146,7 +146,7 @@ public class DefaultIdpAuthManagerBean implements IdpAuthManager {
         if (webAuthConfig.getUseIdpAuthentication() && !event.isAuthenticated()) {
             try {
                 event.getConnection().login(
-                        new TrustedClientCredentials(event.getUserName(), webAuthConfig.getTrustedClientPassword(), event.getLocale())
+                        new TrustedCredentials(event.getUserName(), event.getLocale())
                 );
             } catch (LoginException e) {
                 throw new RuntimeException("Error on trusted client login", e);

@@ -16,10 +16,10 @@
  */
 package com.haulmont.cuba.web;
 
-import com.haulmont.cuba.security.auth.Credentials;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
@@ -49,7 +49,7 @@ public interface Connection {
     @Deprecated
     void login(String login, String password, Locale locale) throws LoginException;
 
-    void login(Credentials credentials) throws LoginException;
+    void login(LoginCredentials credentials) throws LoginException;
 
     /**
      * Log in to the system.

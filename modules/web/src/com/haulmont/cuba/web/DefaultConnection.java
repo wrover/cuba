@@ -19,6 +19,7 @@ package com.haulmont.cuba.web;
 
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.cuba.core.global.ClientType;
+import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.auth.*;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.SessionParams;
@@ -26,11 +27,17 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.CubaAuthProvider;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
+import com.haulmont.cuba.web.auth.provider.AbstractLoginProvider;
+import com.haulmont.cuba.web.auth.provider.AuthenticationStatus;
+import com.haulmont.cuba.web.auth.provider.LoginProvider;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -45,6 +52,19 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     protected WebAuthConfig webAuthConfig;
     @Inject
     protected CubaAuthProvider cubaAuthProvider;
+    @Inject
+    protected List<LoginProvider> loginProviders;
+    @Inject
+    protected UserSessionSource userSessionSource;
+
+    @PostConstruct
+    public void init() {
+        for (int i = 0; i < loginProviders.size(); ++i) {
+            if (i != loginProviders.size() - 1) {
+                ((AbstractLoginProvider) loginProviders.get(i)).setNextLoginProvider(loginProviders.get(i + 1));
+            }
+        }
+    }
 
     @Override
     @Deprecated
@@ -57,23 +77,30 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     }
 
     @Override
-    public void login(Credentials credentials) throws LoginException {
+    public void login(LoginCredentials credentials) throws LoginException {
 
-        if (!(credentials instanceof AbstractClientCredentials)) {
-            throw new IllegalArgumentException(String.format("Credentials of class %s are not supported", credentials.getClass()));
+//        checkParameters(credentials);
+
+//        if (credentials instanceof LocalizedCredentials) {
+//            App.getInstance().setLocale(((LocalizedCredentials) credentials).getLocale());
+//        }
+
+        AuthenticationStatus status = getFirstProvider().process(AuthenticationStatus.notSuccessful(), credentials);
+
+        if (status.isSuccess()) {
+
+            update(status.getSession(), SessionMode.AUTHENTICATED);
+
+            // locale could be set on the server
+            Locale loggedInLocale = userSessionSource.getLocale();
+
+            if (globalConfig.getLocaleSelectVisible()) {
+                App.getInstance().addCookie(App.COOKIE_LOCALE, loggedInLocale.toLanguageTag());
+            }
+        } else {
+            throw new IllegalStateException("Credentials have passed through all providers but " +
+                    "the user wasn't authenticated.");
         }
-
-        AbstractClientCredentials clientCredentials = (AbstractClientCredentials) credentials;
-
-        if (clientCredentials.getLocale() == null) {
-            throw new IllegalArgumentException("Locale is null");
-        }
-
-        setCredentialsParams(clientCredentials, getLoginParams());
-
-        AuthenticationDetails details = authenticationService.login(credentials);
-
-        update(details.getSession(), SessionMode.AUTHENTICATED);
     }
 
     @Override
@@ -205,4 +232,14 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
                 SessionParams.CLIENT_INFO.getId(), makeClientInfo()
         );
     }
+
+    protected LoginProvider getFirstProvider() {
+        return loginProviders.get(0);
+    }
+
+    //    protected void checkParameters(AuthInfo authInfo) throws LoginException {
+//        if (StringUtils.isEmpty(authInfo.getLogin()) || StringUtils.isEmpty(authInfo.getPassword())) {
+//            throw new LoginException(messages.getMainMessage("loginWindow.emptyLoginOrPassword"));
+//        }
+//    }
 }

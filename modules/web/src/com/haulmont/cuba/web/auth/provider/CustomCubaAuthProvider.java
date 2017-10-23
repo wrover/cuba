@@ -46,7 +46,7 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
     protected DomainAliasesResolver domainAliasesResolver;
 
     @Override
-    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+    protected AuthenticationStatus tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
         if (credentials instanceof DefaultLoginCredentials && webAuthConfig.getExternalAuthentication()) {
             DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
@@ -58,9 +58,10 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
             ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
                     convertLoginString(defaultLoginCredentials.getLogin()), defaultLoginCredentials.getLocale()
             );
-            return true;
+            // todo
+            return AuthenticationStatus.successful(null);
         } else {
-            return false;
+            return AuthenticationStatus.notSuccessful();
         }
     }
 

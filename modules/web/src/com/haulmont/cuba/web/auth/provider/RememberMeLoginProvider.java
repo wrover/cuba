@@ -45,25 +45,25 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
     protected WebConfig webConfig;
 
     @Override
-    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+    protected AuthenticationStatus tryToAuthenticate(LoginCredentials credentials) throws LoginException {
         if (credentials instanceof DefaultLoginCredentials) {
 
             DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
 
             if (isRememberMeUsed(defaultLoginCredentials)) {
-                getConnection().login(
+                UserSession session = login(
                         new RememberMeCredentials(
                                 defaultLoginCredentials.getLogin(),
                                 defaultLoginCredentials.getPassword(),
                                 defaultLoginCredentials.getLocale()
                         )
                 );
-                return true;
+                return AuthenticationStatus.successful(session);
             } else {
-                return false;
+                return AuthenticationStatus.notSuccessful();
             }
         } else {
-            return false;
+            return AuthenticationStatus.notSuccessful();
         }
     }
 

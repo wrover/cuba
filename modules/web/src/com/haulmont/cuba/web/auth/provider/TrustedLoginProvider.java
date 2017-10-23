@@ -19,6 +19,7 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.core.global.PasswordEncryption;
 import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import com.haulmont.cuba.web.auth.credentials.TrustedCredentials;
@@ -36,14 +37,12 @@ public class TrustedLoginProvider extends AbstractLoginProvider implements Order
     protected WebAuthConfig webAuthConfig;
 
     @Override
-    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
-
-        boolean result = false;
+    protected AuthenticationStatus tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
         if (credentials instanceof TrustedCredentials) {
             TrustedCredentials trustedCredentials = (TrustedCredentials) credentials;
 
-            getConnection().login(
+            UserSession session = login(
                 new TrustedClientCredentials(
                         trustedCredentials.getUserName(),
                         webAuthConfig.getTrustedClientPassword(),
@@ -51,10 +50,10 @@ public class TrustedLoginProvider extends AbstractLoginProvider implements Order
                 )
             );
 
-            result = true;
+            return AuthenticationStatus.successful(session);
+        } else {
+            return AuthenticationStatus.notSuccessful();
         }
-
-        return result;
     }
 
     @Override

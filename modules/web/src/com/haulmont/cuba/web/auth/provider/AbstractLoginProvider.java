@@ -16,10 +16,25 @@
 
 package com.haulmont.cuba.web.auth.provider;
 
+import com.haulmont.bali.util.ParamsMap;
+import com.haulmont.cuba.core.global.ClientType;
+import com.haulmont.cuba.core.global.GlobalConfig;
+import com.haulmont.cuba.security.auth.AbstractClientCredentials;
+import com.haulmont.cuba.security.auth.AuthenticationDetails;
+import com.haulmont.cuba.security.auth.AuthenticationService;
+import com.haulmont.cuba.security.auth.Credentials;
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.security.global.SessionParams;
+import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.Connection;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.server.WebBrowser;
+
+import javax.inject.Inject;
+import java.util.Map;
 
 /**
  * {@link LoginProvider} that implements the "Chain of Responsibility" pattern.
@@ -35,26 +50,31 @@ import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
  */
 abstract public class AbstractLoginProvider implements LoginProvider {
 
+    @Inject
+    protected AuthenticationService authenticationService;
+    @Inject
+    protected GlobalConfig globalConfig;
+
     protected LoginProvider nextLoginProvider;
 
     @Override
-    public final boolean process(boolean authenticated, LoginCredentials credentials) throws LoginException {
+    public final AuthenticationStatus process(AuthenticationStatus status, LoginCredentials credentials) throws LoginException {
 
-        boolean result = authenticated;
+        AuthenticationStatus result = status;
 
-        before(result, credentials);
+        before(result.isSuccess(), credentials);
 
-        if (!authenticated) {
+        if (!result.isSuccess()) {
             result = tryToAuthenticate(credentials);
         }
 
-        after(result, credentials);
+        after(result.isSuccess(), credentials);
 
         if (nextLoginProvider != null) {
             result = nextLoginProvider.process(result, credentials);
         }
 
-        afterAll(authenticated, credentials);
+        afterAll(result.isSuccess(), credentials);
 
         return result;
     }
@@ -70,7 +90,7 @@ abstract public class AbstractLoginProvider implements LoginProvider {
      * @return                  whether the method is succeeded to authorize the user
      * @throws LoginException   if the input provided by the user is incorrect
      */
-    abstract protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException;
+    abstract protected AuthenticationStatus tryToAuthenticate(LoginCredentials credentials) throws LoginException;
 
     protected App getApp() {
         return App.getInstance();
@@ -90,5 +110,56 @@ abstract public class AbstractLoginProvider implements LoginProvider {
      * This method is guaranteed to be called after all Login Providers had a chance to authorize a user.
      */
     protected void afterAll(boolean authenticated, LoginCredentials credentials) {}
+
+    protected UserSession login(Credentials credentials) throws LoginException {
+
+        if (!(credentials instanceof AbstractClientCredentials)) {
+            throw new IllegalArgumentException(String.format("Credentials of class %s are not supported", credentials.getClass()));
+        }
+
+        AbstractClientCredentials clientCredentials = (AbstractClientCredentials) credentials;
+
+        if (clientCredentials.getLocale() == null) {
+            throw new IllegalArgumentException("Locale is null");
+        }
+
+        setCredentialsParams(clientCredentials, getLoginParams());
+
+        AuthenticationDetails details = authenticationService.login(credentials);
+        return details.getSession();
+    }
+
+    protected void setCredentialsParams(AbstractClientCredentials credentials, Map<String, Object> loginParams) {
+        credentials.setClientInfo(makeClientInfo());
+        credentials.setClientType(ClientType.WEB);
+        credentials.setIpAddress(App.getInstance().getClientAddress());
+        credentials.setParams(loginParams);
+        if (!globalConfig.getLocaleSelectVisible()) {
+            credentials.setOverrideLocale(false);
+        }
+    }
+
+    protected Map<String, Object> getLoginParams() {
+        return ParamsMap.of(
+                ClientType.class.getName(), ClientType.WEB.name(),
+                SessionParams.IP_ADDERSS.getId(), App.getInstance().getClientAddress(),
+                SessionParams.CLIENT_INFO.getId(), makeClientInfo()
+        );
+    }
+
+    protected String makeClientInfo() {
+        // timezone info is passed only on VaadinSession creation
+        WebBrowser webBrowser = VaadinSession.getCurrent().getBrowser();
+        webBrowser.updateRequestDetails(VaadinService.getCurrentRequest());
+
+        //noinspection UnnecessaryLocalVariable
+        String serverInfo = String.format("Web (%s:%s/%s) %s",
+                globalConfig.getWebHostName(),
+                globalConfig.getWebPort(),
+                globalConfig.getWebContextName(),
+                webBrowser.getBrowserApplication());
+
+        return serverInfo;
+    }
 
 }
