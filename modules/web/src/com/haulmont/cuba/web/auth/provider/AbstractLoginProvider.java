@@ -27,7 +27,7 @@ import com.haulmont.cuba.web.auth.AuthInfo;
  * If the user is not yet authenticated it checks if it can authenticate him.
  * Regardless of the outcome it passes authorization details to a next LoginProvider.
  *
- * Provider can implement {@link #providerHook(AuthInfo)} to put there some logic that
+ * Provider can implement {@link #afterAll(boolean, AuthInfo)} to put there some logic that
  *  has to be called after all providers had their chance to analyze authentication info.
  *
  * Defining and initializing the next provider is a responsibility of a system that uses
@@ -42,15 +42,19 @@ abstract public class AbstractLoginProvider implements LoginProvider {
 
         boolean result = authenticated;
 
+        before(result, authInfo);
+
         if (!authenticated) {
             result = tryToAuthenticate(authInfo);
         }
+
+        after(result, authInfo);
 
         if (nextLoginProvider != null) {
             result = nextLoginProvider.process(result, authInfo);
         }
 
-        providerHook(authInfo);
+        afterAll(authenticated, authInfo);
 
         return result;
     }
@@ -76,13 +80,15 @@ abstract public class AbstractLoginProvider implements LoginProvider {
         return getApp().getConnection();
     }
 
+    protected void before(boolean authenticated, AuthInfo authInfo) {}
+
+    protected void after(boolean authenticated, AuthInfo authInfo) {}
+
     /**
      * This hook can be used to place there some logic that should be executed
      *  no matter if the user is authorized or not.
      * This method is guaranteed to be called after all Login Providers had a chance to authorize a user.
      */
-    protected void providerHook(AuthInfo authInfo) {
-        // required behavior can be implemented in child components
-    }
+    protected void afterAll(boolean authenticated, AuthInfo authInfo) {}
 
 }

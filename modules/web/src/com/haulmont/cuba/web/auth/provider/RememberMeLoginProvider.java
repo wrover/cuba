@@ -61,8 +61,8 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
      * @param authInfo  input provided by the user
      */
     @Override
-    protected void providerHook(AuthInfo authInfo) {
-        super.providerHook(authInfo);
+    protected void afterAll(boolean authenticated, AuthInfo authInfo) {
+        super.afterAll(authenticated, authInfo);
 
         if (webConfig.getRememberMeEnabled()) {
             if (Boolean.TRUE.equals(authInfo.getRememberMe())) {

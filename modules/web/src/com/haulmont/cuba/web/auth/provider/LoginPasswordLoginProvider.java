@@ -31,7 +31,7 @@ import javax.inject.Inject;
  * If it's not the last provider, please override the {@link #tryToAuthenticate(AuthInfo)} method.
  */
 @Component("cuba_LoginPasswordProvider")
-public class PasswordLoginProvider extends AbstractLoginProvider implements Ordered {
+public class LoginPasswordLoginProvider extends AbstractLoginProvider implements Ordered {
 
     @Inject
     protected PasswordEncryption passwordEncryption;
