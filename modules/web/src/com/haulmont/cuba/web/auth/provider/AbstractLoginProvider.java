@@ -19,11 +19,7 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.Connection;
-import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
-
-import javax.annotation.Nullable;
-import java.util.Locale;
 
 /**
  * {@link LoginProvider} that implements the "Chain of Responsibility" pattern.
@@ -82,13 +78,6 @@ abstract public class AbstractLoginProvider implements LoginProvider {
 
     protected Connection getConnection() {
         return getApp().getConnection();
-    }
-
-    @Nullable
-    protected Locale getLocale(LoginCredentials credentials) {
-        return credentials instanceof LocalizedCredentials
-                ? ((LocalizedCredentials) credentials).getLocale()
-                : null;
     }
 
     protected void before(boolean authenticated, LoginCredentials credentials) {}

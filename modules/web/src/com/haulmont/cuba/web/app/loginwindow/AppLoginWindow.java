@@ -176,9 +176,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
                 passwordField.setValue(((LoginPasswordCredentials) credentials).getPassword());
             }
 
-            if (credentials instanceof RememberMeCredentials) {
-                rememberMeCheckBox.setValue(((RememberMeCredentials) credentials).isRememberMe());
-            }
+            rememberMeCheckBox.setValue(credentials instanceof RememberMeCredentials);
 
             localesSelect.requestFocus();
         } else {
@@ -247,74 +245,59 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
         return null;
     }
 
+    @SuppressWarnings("SuspiciousMethodCalls")
     protected LoginCredentials getCredentials() {
         LoginCredentials credentials;
 
-        //noinspection SuspiciousMethodCalls
-        if ((webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getExternalAuthentication())
+        if (isRememberMeUsed() && Boolean.TRUE.equals(rememberMeCheckBox.getValue())) {
+            credentials = new RememberMeCredentials(
+                    loginField.getValue(),
+                    passwordField.getValue(),
+                    localesSelect.getValue()
+            );
+        } else if ((webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getExternalAuthentication())
                 && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(loginField.getValue())) {
-            if (webConfig.getRememberMeEnabled()) {
-                if (globalConfig.getLocaleSelectVisible()) {
-                    credentials = new LocalizedRememberMeLdapCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue(),
-                            rememberMeCheckBox.getValue(),
-                            localesSelect.getValue()
-                    );
-                } else {
-                    credentials = new RememberMeLdapCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue(),
-                            rememberMeCheckBox.getValue()
-                    );
-                }
-            } else {
-                if (globalConfig.getLocaleSelectVisible()) {
-                    credentials = new LocalizedLdapCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue(),
-                            localesSelect.getValue()
-                    );
-                } else {
-                    credentials = new DefaultLdapCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue()
-                    );
-                }
-            }
+
+            credentials = new LdapCredentials(
+                    loginField.getValue(),
+                    passwordField.getValue(),
+                    localesSelect.getValue()
+            );
         } else {
-            if (webConfig.getRememberMeEnabled()) {
-                if (globalConfig.getLocaleSelectVisible()) {
-                    credentials = new LocalizedRememberMeLoginPasswordCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue(),
-                            rememberMeCheckBox.getValue(),
-                            localesSelect.getValue()
-                    );
-                } else {
-                    credentials = new RememberMeLoginPasswordCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue(),
-                            rememberMeCheckBox.getValue()
-                    );
-                }
-            } else {
-                if (globalConfig.getLocaleSelectVisible()) {
-                    credentials = new LocalizedLoginPasswordCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue(),
-                            localesSelect.getValue()
-                    );
-                } else {
-                    credentials = new DefaultLoginPasswordCredentials(
-                            loginField.getValue(),
-                            passwordField.getValue()
-                    );
-                }
-            }
+            credentials = new LoginPasswordCredentials(
+                    loginField.getValue(),
+                    passwordField.getValue(),
+                    localesSelect.getValue()
+            );
         }
 
         return credentials;
+    }
+
+    protected boolean isRememberMeUsed() {
+        boolean result = false;
+
+        App app = App.getInstance();
+
+        if (webConfig.getRememberMeEnabled()) {
+            String rememberMeCookie = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_USED);
+            if (Boolean.parseBoolean(rememberMeCookie)) {
+                String encodedLogin = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
+
+                if (StringUtils.isNotEmpty(encodedLogin)) {
+                    String login = URLEncodeUtils.decodeUtf8(encodedLogin);
+                    String rememberMeToken = app.getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
+
+                    if (StringUtils.isNotEmpty(rememberMeToken)) {
+                        result = login.equals(loginField.getValue())
+                                && rememberMeToken.equals(passwordField.getValue());
+                    }
+                }
+
+            }
+        }
+
+        return result;
     }
 
 }

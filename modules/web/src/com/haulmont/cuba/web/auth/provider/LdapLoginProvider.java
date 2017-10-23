@@ -85,11 +85,11 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
         if (credentials instanceof LdapCredentials) {
             LdapCredentials ldapCredentials = (LdapCredentials) credentials;
 
-            authenticateInExternalSystem(ldapCredentials.getLogin(), ldapCredentials.getPassword(), getLocale(credentials));
+            authenticateInExternalSystem(ldapCredentials.getLogin(), ldapCredentials.getPassword(), ldapCredentials.getLocale());
             String login = convertLoginString(ldapCredentials.getLogin());
 
             getConnection().login(
-                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), getLocale(credentials))
+                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), ldapCredentials.getLocale())
             );
 
             result = true;

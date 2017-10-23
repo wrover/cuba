@@ -53,9 +53,9 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
         if (credentials instanceof LdapCredentials) {
             LdapCredentials ldapCredentials = (LdapCredentials) credentials;
 
-            cubaAuthProvider.authenticate(ldapCredentials.getLogin(), ldapCredentials.getPassword(), getLocale(credentials));
+            cubaAuthProvider.authenticate(ldapCredentials.getLogin(), ldapCredentials.getPassword(), ldapCredentials.getLocale());
             ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
-                    convertLoginString(ldapCredentials.getLogin()), getLocale(credentials)
+                    convertLoginString(ldapCredentials.getLogin()), ldapCredentials.getLocale()
             );
             result = true;
         }

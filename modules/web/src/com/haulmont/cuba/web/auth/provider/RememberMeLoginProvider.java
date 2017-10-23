@@ -25,9 +25,7 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.auth.LoginCookies;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
-import com.haulmont.cuba.web.auth.credentials.RememberMeLoginPasswordCredentials;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
@@ -49,20 +47,19 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
 
         boolean result = false;
 
-        if (credentials instanceof RememberMeLoginPasswordCredentials) {
-            RememberMeLoginPasswordCredentials rememberMeCredentials = (RememberMeLoginPasswordCredentials) credentials;
+        if (credentials instanceof com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) {
+            com.haulmont.cuba.web.auth.credentials.RememberMeCredentials rememberMeCredentials =
+                    (com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) credentials;
 
-            if (rememberMeCredentials.isRememberMe()) {
-                getConnection().login(
-                        new RememberMeCredentials(
-                                rememberMeCredentials.getLogin(),
-                                rememberMeCredentials.getPassword(),
-                                getLocale(credentials)
-                        )
-                );
+            getConnection().login(
+                    new RememberMeCredentials(
+                            rememberMeCredentials.getLogin(),
+                            rememberMeCredentials.getRememberMeToken(),
+                            rememberMeCredentials.getLocale()
+                    )
+            );
 
-                result = true;
-            }
+            result = true;
         }
 
         return result;
@@ -77,59 +74,34 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
     protected void afterAll(boolean authenticated, LoginCredentials credentials) {
         super.afterAll(authenticated, credentials);
 
-        if (credentials instanceof RememberMeLoginPasswordCredentials) {
+        if (webConfig.getRememberMeEnabled()) {
 
-            RememberMeLoginPasswordCredentials rememberMeCredentials = (RememberMeLoginPasswordCredentials) credentials;
+            if (credentials instanceof com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) {
+                com.haulmont.cuba.web.auth.credentials.RememberMeCredentials rememberMeCredentials =
+                        (com.haulmont.cuba.web.auth.credentials.RememberMeCredentials) credentials;
 
-            if (Boolean.TRUE.equals(rememberMeCredentials.isRememberMe())) {
-                if (!isRememberMeUsed(rememberMeCredentials)) {
-                    getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_USED, Boolean.TRUE.toString());
+                getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_USED, Boolean.TRUE.toString());
 
-                    String encodedLogin = URLEncodeUtils.encodeUtf8(rememberMeCredentials.getLogin());
+                String encodedLogin = URLEncodeUtils.encodeUtf8(rememberMeCredentials.getLogin());
 
-                    getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN, StringEscapeUtils.escapeJava(encodedLogin));
+                getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN, StringEscapeUtils.escapeJava(encodedLogin));
 
-                    UserSession session = getConnection().getSession();
-                    if (session == null) {
-                        throw new IllegalStateException("Unable to get session after login");
-                    }
-
-                    User user = session.getUser();
-
-                    String rememberMeToken = userManagementService.generateRememberMeToken(user.getId());
-
-                    getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD, rememberMeToken);
+                UserSession session = getConnection().getSession();
+                if (session == null) {
+                    throw new IllegalStateException("Unable to get session after login");
                 }
+
+                User user = session.getUser();
+
+                String rememberMeToken = userManagementService.generateRememberMeToken(user.getId());
+
+                getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD, rememberMeToken);
             } else {
                 getApp().removeCookie(LoginCookies.COOKIE_REMEMBER_ME_USED);
                 getApp().removeCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
                 getApp().removeCookie(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
             }
         }
-    }
-
-    private boolean isRememberMeUsed(RememberMeLoginPasswordCredentials rememberMeCredentials) {
-        boolean result = false;
-
-        if (webConfig.getRememberMeEnabled()) {
-            String rememberMeCookie = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_USED);
-            if (Boolean.parseBoolean(rememberMeCookie)) {
-                String encodedLogin = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_LOGIN);
-
-                if (StringUtils.isNotEmpty(encodedLogin)) {
-                    String login = URLEncodeUtils.decodeUtf8(encodedLogin);
-                    String rememberMeToken = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
-
-                    if (StringUtils.isNotEmpty(rememberMeToken)) {
-                        result = login.equals(rememberMeCredentials.getLogin())
-                                && rememberMeToken.equals(rememberMeCredentials.getPassword());
-                    }
-                }
-
-            }
-        }
-
-        return result;
     }
 
     @Override

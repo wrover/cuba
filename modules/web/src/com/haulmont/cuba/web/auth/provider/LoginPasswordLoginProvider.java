@@ -49,7 +49,7 @@ public class LoginPasswordLoginProvider extends AbstractLoginProvider implements
                     new LoginPasswordCredentials(
                             loginPasswordCredentials.getLogin(),
                             passwordEncryption.getPlainHash(loginPasswordCredentials.getPassword()),
-                            getLocale(credentials)
+                            loginPasswordCredentials.getLocale()
                     )
             );
 

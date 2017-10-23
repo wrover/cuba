@@ -16,8 +16,20 @@
 
 package com.haulmont.cuba.web.auth.credentials;
 
-public interface RememberMeCredentials extends LoginCredentials {
+import java.util.Locale;
 
-    boolean isRememberMe();
+public class RememberMeCredentials extends LoginPasswordCredentials {
+
+    public RememberMeCredentials(String login, String rememberMeToken, Locale locale) {
+        super(login, rememberMeToken, locale);
+    }
+
+    public String getRememberMeToken() {
+        return password;
+    }
+
+    public void setRememberMeToken(String rememberMeToken) {
+        this.password = rememberMeToken;
+    }
 
 }

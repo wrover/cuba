@@ -16,4 +16,10 @@
 
 package com.haulmont.cuba.web.auth.credentials;
 
-public interface LdapCredentials extends LoginPasswordCredentials {}
+import java.util.Locale;
+
+public class LdapCredentials extends LoginPasswordCredentials {
+    public LdapCredentials(String login, String password, Locale locale) {
+        super(login, password, locale);
+    }
+}

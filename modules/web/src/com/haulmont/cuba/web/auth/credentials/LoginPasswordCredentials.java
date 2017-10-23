@@ -16,10 +16,43 @@
 
 package com.haulmont.cuba.web.auth.credentials;
 
-public interface LoginPasswordCredentials extends LoginCredentials {
+import java.util.Locale;
 
-    String getLogin();
+public class LoginPasswordCredentials implements LoginCredentials {
 
-    String getPassword();
+    protected String login;
 
+    protected String password;
+
+    protected Locale locale;
+
+    public LoginPasswordCredentials(String login, String password, Locale locale) {
+        this.login = login;
+        this.password = password;
+        this.locale = locale;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
 }
