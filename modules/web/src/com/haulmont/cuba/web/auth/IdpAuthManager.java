@@ -45,11 +45,4 @@ public interface IdpAuthManager {
      */
     void userSessionLoggedIn(UserSession userSession);
 
-    /**
-     * Send ping to identity provider.
-     *
-     * @param userSession user session
-     */
-    void pingUserSession(UserSession userSession);
-
 }

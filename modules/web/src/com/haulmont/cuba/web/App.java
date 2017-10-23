@@ -18,6 +18,7 @@
 package com.haulmont.cuba.web;
 
 import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.Events;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.global.MessageTools;
 import com.haulmont.cuba.gui.components.Frame;
@@ -35,6 +36,7 @@ import com.haulmont.cuba.web.auth.IdpAuthManager;
 import com.haulmont.cuba.web.auth.RequestContext;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
+import com.haulmont.cuba.web.event.PingSessionEvent;
 import com.haulmont.cuba.web.exception.ExceptionHandlers;
 import com.haulmont.cuba.web.log.AppLog;
 import com.haulmont.cuba.web.settings.WebSettingsClient;
@@ -118,6 +120,9 @@ public abstract class App {
 
     @Inject
     protected CubaAuthProvider cubaAuthProvider;
+
+    @Inject
+    protected Events events;
 
     protected AppCookies cookies;
 
@@ -367,13 +372,12 @@ public abstract class App {
 
     public void pingExternalAuthentication() {
         if (getConnection().isConnected() && connection.isAuthenticated()) {
+            events.publish(new PingSessionEvent(getConnection().getSession()));
             try {
                 if (webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication()) {
                     UserSession session = getConnection().getSession();
                     if (session != null) {
-                        if (webAuthConfig.getUseIdpAuthentication()) {
-                            idpAuthManager.pingUserSession(session);
-                        } else {
+                        if (webAuthConfig.getExternalAuthentication()) {
                             cubaAuthProvider.pingUserSession(session);
                         }
                     }

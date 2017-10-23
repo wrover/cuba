@@ -18,17 +18,18 @@ package com.haulmont.cuba.web;
 
 import com.google.common.base.Strings;
 import com.haulmont.bali.util.ParamsMap;
+import com.haulmont.cuba.core.global.Events;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.gui.WindowManager.OpenType;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowInfo;
-import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.IdpAuthManager;
+import com.haulmont.cuba.web.event.ExternalAuthenticationInitEvent;
 import com.vaadin.server.*;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
@@ -60,6 +61,9 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
     @Inject
     protected IdpAuthManager idpAuthManager;
+
+    @Inject
+    protected Events events;
 
     public DefaultApp() {
     }
@@ -215,29 +219,29 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
 
             String userName = principal.getName();
             log.debug("Trying to login after external authentication as {}", userName);
+
             try {
-
-                if (webAuthConfig.getUseIdpAuthentication()) {
-                    connection.login(
-                            new TrustedClientCredentials(userName, webAuthConfig.getTrustedClientPassword(), getLocale())
-                    );
-
-                    UserSession session = getConnection().getSession();
-                    idpAuthManager.userSessionLoggedIn(session);
+                if (webAuthConfig.getExternalAuthentication()) {
+                    try {
+                        ((ExternallyAuthenticatedConnection) connection).loginAfterExternalAuthentication(userName, getLocale());
+                        return true;
+                    } catch (LoginException e) {
+                        log.trace("Unable to login on start", e);
+                        return false;
+                    }
                 } else {
-                    ((ExternallyAuthenticatedConnection) connection).loginAfterExternalAuthentication(userName, getLocale());
+                    ExternalAuthenticationInitEvent event = new ExternalAuthenticationInitEvent(getConnection(), userName, getLocale());
+                    events.publish(event);
+                    return event.isAuthenticated();
                 }
-
-                return true;
-            } catch (LoginException e) {
-                log.trace("Unable to login on start", e);
             } finally {
                 // Close attempt login on start
                 tryLoginOnStart = false;
             }
-        }
 
-        return false;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -282,8 +286,6 @@ public class DefaultApp extends App implements ConnectionListener, UserSubstitut
     }
 
     protected boolean isLoginOnStart() {
-        return tryLoginOnStart
-                && principal != null
-                && (webAuthConfig.getUseIdpAuthentication() || webAuthConfig.getExternalAuthentication());
+        return tryLoginOnStart && principal != null;
     }
 }

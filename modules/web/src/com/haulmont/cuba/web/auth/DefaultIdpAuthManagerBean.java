@@ -23,10 +23,14 @@ import com.haulmont.bali.util.URLEncodeUtils;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.auth.AuthenticationService;
+import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.IdpSession;
+import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.security.idp.IdpService;
+import com.haulmont.cuba.web.event.ExternalAuthenticationInitEvent;
+import com.haulmont.cuba.web.event.PingSessionEvent;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -40,6 +44,7 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -82,14 +87,6 @@ public class DefaultIdpAuthManagerBean implements IdpAuthManager {
                 IdpSession idpSession = ((IdpSessionPrincipal) principal).getIdpSession();
                 session.setAttribute(IdpService.IDP_USER_SESSION_ATTRIBUTE, idpSession.getId());
             }
-        }
-    }
-
-    @Override
-    public void pingUserSession(UserSession session) {
-        String idpSessionId = session.getAttribute(IdpService.IDP_USER_SESSION_ATTRIBUTE);
-        if (idpSessionId != null) {
-            pingIdpSessionServer(idpSessionId);
         }
     }
 
@@ -160,6 +157,37 @@ public class DefaultIdpAuthManagerBean implements IdpAuthManager {
         }
 
         return session;
+    }
+
+    @EventListener
+    public void onPingEvent(PingSessionEvent event) {
+        if (webAuthConfig.getUseIdpAuthentication()) {
+            UserSession session = event.getSession();
+
+            if (session != null) {
+                String idpSessionId = event.getSession().getAttribute(IdpService.IDP_USER_SESSION_ATTRIBUTE);
+                if (idpSessionId != null) {
+                    pingIdpSessionServer(idpSessionId);
+                }
+            }
+        }
+    }
+
+    @EventListener
+    public void onExternalAuthenticationInitEvent(ExternalAuthenticationInitEvent event) {
+        if (webAuthConfig.getUseIdpAuthentication() && !event.isAuthenticated()) {
+            try {
+                event.getConnection().login(
+                        new TrustedClientCredentials(event.getUserName(), webAuthConfig.getTrustedClientPassword(), event.getLocale())
+                );
+            } catch (LoginException e) {
+                throw new RuntimeException("Error on trusted client login", e);
+            }
+
+            userSessionLoggedIn(event.getConnection().getSession());
+
+            event.setAuthenticated(true);
+        }
     }
 
     protected void pingIdpSessionServer(String idpSessionId) {
