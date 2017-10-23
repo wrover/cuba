@@ -17,11 +17,18 @@
 package com.haulmont.cuba.web.auth.provider;
 
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.web.auth.*;
+import com.haulmont.cuba.web.auth.CubaAuthProvider;
+import com.haulmont.cuba.web.auth.DomainAliasesResolver;
+import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
+import com.haulmont.cuba.web.auth.WebAuthConfig;
+import com.haulmont.cuba.web.auth.credentials.LdapCredentials;
+import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.Locale;
 
 /**
  * @deprecated
@@ -41,17 +48,25 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
     protected DomainAliasesResolver domainAliasesResolver;
 
     @Override
-    protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
+    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
-        if (webAuthConfig.getExternalAuthentication()) {
-            cubaAuthProvider.authenticate(authInfo.getLogin(), authInfo.getPassword(), authInfo.getLocale());
+        boolean result = false;
+
+        if (credentials instanceof LdapCredentials) {
+            LdapCredentials ldapCredentials = (LdapCredentials) credentials;
+
+            Locale locale = credentials instanceof LocalizedCredentials
+                    ? ((LocalizedCredentials) credentials).getLocale()
+                    : null;
+
+            cubaAuthProvider.authenticate(ldapCredentials.getLogin(), ldapCredentials.getPassword(), locale);
             ((ExternallyAuthenticatedConnection) getConnection()).loginAfterExternalAuthentication(
-                    convertLoginString(authInfo.getLogin()), authInfo.getLocale()
+                    convertLoginString(ldapCredentials.getLogin()), locale
             );
-            return true;
-        } else {
-            return false;
+            result = true;
         }
+
+        return result;
     }
 
     @Override

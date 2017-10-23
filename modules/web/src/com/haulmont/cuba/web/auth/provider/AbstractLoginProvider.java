@@ -19,7 +19,7 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.Connection;
-import com.haulmont.cuba.web.auth.AuthInfo;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 
 /**
  * {@link LoginProvider} that implements the "Chain of Responsibility" pattern.
@@ -27,7 +27,7 @@ import com.haulmont.cuba.web.auth.AuthInfo;
  * If the user is not yet authenticated it checks if it can authenticate him.
  * Regardless of the outcome it passes authorization details to a next LoginProvider.
  *
- * Provider can implement {@link #afterAll(boolean, AuthInfo)} to put there some logic that
+ * Provider can implement {@link #afterAll(boolean, LoginCredentials)} to put there some logic that
  *  has to be called after all providers had their chance to analyze authentication info.
  *
  * Defining and initializing the next provider is a responsibility of a system that uses
@@ -38,23 +38,23 @@ abstract public class AbstractLoginProvider implements LoginProvider {
     protected LoginProvider nextLoginProvider;
 
     @Override
-    public final boolean process(boolean authenticated, AuthInfo authInfo) throws LoginException {
+    public final boolean process(boolean authenticated, LoginCredentials credentials) throws LoginException {
 
         boolean result = authenticated;
 
-        before(result, authInfo);
+        before(result, credentials);
 
         if (!authenticated) {
-            result = tryToAuthenticate(authInfo);
+            result = tryToAuthenticate(credentials);
         }
 
-        after(result, authInfo);
+        after(result, credentials);
 
         if (nextLoginProvider != null) {
-            result = nextLoginProvider.process(result, authInfo);
+            result = nextLoginProvider.process(result, credentials);
         }
 
-        afterAll(authenticated, authInfo);
+        afterAll(authenticated, credentials);
 
         return result;
     }
@@ -66,11 +66,11 @@ abstract public class AbstractLoginProvider implements LoginProvider {
     /**
      * Authenticate the user if possible.
      *
-     * @param authInfo          input provided by the user
+     * @param credentials          input provided by the user
      * @return                  whether the method is succeeded to authorize the user
      * @throws LoginException   if the input provided by the user is incorrect
      */
-    abstract protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException;
+    abstract protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException;
 
     protected App getApp() {
         return App.getInstance();
@@ -80,15 +80,15 @@ abstract public class AbstractLoginProvider implements LoginProvider {
         return getApp().getConnection();
     }
 
-    protected void before(boolean authenticated, AuthInfo authInfo) {}
+    protected void before(boolean authenticated, LoginCredentials credentials) {}
 
-    protected void after(boolean authenticated, AuthInfo authInfo) {}
+    protected void after(boolean authenticated, LoginCredentials credentials) {}
 
     /**
      * This hook can be used to place there some logic that should be executed
      *  no matter if the user is authorized or not.
      * This method is guaranteed to be called after all Login Providers had a chance to authorize a user.
      */
-    protected void afterAll(boolean authenticated, AuthInfo authInfo) {}
+    protected void afterAll(boolean authenticated, LoginCredentials credentials) {}
 
 }

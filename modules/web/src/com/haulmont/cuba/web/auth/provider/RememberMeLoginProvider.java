@@ -23,14 +23,17 @@ import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.WebConfig;
-import com.haulmont.cuba.web.auth.AuthInfo;
 import com.haulmont.cuba.web.auth.LoginCookies;
+import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
+import com.haulmont.cuba.web.auth.credentials.RememberMeLoginPasswordCredentials;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.Locale;
 
 /**
  * {@link LoginProvider} that checks if the user tries to authenticate by "Remember me" functionality
@@ -44,32 +47,51 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
     protected WebConfig webConfig;
 
     @Override
-    protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
-        if (isRememberMeUsed(authInfo)) {
-            getConnection().login(
-                    new RememberMeCredentials(authInfo.getLogin(), authInfo.getPassword(), authInfo.getLocale())
-            );
-            return true;
-        } else {
-            return false;
+    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
+
+        boolean result = false;
+
+        if (credentials instanceof RememberMeLoginPasswordCredentials) {
+            RememberMeLoginPasswordCredentials rememberMeCredentials = (RememberMeLoginPasswordCredentials) credentials;
+
+            if (rememberMeCredentials.isRememberMe()) {
+                Locale locale = credentials instanceof LocalizedCredentials
+                        ? ((LocalizedCredentials) credentials).getLocale()
+                        : null;
+
+                getConnection().login(
+                        new RememberMeCredentials(
+                                rememberMeCredentials.getLogin(),
+                                rememberMeCredentials.getPassword(),
+                                locale
+                        )
+                );
+
+                result = true;
+            }
         }
+
+        return result;
     }
 
     /**
      * Checks if the "Remember me" checkbox was turned on or off and edits cookies based on it
      *
-     * @param authInfo  input provided by the user
+     * @param credentials  input provided by the user
      */
     @Override
-    protected void afterAll(boolean authenticated, AuthInfo authInfo) {
-        super.afterAll(authenticated, authInfo);
+    protected void afterAll(boolean authenticated, LoginCredentials credentials) {
+        super.afterAll(authenticated, credentials);
 
-        if (webConfig.getRememberMeEnabled()) {
-            if (Boolean.TRUE.equals(authInfo.getRememberMe())) {
-                if (!isRememberMeUsed(authInfo)) {
+        if (credentials instanceof RememberMeLoginPasswordCredentials) {
+
+            RememberMeLoginPasswordCredentials rememberMeCredentials = (RememberMeLoginPasswordCredentials) credentials;
+
+            if (Boolean.TRUE.equals(rememberMeCredentials.isRememberMe())) {
+                if (!isRememberMeUsed(rememberMeCredentials)) {
                     getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_USED, Boolean.TRUE.toString());
 
-                    String encodedLogin = URLEncodeUtils.encodeUtf8(authInfo.getLogin());
+                    String encodedLogin = URLEncodeUtils.encodeUtf8(rememberMeCredentials.getLogin());
 
                     getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_LOGIN, StringEscapeUtils.escapeJava(encodedLogin));
 
@@ -92,7 +114,7 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
         }
     }
 
-    private boolean isRememberMeUsed(AuthInfo authInfo) {
+    private boolean isRememberMeUsed(RememberMeLoginPasswordCredentials rememberMeCredentials) {
         boolean result = false;
 
         if (webConfig.getRememberMeEnabled()) {
@@ -105,7 +127,8 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
                     String rememberMeToken = getApp().getCookieValue(LoginCookies.COOKIE_REMEMBER_ME_PASSWORD);
 
                     if (StringUtils.isNotEmpty(rememberMeToken)) {
-                        result = login.equals(authInfo.getLogin()) && rememberMeToken.equals(authInfo.getPassword());
+                        result = login.equals(rememberMeCredentials.getLogin())
+                                && rememberMeToken.equals(rememberMeCredentials.getPassword());
                     }
                 }
 

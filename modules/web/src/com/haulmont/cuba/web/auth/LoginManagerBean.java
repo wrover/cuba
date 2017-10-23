@@ -21,9 +21,10 @@ import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.App;
+import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import com.haulmont.cuba.web.auth.provider.AbstractLoginProvider;
 import com.haulmont.cuba.web.auth.provider.LoginProvider;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -54,13 +55,15 @@ public class LoginManagerBean implements LoginManager {
     }
 
     @Override
-    public void login(AuthInfo authInfo) throws LoginException {
+    public void login(LoginCredentials credentials) throws LoginException {
 
-        checkParameters(authInfo);
+//        checkParameters(credentials);
 
-        App.getInstance().setLocale(authInfo.getLocale());
+        if (credentials instanceof LocalizedCredentials) {
+            App.getInstance().setLocale(((LocalizedCredentials) credentials).getLocale());
+        }
 
-        boolean authenticated = getFirstProvider().process(false, authInfo);
+        boolean authenticated = getFirstProvider().process(false, credentials);
 
         if (authenticated) {
             // locale could be set on the server
@@ -75,11 +78,11 @@ public class LoginManagerBean implements LoginManager {
         }
     }
 
-    protected void checkParameters(AuthInfo authInfo) throws LoginException {
-        if (StringUtils.isEmpty(authInfo.getLogin()) || StringUtils.isEmpty(authInfo.getPassword())) {
-            throw new LoginException(messages.getMainMessage("loginWindow.emptyLoginOrPassword"));
-        }
-    }
+//    protected void checkParameters(AuthInfo authInfo) throws LoginException {
+//        if (StringUtils.isEmpty(authInfo.getLogin()) || StringUtils.isEmpty(authInfo.getPassword())) {
+//            throw new LoginException(messages.getMainMessage("loginWindow.emptyLoginOrPassword"));
+//        }
+//    }
 
     protected LoginProvider getFirstProvider() {
         return loginProviders.get(0);

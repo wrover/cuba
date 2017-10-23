@@ -23,7 +23,10 @@ import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.WebConfig;
-import com.haulmont.cuba.web.auth.*;
+import com.haulmont.cuba.web.auth.LoginCookies;
+import com.haulmont.cuba.web.auth.LoginManager;
+import com.haulmont.cuba.web.auth.WebAuthConfig;
+import com.haulmont.cuba.web.auth.credentials.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +40,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
     private static final Logger log = LoggerFactory.getLogger(AppLoginWindow.class);
 
-    protected static final ThreadLocal<AuthInfo> authInfoThreadLocal = new ThreadLocal<>();
+    protected static final ThreadLocal<LoginCredentials> credentialsThreadLocal = new ThreadLocal<>();
 
     @Inject
     protected GlobalConfig globalConfig;
@@ -118,11 +121,11 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
             App app = App.getInstance();
             app.setLocale(selectedLocale);
 
-            authInfoThreadLocal.set(getAuthInfo());
+            credentialsThreadLocal.set(getCredentials());
             try {
                 app.createTopLevelWindow();
             } finally {
-                authInfoThreadLocal.set(null);
+                credentialsThreadLocal.set(null);
             }
         });
     }
@@ -165,11 +168,17 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
     }
 
     protected void initDefaultCredentials() {
-        AuthInfo authInfo = authInfoThreadLocal.get();
-        if (authInfo != null) {
-            loginField.setValue(authInfo.getLogin());
-            passwordField.setValue(authInfo.getPassword());
-            rememberMeCheckBox.setValue(authInfo.getRememberMe());
+        LoginCredentials credentials = credentialsThreadLocal.get();
+        if (credentials != null) {
+
+            if (credentials instanceof LoginPasswordCredentials) {
+                loginField.setValue(((LoginPasswordCredentials) credentials).getLogin());
+                passwordField.setValue(((LoginPasswordCredentials) credentials).getPassword());
+            }
+
+            if (credentials instanceof RememberMeCredentials) {
+                rememberMeCheckBox.setValue(((RememberMeCredentials) credentials).isRememberMe());
+            }
 
             localesSelect.requestFocus();
         } else {
@@ -209,7 +218,7 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
 
     public void login() {
         try {
-            loginManager.login(getAuthInfo());
+            loginManager.login(getCredentials());
         } catch (LoginException e) {
             log.info("Login failed: {}", e.toString());
 
@@ -238,16 +247,74 @@ public class AppLoginWindow extends AbstractWindow implements Window.TopLevelWin
         return null;
     }
 
-    /**
-     * Override this method if you extended the login screen and added more input elements
-     */
-    protected AuthInfo getAuthInfo() {
-        return new AuthInfo(
-                loginField.getValue(),
-                passwordField.getValue(),
-                rememberMeCheckBox.getValue(),
-                localesSelect.getValue()
-        );
+    protected LoginCredentials getCredentials() {
+        LoginCredentials credentials;
+
+        //noinspection SuspiciousMethodCalls
+        if ((webAuthConfig.getLdapAuthenticationEnabled() || webAuthConfig.getExternalAuthentication())
+                && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(loginField.getValue())) {
+            if (webConfig.getRememberMeEnabled()) {
+                if (globalConfig.getLocaleSelectVisible()) {
+                    credentials = new LocalizedRememberMeLdapCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue(),
+                            rememberMeCheckBox.getValue(),
+                            localesSelect.getValue()
+                    );
+                } else {
+                    credentials = new RememberMeLdapCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue(),
+                            rememberMeCheckBox.getValue()
+                    );
+                }
+            } else {
+                if (globalConfig.getLocaleSelectVisible()) {
+                    credentials = new LocalizedLdapCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue(),
+                            localesSelect.getValue()
+                    );
+                } else {
+                    credentials = new DefaultLdapCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue()
+                    );
+                }
+            }
+        } else {
+            if (webConfig.getRememberMeEnabled()) {
+                if (globalConfig.getLocaleSelectVisible()) {
+                    credentials = new LocalizedRememberMeLoginPasswordCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue(),
+                            rememberMeCheckBox.getValue(),
+                            localesSelect.getValue()
+                    );
+                } else {
+                    credentials = new RememberMeLoginPasswordCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue(),
+                            rememberMeCheckBox.getValue()
+                    );
+                }
+            } else {
+                if (globalConfig.getLocaleSelectVisible()) {
+                    credentials = new LocalizedLoginPasswordCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue(),
+                            localesSelect.getValue()
+                    );
+                } else {
+                    credentials = new DefaultLoginPasswordCredentials(
+                            loginField.getValue(),
+                            passwordField.getValue()
+                    );
+                }
+            }
+        }
+
+        return credentials;
     }
 
 }

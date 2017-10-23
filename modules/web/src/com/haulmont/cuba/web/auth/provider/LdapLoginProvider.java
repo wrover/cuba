@@ -19,9 +19,11 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.web.auth.AuthInfo;
 import com.haulmont.cuba.web.auth.DomainAliasesResolver;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
+import com.haulmont.cuba.web.auth.credentials.LdapCredentials;
+import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.ldap.core.LdapTemplate;
@@ -77,22 +79,28 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
     }
 
     @Override
-    protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
+    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
-        if (webAuthConfig.getLdapAuthenticationEnabled()
-                && !webAuthConfig.getLdapStandardAuthenticationUsers().contains(authInfo.getLogin())) {
+        boolean result = false;
 
-            authenticateInExternalSystem(authInfo.getLogin(), authInfo.getPassword(), authInfo.getLocale());
-            String login = convertLoginString(authInfo.getLogin());
+        if (credentials instanceof LdapCredentials) {
+            LdapCredentials ldapCredentials = (LdapCredentials) credentials;
+
+            Locale locale = credentials instanceof LocalizedCredentials
+                    ? ((LocalizedCredentials) credentials).getLocale()
+                    : null;
+
+            authenticateInExternalSystem(ldapCredentials.getLogin(), ldapCredentials.getPassword(), locale);
+            String login = convertLoginString(ldapCredentials.getLogin());
 
             getConnection().login(
-                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), authInfo.getLocale())
+                    new TrustedClientCredentials(login, webAuthConfig.getTrustedClientPassword(), locale)
             );
 
-            return true;
-        } else {
-            return false;
+            result = true;
         }
+
+        return result;
     }
 
     /**

@@ -17,7 +17,7 @@
 package com.haulmont.cuba.web.auth.provider;
 
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.web.auth.AuthInfo;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 
 /**
  * LoginProvider analyses user's input from a login screen and decides
@@ -39,10 +39,10 @@ public interface LoginProvider {
      * Process user's input and authenticates the user if possible
      *
      * @param authenticated     is the user already authenticated
-     * @param authInfo          input provided by the user
+     * @param credentials          input provided by the user
      * @return                  whether the user is authenticated
      * @throws LoginException   if the input provided by the user is incorrect
      */
-    boolean process(boolean authenticated, AuthInfo authInfo) throws LoginException;
+    boolean process(boolean authenticated, LoginCredentials credentials) throws LoginException;
 
 }

@@ -19,16 +19,18 @@ package com.haulmont.cuba.web.auth.provider;
 import com.haulmont.cuba.core.global.PasswordEncryption;
 import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
 import com.haulmont.cuba.security.global.LoginException;
-import com.haulmont.cuba.web.auth.AuthInfo;
+import com.haulmont.cuba.web.auth.credentials.LocalizedCredentials;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.Locale;
 
 /**
  * {@link LoginProvider} that authenticates the user based on provided login and password.
  * In most cases it should be the last called provider.
- * If it's not the last provider, please override the {@link #tryToAuthenticate(AuthInfo)} method.
+ * If it's not the last provider, please override the {@link #tryToAuthenticate(LoginCredentials)} method.
  */
 @Component("cuba_LoginPasswordProvider")
 public class LoginPasswordLoginProvider extends AbstractLoginProvider implements Ordered {
@@ -37,17 +39,30 @@ public class LoginPasswordLoginProvider extends AbstractLoginProvider implements
     protected PasswordEncryption passwordEncryption;
 
     @Override
-    protected boolean tryToAuthenticate(AuthInfo authInfo) throws LoginException {
+    protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
-        getConnection().login(
-                new LoginPasswordCredentials(
-                        authInfo.getLogin(),
-                        passwordEncryption.getPlainHash(authInfo.getPassword()),
-                        authInfo.getLocale()
-                )
-        );
+        boolean result = false;
 
-        return true;
+        if (credentials instanceof com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials) {
+            com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials loginPasswordCredentials =
+                    (com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials) credentials;
+
+            Locale locale = credentials instanceof LocalizedCredentials
+                    ? ((LocalizedCredentials) credentials).getLocale()
+                    : null;
+
+            getConnection().login(
+                    new LoginPasswordCredentials(
+                            loginPasswordCredentials.getLogin(),
+                            passwordEncryption.getPlainHash(loginPasswordCredentials.getPassword()),
+                            locale
+                    )
+            );
+
+            result = true;
+        }
+
+        return result;
     }
 
     @Override

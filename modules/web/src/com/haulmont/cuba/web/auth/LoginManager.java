@@ -17,6 +17,7 @@
 package com.haulmont.cuba.web.auth;
 
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
 
 /**
  * Authenticates users by using of the chain of {@link com.haulmont.cuba.web.auth.provider.LoginProvider}
@@ -30,9 +31,9 @@ public interface LoginManager {
      *  After the method is called the user is guaranteed to be authenticated.
      *  Otherwise, an exception will be thrown.
      *
-     * @param authInfo          input provided by the user
+     * @param credentials          input provided by the user
      * @throws LoginException   if the input provided by the user is incorrect
      */
-    void login(AuthInfo authInfo) throws LoginException;
+    void login(LoginCredentials credentials) throws LoginException;
 
 }
