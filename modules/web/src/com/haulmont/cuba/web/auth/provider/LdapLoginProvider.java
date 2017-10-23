@@ -126,7 +126,7 @@ public class LdapLoginProvider extends AbstractLoginProvider implements Ordered 
 
     @Override
     public int getOrder() {
-        return HIGHEST_PLATFORM_PRECEDENCE + 20;
+        return HIGHEST_PLATFORM_PRECEDENCE + 30;
     }
 
     protected void authenticateInExternalSystem(String login, String password, Locale messagesLocale) throws LoginException {

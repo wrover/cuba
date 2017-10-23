@@ -17,40 +17,38 @@
 package com.haulmont.cuba.web.auth.provider;
 
 import com.haulmont.cuba.core.global.PasswordEncryption;
-import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
+import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
+import com.haulmont.cuba.web.auth.credentials.TrustedCredentials;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-/**
- * {@link LoginProvider} that authenticates the user based on provided login and password.
- * In most cases it should be the last called provider.
- * If it's not the last provider, please override the {@link #tryToAuthenticate(LoginCredentials)} method.
- */
-@Component("cuba_LoginPasswordProvider")
-public class LoginPasswordLoginProvider extends AbstractLoginProvider implements Ordered {
+@Component("cuba_TrustedLoginProvider")
+public class TrustedLoginProvider extends AbstractLoginProvider implements Ordered {
 
     @Inject
     protected PasswordEncryption passwordEncryption;
+    @Inject
+    protected WebAuthConfig webAuthConfig;
 
     @Override
     protected boolean tryToAuthenticate(LoginCredentials credentials) throws LoginException {
 
         boolean result = false;
 
-        if (credentials instanceof com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials) {
-            com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials loginPasswordCredentials =
-                    (com.haulmont.cuba.web.auth.credentials.LoginPasswordCredentials) credentials;
+        if (credentials instanceof TrustedCredentials) {
+            TrustedCredentials trustedCredentials = (TrustedCredentials) credentials;
 
             getConnection().login(
-                    new LoginPasswordCredentials(
-                            loginPasswordCredentials.getLogin(),
-                            passwordEncryption.getPlainHash(loginPasswordCredentials.getPassword()),
-                            loginPasswordCredentials.getLocale()
-                    )
+                new TrustedClientCredentials(
+                        trustedCredentials.getUserName(),
+                        webAuthConfig.getTrustedClientPassword(),
+                        trustedCredentials.getLocale()
+                )
             );
 
             result = true;
@@ -61,6 +59,6 @@ public class LoginPasswordLoginProvider extends AbstractLoginProvider implements
 
     @Override
     public int getOrder() {
-        return HIGHEST_PLATFORM_PRECEDENCE + 40;
+        return HIGHEST_PLATFORM_PRECEDENCE + 10;
     }
 }

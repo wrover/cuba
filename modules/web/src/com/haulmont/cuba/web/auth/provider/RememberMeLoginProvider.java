@@ -106,6 +106,6 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
 
     @Override
     public int getOrder() {
-        return HIGHEST_PLATFORM_PRECEDENCE + 10;
+        return HIGHEST_PLATFORM_PRECEDENCE + 20;
     }
 }

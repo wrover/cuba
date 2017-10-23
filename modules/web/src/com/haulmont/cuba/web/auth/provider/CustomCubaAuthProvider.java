@@ -65,7 +65,7 @@ public class CustomCubaAuthProvider extends AbstractLoginProvider implements Ord
 
     @Override
     public int getOrder() {
-        return HIGHEST_PLATFORM_PRECEDENCE + 15;
+        return HIGHEST_PLATFORM_PRECEDENCE + 25;
     }
 
     /**
