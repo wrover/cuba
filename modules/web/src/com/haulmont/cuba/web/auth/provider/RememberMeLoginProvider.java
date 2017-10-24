@@ -73,15 +73,15 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
      * @param credentials  input provided by the user
      */
     @Override
-    protected void afterAll(boolean authenticated, LoginCredentials credentials) {
-        super.afterAll(authenticated, credentials);
+    protected void afterAll(AuthenticationStatus status, LoginCredentials credentials) {
+        super.afterAll(status, credentials);
 
         if (webConfig.getRememberMeEnabled() && credentials instanceof DefaultLoginCredentials) {
 
             DefaultLoginCredentials defaultLoginCredentials = (DefaultLoginCredentials) credentials;
 
             if (Boolean.TRUE.equals(defaultLoginCredentials.getRememberMe())) {
-                if (!isRememberMeUsed(defaultLoginCredentials)) {
+                if (!isRememberMeUsed(defaultLoginCredentials) && status.isSuccess()) {
                     getApp().addCookie(LoginCookies.COOKIE_REMEMBER_ME_USED, Boolean.TRUE.toString());
 
                     String encodedLogin = URLEncodeUtils.encodeUtf8(defaultLoginCredentials.getLogin());
@@ -93,7 +93,7 @@ public class RememberMeLoginProvider extends AbstractLoginProvider implements Or
                         throw new IllegalStateException("Unable to get session after login");
                     }
 
-                    User user = session.getUser();
+                    User user = status.getSession().getUser();
 
                     String rememberMeToken = userManagementService.generateRememberMeToken(user.getId());
 

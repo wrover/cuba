@@ -42,7 +42,7 @@ import java.util.Map;
  * If the user is not yet authenticated it checks if it can authenticate him.
  * Regardless of the outcome it passes authorization details to a next LoginProvider.
  *
- * Provider can implement {@link #afterAll(boolean, LoginCredentials)} to put there some logic that
+ * Provider can implement {@link #afterAll(AuthenticationStatus, LoginCredentials)} to put there some logic that
  *  has to be called after all providers had their chance to analyze authentication info.
  *
  * Defining and initializing the next provider is a responsibility of a system that uses
@@ -60,17 +60,17 @@ abstract public class AbstractLoginProvider implements LoginProvider {
 
         AuthenticationStatus result = status;
 
-        before(result.isSuccess(), credentials);
+        before(result, credentials);
 
         if (!result.isSuccess()) {
             result = tryToAuthenticate(credentials);
         }
 
-        after(result.isSuccess(), credentials);
+        after(result, credentials);
 
         result = chain.nextProvider(result, credentials);
 
-        afterAll(result.isSuccess(), credentials);
+        afterAll(result, credentials);
 
         return result;
     }
@@ -92,16 +92,16 @@ abstract public class AbstractLoginProvider implements LoginProvider {
         return getApp().getConnection();
     }
 
-    protected void before(boolean authenticated, LoginCredentials credentials) {}
+    protected void before(AuthenticationStatus status, LoginCredentials credentials) {}
 
-    protected void after(boolean authenticated, LoginCredentials credentials) {}
+    protected void after(AuthenticationStatus status, LoginCredentials credentials) {}
 
     /**
      * This hook can be used to place there some logic that should be executed
      *  no matter if the user is authorized or not.
      * This method is guaranteed to be called after all Login Providers had a chance to authorize a user.
      */
-    protected void afterAll(boolean authenticated, LoginCredentials credentials) {}
+    protected void afterAll(AuthenticationStatus status, LoginCredentials credentials) {}
 
     protected UserSession login(Credentials credentials) throws LoginException {
 
