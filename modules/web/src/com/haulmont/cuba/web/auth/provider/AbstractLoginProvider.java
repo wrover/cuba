@@ -55,10 +55,8 @@ abstract public class AbstractLoginProvider implements LoginProvider {
     @Inject
     protected GlobalConfig globalConfig;
 
-    protected LoginProvider nextLoginProvider;
-
     @Override
-    public final AuthenticationStatus process(AuthenticationStatus status, LoginCredentials credentials) throws LoginException {
+    public final AuthenticationStatus process(AuthenticationStatus status, LoginCredentials credentials, LoginProviderChain chain) throws LoginException {
 
         AuthenticationStatus result = status;
 
@@ -70,17 +68,11 @@ abstract public class AbstractLoginProvider implements LoginProvider {
 
         after(result.isSuccess(), credentials);
 
-        if (nextLoginProvider != null) {
-            result = nextLoginProvider.process(result, credentials);
-        }
+        result = chain.nextProvider(result, credentials);
 
         afterAll(result.isSuccess(), credentials);
 
         return result;
-    }
-
-    public void setNextLoginProvider(LoginProvider nextLoginProvider) {
-        this.nextLoginProvider = nextLoginProvider;
     }
 
     /**

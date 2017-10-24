@@ -20,7 +20,10 @@ package com.haulmont.cuba.web;
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.cuba.core.global.ClientType;
 import com.haulmont.cuba.core.global.UserSessionSource;
-import com.haulmont.cuba.security.auth.*;
+import com.haulmont.cuba.security.auth.AbstractClientCredentials;
+import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
+import com.haulmont.cuba.security.auth.RememberMeCredentials;
+import com.haulmont.cuba.security.auth.TrustedClientCredentials;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.SessionParams;
 import com.haulmont.cuba.security.global.UserSession;
@@ -28,16 +31,13 @@ import com.haulmont.cuba.web.auth.CubaAuthProvider;
 import com.haulmont.cuba.web.auth.ExternallyAuthenticatedConnection;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.auth.credentials.LoginCredentials;
-import com.haulmont.cuba.web.auth.provider.AbstractLoginProvider;
 import com.haulmont.cuba.web.auth.provider.AuthenticationStatus;
-import com.haulmont.cuba.web.auth.provider.LoginProvider;
+import com.haulmont.cuba.web.auth.provider.LoginProviderChainFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -53,18 +53,9 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
     @Inject
     protected CubaAuthProvider cubaAuthProvider;
     @Inject
-    protected List<LoginProvider> loginProviders;
-    @Inject
     protected UserSessionSource userSessionSource;
-
-    @PostConstruct
-    public void init() {
-        for (int i = 0; i < loginProviders.size(); ++i) {
-            if (i != loginProviders.size() - 1) {
-                ((AbstractLoginProvider) loginProviders.get(i)).setNextLoginProvider(loginProviders.get(i + 1));
-            }
-        }
-    }
+    @Inject
+    protected LoginProviderChainFactory chainFactory;
 
     @Override
     @Deprecated
@@ -85,7 +76,7 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
 //            App.getInstance().setLocale(((LocalizedCredentials) credentials).getLocale());
 //        }
 
-        AuthenticationStatus status = getFirstProvider().process(AuthenticationStatus.notSuccessful(), credentials);
+        AuthenticationStatus status = chainFactory.create().process(AuthenticationStatus.notSuccessful(), credentials);
 
         if (status.isSuccess()) {
 
@@ -231,10 +222,6 @@ public class DefaultConnection extends AbstractConnection implements ExternallyA
                 SessionParams.IP_ADDERSS.getId(), App.getInstance().getClientAddress(),
                 SessionParams.CLIENT_INFO.getId(), makeClientInfo()
         );
-    }
-
-    protected LoginProvider getFirstProvider() {
-        return loginProviders.get(0);
     }
 
     //    protected void checkParameters(AuthInfo authInfo) throws LoginException {

@@ -40,9 +40,10 @@ public interface LoginProvider {
      *
      * @param status            is the user already authenticated
      * @param credentials       input provided by the user
+     * @param chain             todo
      * @return                  whether the user is authenticated
      * @throws LoginException   if the input provided by the user is incorrect
      */
-    AuthenticationStatus process(AuthenticationStatus status, LoginCredentials credentials) throws LoginException;
+    AuthenticationStatus process(AuthenticationStatus status, LoginCredentials credentials, LoginProviderChain chain) throws LoginException;
 
 }
