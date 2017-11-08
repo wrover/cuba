@@ -20,6 +20,7 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Filter;
 import com.haulmont.cuba.gui.components.FilterImplementation;
+import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.compatibility.ComponentExpandCollapseListenerWrapper;
 import com.haulmont.cuba.gui.components.filter.FilterDelegate;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
@@ -27,6 +28,8 @@ import com.haulmont.cuba.security.entity.FilterEntity;
 import com.haulmont.cuba.web.toolkit.ui.CubaCssActionsLayout;
 import com.vaadin.shared.ui.MarginInfo;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -37,6 +40,8 @@ import java.util.List;
  *
  */
 public class WebFilter extends WebAbstractComponent<CubaCssActionsLayout> implements Filter, FilterImplementation {
+
+    private final Logger log = LoggerFactory.getLogger(WebFilter.class);
 
     protected static final String FILTER_STYLENAME = "c-generic-filter";
 
@@ -380,5 +385,14 @@ public class WebFilter extends WebAbstractComponent<CubaCssActionsLayout> implem
     @Override
     public boolean isBorderVisible() {
         return delegate.isBorderVisible();
+    }
+
+    @Override
+    public void setFrame(Frame frame) {
+        super.setFrame(frame);
+
+        if (frame != null && frame.getId() == null) {
+            log.warn("Filter is embedded in a frame without ID");
+        }
     }
 }
