@@ -30,6 +30,7 @@ import com.haulmont.cuba.desktop.gui.executors.impl.DesktopBackgroundWorker;
 import com.haulmont.cuba.desktop.sys.DesktopToolTipManager;
 import com.haulmont.cuba.desktop.sys.vcl.SearchAutoCompleteSupport;
 import com.haulmont.cuba.desktop.sys.vcl.SearchComboBox;
+import com.haulmont.cuba.gui.components.OptionWrapper;
 import com.haulmont.cuba.gui.components.SuggestionField;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -41,7 +42,11 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -608,6 +613,14 @@ public class DesktopSuggestionField extends DesktopAbstractOptionsField<JCompone
     }
 
     @Override
+    public <T> T getValue() {
+        T value = super.getValue();
+        return value instanceof OptionWrapper
+                ? (T) ((OptionWrapper) value).getValue()
+                : value;
+    }
+
+    @Override
     public void setValue(Object value) {
         DesktopBackgroundWorker.checkSwingUIAccess();
 
@@ -731,24 +744,6 @@ public class DesktopSuggestionField extends DesktopAbstractOptionsField<JCompone
         this.inputPrompt = inputPrompt;
     }
 
-    // we don't need to select current item in suggestion list automatically
-    /*protected class SearchEntityWrapper extends EntityWrapper {
-
-        public SearchEntityWrapper(Entity entity) {
-            super(entity);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return this == obj;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(this);
-        }
-    }*/
-
     protected class SearchObjectWrapper extends ObjectWrapper {
 
         public SearchObjectWrapper(Object obj) {
@@ -760,7 +755,7 @@ public class DesktopSuggestionField extends DesktopAbstractOptionsField<JCompone
             if (captionFormatter != null) {
                 return captionFormatter.formatValue(getValue());
             }
-            return getDisplayString(getValue());
+            return getDisplayString(obj);
         }
     }
 

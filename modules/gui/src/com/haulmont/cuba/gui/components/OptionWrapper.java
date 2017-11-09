@@ -18,6 +18,9 @@ package com.haulmont.cuba.gui.components;
 
 import com.haulmont.bali.util.Preconditions;
 
+/**
+ * Represent value and its string representation.
+ */
 public class OptionWrapper {
     protected String caption;
     protected Object value;
@@ -30,10 +33,16 @@ public class OptionWrapper {
         this.value = value;
     }
 
+    /**
+     * @return string representation
+     */
     public String getCaption() {
         return caption;
     }
 
+    /**
+     * @return value
+     */
     public Object getValue() {
         return value;
     }

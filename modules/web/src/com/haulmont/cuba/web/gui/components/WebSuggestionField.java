@@ -22,7 +22,6 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.MetadataTools;
 import com.haulmont.cuba.gui.components.CaptionMode;
 import com.haulmont.cuba.gui.components.Component;
-import com.haulmont.cuba.gui.components.OptionWrapper;
 import com.haulmont.cuba.gui.components.SuggestionField;
 import com.haulmont.cuba.gui.executors.BackgroundTask;
 import com.haulmont.cuba.gui.executors.BackgroundTaskHandler;
@@ -31,7 +30,6 @@ import com.haulmont.cuba.gui.executors.TaskLifeCycle;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.toolkit.ui.CubaSuggestionField;
 import com.haulmont.cuba.web.toolkit.ui.converters.StringToEntityConverter;
-import com.haulmont.cuba.web.toolkit.ui.converters.StringToObjectConverter;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -318,15 +316,10 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
 
     protected class TextViewConverter {
         protected StringToEntityConverter entityConverter = new StringToEntityConverter();
-        protected StringToObjectConverter objectConverter = new StringToObjectConverter(null);
 
         public String convertToPresentation(Object value) {
             if (value == null) {
                 return StringUtils.EMPTY;
-            }
-
-            if (value instanceof OptionWrapper) {
-                return ((OptionWrapper) value).getCaption();
             }
 
             if (value instanceof Entity) {
@@ -349,7 +342,7 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
                 return entityConverter.convertToPresentation(entity, String.class, userSession.getLocale());
             }
 
-            return objectConverter.convertToPresentation(value, String.class, userSession.getLocale());
+            return metadataTools.format(value);
         }
     }
 }
