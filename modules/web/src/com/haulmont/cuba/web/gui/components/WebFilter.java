@@ -41,8 +41,6 @@ import java.util.List;
  */
 public class WebFilter extends WebAbstractComponent<CubaCssActionsLayout> implements Filter, FilterImplementation {
 
-    private final Logger log = LoggerFactory.getLogger(WebFilter.class);
-
     protected static final String FILTER_STYLENAME = "c-generic-filter";
 
     protected FilterDelegate delegate;
@@ -392,7 +390,7 @@ public class WebFilter extends WebAbstractComponent<CubaCssActionsLayout> implem
         super.setFrame(frame);
 
         if (frame != null && frame.getId() == null) {
-            log.warn("Filter is embedded in a frame without ID");
+            LoggerFactory.getLogger(WebFilter.class).warn("Filter is embedded in a frame without ID");
         }
     }
 }

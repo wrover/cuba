@@ -46,8 +46,6 @@ import java.util.List;
  */
 public class DesktopFilter extends DesktopAbstractComponent<JPanel> implements Filter, FilterImplementation {
 
-    private final Logger log = LoggerFactory.getLogger(DesktopFilter.class);
-
     protected FilterDelegate delegate;
     protected boolean settingsEnabled = true;
 
@@ -397,7 +395,7 @@ public class DesktopFilter extends DesktopAbstractComponent<JPanel> implements F
         super.setFrame(frame);
 
         if (frame != null && frame.getId() == null) {
-            log.warn("Filter is embedded in a frame without ID");
+            LoggerFactory.getLogger(DesktopFilter.class).warn("Filter is embedded in a frame without ID");
         }
     }
 }
