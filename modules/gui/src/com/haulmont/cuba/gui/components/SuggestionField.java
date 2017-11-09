@@ -17,8 +17,6 @@
 
 package com.haulmont.cuba.gui.components;
 
-import com.haulmont.cuba.core.entity.Entity;
-
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +24,7 @@ public interface SuggestionField extends Field, Component.Focusable, Component.H
 
     String NAME = "suggestionField";
 
-    interface SearchExecutor<E extends Entity> {
+    interface SearchExecutor<E> {
 
         /**
          * Executed on background thread.
@@ -38,7 +36,7 @@ public interface SuggestionField extends Field, Component.Focusable, Component.H
         List<E> search(String searchString, Map<String, Object> searchParams);
     }
 
-    interface ParametrizedSearchExecutor<E extends Entity> extends SearchExecutor<E> {
+    interface ParametrizedSearchExecutor<E> extends SearchExecutor<E> {
         /**
          * Called by the execution environment in UI thread to prepare execution parameters for {@link SearchExecutor#search(String, Map)}.
          *
@@ -159,7 +157,7 @@ public interface SuggestionField extends Field, Component.Focusable, Component.H
      *
      * @param suggestions suggestions to show
      */
-    void showSuggestions(List<? extends Entity> suggestions);
+    void showSuggestions(List<?> suggestions);
 
     CaptionMode getCaptionMode();
     void setCaptionMode(CaptionMode captionMode);
