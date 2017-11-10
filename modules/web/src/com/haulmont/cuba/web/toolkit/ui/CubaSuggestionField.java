@@ -16,7 +16,6 @@
 
 package com.haulmont.cuba.web.toolkit.ui;
 
-import com.haulmont.cuba.gui.components.OptionWrapper;
 import com.haulmont.cuba.web.toolkit.ui.client.suggestionfield.CubaSuggestionFieldClientRpc;
 import com.haulmont.cuba.web.toolkit.ui.client.suggestionfield.CubaSuggestionFieldServerRpc;
 import com.haulmont.cuba.web.toolkit.ui.client.suggestionfield.CubaSuggestionFieldState;
@@ -104,9 +103,7 @@ public class CubaSuggestionField extends AbstractField<Object> {
 
     @Override
     protected void setInternalValue(Object newValue) {
-        super.setInternalValue((newValue instanceof OptionWrapper)
-                ? ((OptionWrapper) newValue).getValue()
-                : newValue);
+        super.setInternalValue(newValue);
 
         updateTextPresentation(newValue);
     }

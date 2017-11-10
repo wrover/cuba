@@ -74,6 +74,14 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
     }
 
     @Override
+    public <V> V getValue() {
+        V value = super.getValue();
+        return value instanceof OptionWrapper
+                ? (V) ((OptionWrapper) value).getValue()
+                : value;
+    }
+
+    @Override
     public CaptionMode getCaptionMode() {
         return captionMode;
     }

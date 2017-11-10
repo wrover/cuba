@@ -30,7 +30,6 @@ import com.haulmont.cuba.desktop.gui.executors.impl.DesktopBackgroundWorker;
 import com.haulmont.cuba.desktop.sys.DesktopToolTipManager;
 import com.haulmont.cuba.desktop.sys.vcl.SearchAutoCompleteSupport;
 import com.haulmont.cuba.desktop.sys.vcl.SearchComboBox;
-import com.haulmont.cuba.gui.components.OptionWrapper;
 import com.haulmont.cuba.gui.components.SuggestionField;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
