@@ -51,7 +51,7 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
     protected EnterActionHandler enterActionHandler;
     protected ArrowDownActionHandler arrowDownActionHandler;
 
-    protected TextViewConverter textViewConverter = new TextViewConverter();
+    protected StringToEntityConverter entityConverter = new StringToEntityConverter();
 
     protected CaptionMode captionMode = CaptionMode.ITEM;
     protected String captionProperty;
@@ -61,7 +61,7 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
     public WebSuggestionField() {
         component = new CubaSuggestionField();
 
-        component.setTextViewConverter(obj -> textViewConverter.convertToPresentation(obj));
+        component.setTextViewConverter(this::convertToTextView);
 
         component.setSearchExecutor(query -> {
             cancelSearch();
@@ -71,6 +71,34 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
         component.setCancelSearchHandler(this::cancelSearch);
 
         attachListener(component);
+    }
+
+    protected String convertToTextView(Object value) {
+        if (value == null) {
+            return StringUtils.EMPTY;
+        }
+
+        if (value instanceof Entity) {
+            Entity entity = (Entity) value;
+            if (captionMode == CaptionMode.ITEM) {
+                return entityConverter.convertToPresentation(entity, String.class, userSession.getLocale());
+            }
+
+            if (StringUtils.isNotEmpty(captionProperty)) {
+                MetaPropertyPath propertyPath = entity.getMetaClass().getPropertyPath(captionProperty);
+                if (propertyPath == null) {
+                    throw new IllegalArgumentException(String.format("Can't find property for given caption property: %s", captionProperty));
+                }
+
+                return metadataTools.format(entity.getValueEx(captionProperty), propertyPath.getMetaProperty());
+            }
+
+            log.warn("Using StringToEntityConverter to get entity text presentation. Caption property is not defined " +
+                    "while caption mode is \"PROPERTY\"");
+            return entityConverter.convertToPresentation(entity, String.class, userSession.getLocale());
+        }
+
+        return metadataTools.format(value);
     }
 
     @Override
@@ -320,37 +348,5 @@ public class WebSuggestionField extends WebAbstractField<CubaSuggestionField> im
     @Override
     public void setInputPrompt(String inputPrompt) {
         component.setInputPrompt(inputPrompt);
-    }
-
-    protected class TextViewConverter {
-        protected StringToEntityConverter entityConverter = new StringToEntityConverter();
-
-        public String convertToPresentation(Object value) {
-            if (value == null) {
-                return StringUtils.EMPTY;
-            }
-
-            if (value instanceof Entity) {
-                Entity entity = (Entity) value;
-                if (captionMode == CaptionMode.ITEM) {
-                    return entityConverter.convertToPresentation(entity, String.class, userSession.getLocale());
-                }
-
-                if (StringUtils.isNotEmpty(captionProperty)) {
-                    MetaPropertyPath propertyPath = entity.getMetaClass().getPropertyPath(captionProperty);
-                    if (propertyPath == null) {
-                        throw new IllegalArgumentException(String.format("Can't find property for given caption property: %s", captionProperty));
-                    }
-
-                    return metadataTools.format(entity.getValueEx(captionProperty), propertyPath.getMetaProperty());
-                }
-
-                log.warn("Using StringToEntityConverter to get entity text presentation. Caption property is not defined " +
-                        "while caption mode is \"PROPERTY\"");
-                return entityConverter.convertToPresentation(entity, String.class, userSession.getLocale());
-            }
-
-            return metadataTools.format(value);
-        }
     }
 }
