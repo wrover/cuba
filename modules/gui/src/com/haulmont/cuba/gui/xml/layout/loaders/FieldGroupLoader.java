@@ -432,6 +432,7 @@ public class FieldGroupLoader extends AbstractComponentLoader<FieldGroup> {
             }
         }
         loadDescription(field, element);
+        loadContextHelpText(field, element);
 
         field.setXmlDescriptor(element);
 
@@ -488,6 +489,14 @@ public class FieldGroupLoader extends AbstractComponentLoader<FieldGroup> {
         }
 
         return field;
+    }
+
+    protected void loadContextHelpText(FieldGroup.FieldConfig field, Element element) {
+        String contextHelpText = element.attributeValue("contextHelpText");
+        if (StringUtils.isNotEmpty(contextHelpText)) {
+            contextHelpText = loadResourceString(contextHelpText);
+            field.setContextHelpText(contextHelpText);
+        }
     }
 
     protected String getDefaultCaption(FieldGroup.FieldConfig fieldConfig, Datasource fieldDatasource) {

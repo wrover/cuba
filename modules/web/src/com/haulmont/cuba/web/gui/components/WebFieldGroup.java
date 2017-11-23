@@ -325,6 +325,9 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
             if (fci.getTargetRequiredMessage() != null) {
                 cubaField.setRequiredMessage(fci.getTargetRequiredMessage());
             }
+            if (fci.getTargetContextHelpText() != null) {
+                cubaField.setContextHelpText(fci.getTargetContextHelpText());
+            }
             if (fci.getTargetEditable() != null) {
                 cubaField.setEditable(fci.getTargetEditable());
             }
@@ -813,6 +816,7 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
         protected CollectionDatasource targetOptionsDatasource;
         protected String targetCaption;
         protected String targetDescription;
+        protected String targetContextHelpText;
         protected Formatter targetFormatter;
         protected boolean isTargetCustom;
 
@@ -1205,6 +1209,28 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
         }
 
         @Override
+        public String getContextHelpText() {
+            if (component instanceof Field) {
+                return ((Field) component).getContextHelpText();
+            }
+            if (composition != null && isWrapped()) {
+                return composition.getContextHelpText();
+            }
+            return targetContextHelpText;
+        }
+
+        @Override
+        public void setContextHelpText(String contextHelpText) {
+            if (component instanceof Field) {
+                ((Field) component).setContextHelpText(contextHelpText);
+            } else if (composition != null && isWrapped()) {
+                composition.setContextHelpText(contextHelpText);
+            } else {
+                this.targetContextHelpText = contextHelpText;
+            }
+        }
+
+        @Override
         public Formatter getFormatter() {
             if (component instanceof HasFormatter) {
                 return ((HasFormatter) component).getFormatter();
@@ -1354,6 +1380,14 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
 
         public void setTargetRequiredMessage(String targetRequiredMessage) {
             this.targetRequiredMessage = targetRequiredMessage;
+        }
+
+        public String getTargetContextHelpText() {
+            return targetContextHelpText;
+        }
+
+        public void setTargetContextHelpText(String targetContextHelpText) {
+            this.targetContextHelpText = targetContextHelpText;
         }
 
         public CollectionDatasource getTargetOptionsDatasource() {

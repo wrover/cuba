@@ -24,6 +24,18 @@
     display: none;
   }
 
+  .c-context-help-button {
+    display: inline-block;
+    font-size: 0;
+    width: $v-font-size;
+  }
+
+  .c-context-help-button::before {
+    font-family: FontAwesome;
+    content: "\f059";
+    font-size: $v-font-size;
+  }
+
   @if $v-show-required-indicators == false {
     .v-required-field-indicator {
       display: none;

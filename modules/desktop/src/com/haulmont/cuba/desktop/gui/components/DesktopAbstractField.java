@@ -290,4 +290,15 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
             }
         }
     }
+
+    @Override
+    public String getContextHelpText() {
+        // TODO: gg,
+        return null;
+    }
+
+    @Override
+    public void setContextHelpText(String contextHelpText) {
+        // TODO: gg,
+    }
 }

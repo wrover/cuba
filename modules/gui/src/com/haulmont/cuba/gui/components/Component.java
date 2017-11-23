@@ -346,6 +346,14 @@ public interface Component {
     }
 
     /**
+     * A sub-interface implemented by components that can provide a context help.
+     */
+    interface HasContextHelp {
+        String getContextHelpText();
+        void setContextHelpText(String contextHelpText);
+    }
+
+    /**
      * Layout having a mouse click listener.
      */
     interface LayoutClickNotifier {

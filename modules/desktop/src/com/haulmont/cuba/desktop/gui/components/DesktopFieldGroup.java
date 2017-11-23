@@ -546,6 +546,9 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             if (fci.getTargetRequiredMessage() != null) {
                 cubaField.setRequiredMessage(fci.getTargetRequiredMessage());
             }
+            if (fci.getTargetContextHelpText() != null) {
+                cubaField.setContextHelpText(fci.getTargetContextHelpText());
+            }
             if (fci.getTargetEditable() != null) {
                 cubaField.setEditable(fci.getTargetEditable());
             }
@@ -1057,6 +1060,7 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         protected CollectionDatasource targetOptionsDatasource;
         protected String targetCaption;
         protected String targetDescription;
+        protected String targetContextHelpText;
         protected Formatter targetFormatter;
         protected boolean isTargetCustom;
 
@@ -1416,6 +1420,30 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         }
 
         @Override
+        public String getContextHelpText() {
+            if (component instanceof Field) {
+                return ((Field) component).getContextHelpText();
+            }
+            if (composition != null && isWrapped()) {
+                // TODO: gg, ???
+//                return composition.getContextHelpText();
+            }
+            return targetContextHelpText;
+        }
+
+        @Override
+        public void setContextHelpText(String contextHelpText) {
+            if (component instanceof Field) {
+                ((Field) component).setContextHelpText(contextHelpText);
+            } else if (composition != null && isWrapped()) {
+                // TODO: gg, ???
+//                composition.setContextHelpText(contextHelpText);
+            } else {
+                this.targetContextHelpText = contextHelpText;
+            }
+        }
+
+        @Override
         public String getDescription() {
             if (component instanceof Field) {
                 return ((Field) component).getDescription();
@@ -1575,6 +1603,14 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
 
         public void setTargetRequiredMessage(String targetRequiredMessage) {
             this.targetRequiredMessage = targetRequiredMessage;
+        }
+
+        public String getTargetContextHelpText() {
+            return targetContextHelpText;
+        }
+
+        public void setTargetContextHelpText(String targetContextHelpText) {
+            this.targetContextHelpText = targetContextHelpText;
         }
 
         public CollectionDatasource getTargetOptionsDatasource() {

@@ -17,9 +17,8 @@
 package com.haulmont.cuba.web.toolkit.ui.client.cssactionslayout;
 
 import com.haulmont.cuba.web.toolkit.ui.CubaCssActionsLayout;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.Paintable;
-import com.vaadin.client.UIDL;
+import com.haulmont.cuba.web.toolkit.ui.client.caption.CubaCaptionWidget;
+import com.vaadin.client.*;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.ShortcutActionHandler;
 import com.vaadin.client.ui.csslayout.CssLayoutConnector;
@@ -59,5 +58,10 @@ public class CubaCssActionsLayoutConnector extends CssLayoutConnector implements
                 getWidget().getShortcutHandler().updateActionMap(childUidl);
             }
         }
+    }
+
+    @Override
+    protected VCaption createCaption(ComponentConnector child) {
+        return new CubaCaptionWidget(child, getConnection());
     }
 }
