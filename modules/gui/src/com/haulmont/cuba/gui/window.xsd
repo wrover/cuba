@@ -889,6 +889,7 @@
 
     <xs:attributeGroup name="hasContextHelp">
         <xs:attribute name="contextHelpText" type="resourceString"/>
+        <xs:attribute name="contextHelpTextHtmlEnabled" type="xs:boolean"/>
     </xs:attributeGroup>
 
     <xs:attributeGroup name="hasCaptionProp">

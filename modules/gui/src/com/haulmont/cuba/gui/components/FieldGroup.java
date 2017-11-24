@@ -223,7 +223,7 @@ public interface FieldGroup extends Component, Component.BelongToFrame, Componen
      * Configuration of a field. Used as declarative configuration object.
      * After component is set it can be used as Field API for a Component that does not implement {@link Field}.
      */
-    interface FieldConfig extends HasXmlDescriptor, HasCaption, HasFormatter, HasContextHelp {
+    interface FieldConfig extends HasXmlDescriptor, HasCaption, HasFormatter {
         /**
          * @return id
          */
@@ -441,6 +441,18 @@ public interface FieldGroup extends Component, Component.BelongToFrame, Componen
          * @return options datasource
          */
         CollectionDatasource getOptionsDatasource();
+
+        // TODO: gg, Java Doc
+        String getContextHelpText();
+
+        // TODO: gg, Java Doc
+        void setContextHelpText(String contextHelpText);
+
+        // TODO: gg, Java Doc
+        Boolean isContextHelpTextHtmlEnabled();
+
+        // TODO: gg, Java Doc
+        void setContextHelpTextHtmlEnabled(Boolean enabled);
     }
 
     /**

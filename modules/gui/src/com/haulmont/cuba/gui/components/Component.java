@@ -351,6 +351,9 @@ public interface Component {
     interface HasContextHelp {
         String getContextHelpText();
         void setContextHelpText(String contextHelpText);
+
+        boolean isContextHelpTextHtmlEnabled();
+        void setContextHelpTextHtmlEnabled(boolean enabled);
     }
 
     /**

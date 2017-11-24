@@ -225,11 +225,16 @@ public abstract class AbstractComponentLoader<T extends Component> implements Co
         }
     }
 
-    protected void loadContextHelpText(Component.HasContextHelp component, Element element) {
+    protected void loadContextHelp(Component.HasContextHelp component, Element element) {
         String contextHelpText = element.attributeValue("contextHelpText");
         if (StringUtils.isNotEmpty(contextHelpText)) {
             contextHelpText = loadResourceString(contextHelpText);
             component.setContextHelpText(contextHelpText);
+        }
+
+        String htmlEnabled = element.attributeValue("contextHelpTextHtmlEnabled");
+        if (StringUtils.isNotEmpty(htmlEnabled)) {
+            component.setContextHelpTextHtmlEnabled(Boolean.parseBoolean(htmlEnabled));
         }
     }
 

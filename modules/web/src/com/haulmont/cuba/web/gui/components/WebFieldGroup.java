@@ -34,6 +34,7 @@ import com.haulmont.cuba.web.toolkit.ui.CubaFieldGroup;
 import com.haulmont.cuba.web.toolkit.ui.CubaFieldGroupLayout;
 import com.haulmont.cuba.web.toolkit.ui.CubaFieldWrapper;
 import com.vaadin.server.Sizeable;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.slf4j.Logger;
@@ -327,6 +328,9 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
             }
             if (fci.getTargetContextHelpText() != null) {
                 cubaField.setContextHelpText(fci.getTargetContextHelpText());
+            }
+            if (fci.getTargetContextHelpTextHtmlEnabled() != null) {
+                cubaField.setContextHelpTextHtmlEnabled(fci.getTargetContextHelpTextHtmlEnabled());
             }
             if (fci.getTargetEditable() != null) {
                 cubaField.setEditable(fci.getTargetEditable());
@@ -817,6 +821,7 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
         protected String targetCaption;
         protected String targetDescription;
         protected String targetContextHelpText;
+        protected Boolean targetContextHelpTextHtmlEnabled;
         protected Formatter targetFormatter;
         protected boolean isTargetCustom;
 
@@ -1231,6 +1236,32 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
         }
 
         @Override
+        public Boolean isContextHelpTextHtmlEnabled() {
+            if (component instanceof Field) {
+                return ((Field) component).isContextHelpTextHtmlEnabled();
+            }
+            if (composition != null && isWrapped()) {
+                return composition.isContextHelpTextHtmlEnabled();
+            }
+            return BooleanUtils.isTrue(targetContextHelpTextHtmlEnabled);
+        }
+
+        @Override
+        public void setContextHelpTextHtmlEnabled(Boolean enabled) {
+            if (component instanceof Field) {
+                checkNotNullArgument(enabled, "Unable to reset contextHelpTextHtmlEnabled " +
+                        "flag for the bound FieldConfig");
+                ((Field) component).setContextHelpTextHtmlEnabled(enabled);
+            } else if (composition != null && isWrapped()) {
+                checkNotNullArgument(enabled, "Unable to reset contextHelpTextHtmlEnabled " +
+                        "flag for the bound FieldConfig");
+                composition.setContextHelpTextHtmlEnabled(enabled);
+            } else {
+                this.targetContextHelpTextHtmlEnabled = enabled;
+            }
+        }
+
+        @Override
         public Formatter getFormatter() {
             if (component instanceof HasFormatter) {
                 return ((HasFormatter) component).getFormatter();
@@ -1388,6 +1419,14 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
 
         public void setTargetContextHelpText(String targetContextHelpText) {
             this.targetContextHelpText = targetContextHelpText;
+        }
+
+        public Boolean getTargetContextHelpTextHtmlEnabled() {
+            return targetContextHelpTextHtmlEnabled;
+        }
+
+        public void setTargetContextHelpTextHtmlEnabled(Boolean targetContextHelpTextHtmlEnabled) {
+            this.targetContextHelpTextHtmlEnabled = targetContextHelpTextHtmlEnabled;
         }
 
         public CollectionDatasource getTargetOptionsDatasource() {

@@ -549,6 +549,9 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             if (fci.getTargetContextHelpText() != null) {
                 cubaField.setContextHelpText(fci.getTargetContextHelpText());
             }
+            if (fci.getTargetContextHelpTextHtmlEnabled() != null) {
+                cubaField.setContextHelpTextHtmlEnabled(fci.getTargetContextHelpTextHtmlEnabled());
+            }
             if (fci.getTargetEditable() != null) {
                 cubaField.setEditable(fci.getTargetEditable());
             }
@@ -1061,6 +1064,7 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         protected String targetCaption;
         protected String targetDescription;
         protected String targetContextHelpText;
+        protected Boolean targetContextHelpTextHtmlEnabled;
         protected Formatter targetFormatter;
         protected boolean isTargetCustom;
 
@@ -1444,6 +1448,30 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         }
 
         @Override
+        public Boolean isContextHelpTextHtmlEnabled() {
+            if (component instanceof Field) {
+                return ((Field) component).isContextHelpTextHtmlEnabled();
+            }
+            if (composition != null && isWrapped()) {
+                // TODO: gg, ???
+//                return composition.isContextHelpTextHtmlEnabled();
+            }
+            return targetContextHelpTextHtmlEnabled;
+        }
+
+        @Override
+        public void setContextHelpTextHtmlEnabled(Boolean enabled) {
+            if (component instanceof Field) {
+                ((Field) component).setContextHelpTextHtmlEnabled(enabled);
+            } else if (composition != null && isWrapped()) {
+                // TODO: gg, ???
+//                composition.setContextHelpTextHtmlEnabled(enabled);
+            } else {
+                this.targetContextHelpTextHtmlEnabled = enabled;
+            }
+        }
+
+        @Override
         public String getDescription() {
             if (component instanceof Field) {
                 return ((Field) component).getDescription();
@@ -1611,6 +1639,14 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
 
         public void setTargetContextHelpText(String targetContextHelpText) {
             this.targetContextHelpText = targetContextHelpText;
+        }
+
+        public Boolean getTargetContextHelpTextHtmlEnabled() {
+            return targetContextHelpTextHtmlEnabled;
+        }
+
+        public void setTargetContextHelpTextHtmlEnabled(Boolean targetContextHelpTextHtmlEnabled) {
+            this.targetContextHelpTextHtmlEnabled = targetContextHelpTextHtmlEnabled;
         }
 
         public CollectionDatasource getTargetOptionsDatasource() {

@@ -97,8 +97,18 @@ public class CubaTooltip extends VTooltip {
             description.setAttribute("aria-hidden", "true");
         }
 
-        if (info.getContextHelp() != null && !info.getContextHelp().isEmpty()) {
-            contextHelpElement.setInnerHTML(info.getContextHelp());
+        String contextHelp = info.getContextHelp();
+        if (contextHelp != null && !contextHelp.isEmpty()) {
+            if (info.isContextHelpHtmlEnabled()) {
+                contextHelpElement.setInnerHTML(contextHelp);
+            } else {
+                if (contextHelp.contains("\n")) {
+                    contextHelp = WidgetUtil.escapeHTML(contextHelp).replace("\n", "<br/>");
+                    contextHelpElement.setInnerHTML(contextHelp);
+                } else {
+                    contextHelpElement.setInnerText(contextHelp);
+                }
+            }
             contextHelpElement.getStyle().clearDisplay();
         } else {
             contextHelpElement.setInnerHTML("");

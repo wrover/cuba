@@ -293,12 +293,23 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
 
     @Override
     public String getContextHelpText() {
-        // TODO: gg,
+        // TODO: gg, implement
         return null;
     }
 
     @Override
     public void setContextHelpText(String contextHelpText) {
-        // TODO: gg,
+        // TODO: gg, implement
+    }
+
+    @Override
+    public boolean isContextHelpTextHtmlEnabled() {
+        // TODO: gg, implement
+        return false;
+    }
+
+    @Override
+    public void setContextHelpTextHtmlEnabled(boolean enabled) {
+        // TODO: gg, implement
     }
 }
