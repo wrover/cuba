@@ -35,6 +35,8 @@ import com.vaadin.client.ui.gridlayout.GridLayoutConnector;
 import com.vaadin.client.ui.layout.ComponentConnectorLayoutSlot;
 import com.vaadin.client.ui.orderedlayout.Slot;
 
+import static com.haulmont.cuba.web.toolkit.ui.client.caption.CubaCaptionWidget.CONTEXT_HELP_CLASSNAME;
+
 public class CubaTooltip extends VTooltip {
 
     public static final String REQUIRED_INDICATOR = "v-required-field-indicator";
@@ -43,7 +45,11 @@ public class CubaTooltip extends VTooltip {
     // If required indicators are not visible we show tooltip on mouse hover otherwise only by mouse click
     protected static Boolean requiredIndicatorVisible = null;
 
+    protected Element contextHelpElement = DOM.createDiv();
+
     public CubaTooltip() {
+        contextHelpElement.setClassName("c-tooltip-context-help");
+        DOM.appendChild(getWidget().getElement(), contextHelpElement);
         tooltipEventHandler = new CubaTooltipEventHandler();
     }
 
@@ -81,13 +87,39 @@ public class CubaTooltip extends VTooltip {
         Profiler.leave("VTooltip.connectHandlersToWidget");
     }
 
+    @Override
+    protected void setTooltipText(TooltipInfo info) {
+        super.setTooltipText(info);
+
+        if (info.getTitle() != null && !info.getTitle().isEmpty()) {
+            description.removeAttribute("aria-hidden");
+        } else {
+            description.setAttribute("aria-hidden", "true");
+        }
+
+        if (info.getContextHelp() != null && !info.getContextHelp().isEmpty()) {
+            contextHelpElement.setInnerHTML(info.getContextHelp());
+            contextHelpElement.getStyle().clearDisplay();
+        } else {
+            contextHelpElement.setInnerHTML("");
+            contextHelpElement.getStyle().setDisplay(Style.Display.NONE);
+        }
+    }
+
+    @Override
+    public void hide() {
+        contextHelpElement.setInnerHTML("");
+        super.hide();
+    }
+
     public class CubaTooltipEventHandler extends TooltipEventHandler {
 
         protected ComponentConnector currentConnector = null;
 
         protected boolean isTooltipElement(Element element) {
             return (REQUIRED_INDICATOR.equals(element.getClassName())
-                    || ERROR_INDICATOR.equals(element.getClassName()));
+                    || ERROR_INDICATOR.equals(element.getClassName())
+                    || CONTEXT_HELP_CLASSNAME.equals(element.getClassName()));
         }
 
         protected void checkRequiredIndicatorVisible() {
@@ -217,7 +249,7 @@ public class CubaTooltip extends VTooltip {
                 boolean hasTooltipIndicator = hasIndicators(currentConnector);
                 boolean elementIsIndicator = elementIsIndicator(element);
 
-                if ((hasTooltipIndicator && elementIsIndicator) || (!hasTooltipIndicator)) {
+                if (!hasTooltipIndicator || elementIsIndicator) {
                     if (closing) {
                         closeTimer.cancel();
                         closing = false;
@@ -245,7 +277,8 @@ public class CubaTooltip extends VTooltip {
         protected boolean elementIsIndicator(Element relativeElement) {
             return relativeElement != null
                     && (REQUIRED_INDICATOR.equals(relativeElement.getClassName())
-                        || ERROR_INDICATOR.equals(relativeElement.getClassName()));
+                    || ERROR_INDICATOR.equals(relativeElement.getClassName())
+                    || CONTEXT_HELP_CLASSNAME.equals(relativeElement.getClassName()));
         }
 
         protected boolean hasIndicators(ComponentConnector connector) {
@@ -289,7 +322,8 @@ public class CubaTooltip extends VTooltip {
                     if (caption instanceof CubaCaptionWidget) {
                         CubaCaptionWidget cubaCaptionWidget = (CubaCaptionWidget) caption;
                         if (cubaCaptionWidget.getRequiredIndicatorElement() != null
-                                || cubaCaptionWidget.getErrorIndicatorElement() != null) {
+                                || cubaCaptionWidget.getErrorIndicatorElement() != null
+                                || cubaCaptionWidget.getContextHelpIndicatorElement() != null) {
                             return true;
                         }
                     }

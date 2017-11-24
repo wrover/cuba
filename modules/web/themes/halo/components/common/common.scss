@@ -34,6 +34,22 @@
     font-family: FontAwesome;
     content: "\f059";
     font-size: $v-font-size;
+    padding-left: .2em;
+  }
+
+  .v-required-field-indicator {
+    padding: 0 0 0 .2em;
+  }
+
+  .v-tooltip {
+    .c-tooltip-context-help {
+      margin-top: $v-tooltip-padding-vertical * 2;
+      overflow: auto;
+    }
+
+    .v-errormessage[aria-hidden="true"]+.v-tooltip-text[aria-hidden="true"]+.c-tooltip-context-help {
+      margin-top: 0;
+    }
   }
 
   @if $v-show-required-indicators == false {
