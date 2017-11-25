@@ -349,10 +349,28 @@ public interface Component {
      * A sub-interface implemented by components that can provide a context help.
      */
     interface HasContextHelp {
+        /**
+         * @return context help text
+         */
         String getContextHelpText();
+
+        /**
+         * Sets context help text. If set, then a special icon will be added for a field.
+         *
+         * @param contextHelpText context help text to be set
+         */
         void setContextHelpText(String contextHelpText);
 
+        /**
+         * @return true if field accepts context help text in HTML format, false otherwise
+         */
         boolean isContextHelpTextHtmlEnabled();
+
+        /**
+         * Defines if context help text can be presented as HTML.
+         *
+         * @param enabled true if field accepts context help text in HTML format, false otherwise
+         */
         void setContextHelpTextHtmlEnabled(boolean enabled);
     }
 
