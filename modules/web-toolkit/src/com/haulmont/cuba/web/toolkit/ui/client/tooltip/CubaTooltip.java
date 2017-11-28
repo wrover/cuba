@@ -21,27 +21,14 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.DomEvent;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.haulmont.cuba.web.toolkit.ui.client.checkbox.CubaCheckBoxWidget;
 import com.haulmont.cuba.web.toolkit.ui.client.resizabletextarea.CubaResizableTextAreaWrapperWidget;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
-import com.vaadin.client.ComponentConnector;
-import com.vaadin.client.ComputedStyle;
-import com.vaadin.client.Profiler;
-import com.vaadin.client.TooltipInfo;
-import com.vaadin.client.Util;
-import com.vaadin.client.VTooltip;
-import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.*;
 
 import static com.haulmont.cuba.web.toolkit.ui.client.caption.CubaCaptionWidget.CONTEXT_HELP_CLASSNAME;
 
@@ -181,9 +168,12 @@ public class CubaTooltip extends VTooltip {
             if (isTooltipElement(element)) {
                 element = element.getParentElement().cast();
 
-                int index = DOM.getChildIndex(element.getParentElement().cast(), element);
-                int indexOfComponent = index == 0 ? index + 1 : index - 1;
-                element = DOM.getChild(element.getParentElement().cast(), indexOfComponent);
+                Widget widget = WidgetUtil.findWidget(element);
+                if (!(widget instanceof CubaCheckBoxWidget)) {
+                    int index = DOM.getChildIndex(element.getParentElement().cast(), element);
+                    int indexOfComponent = index == 0 ? index + 1 : index - 1;
+                    element = DOM.getChild(element.getParentElement().cast(), indexOfComponent);
+                }
             }
 
             ApplicationConnection ac = getApplicationConnection();

@@ -149,7 +149,7 @@ public class CubaOrderedLayoutSlot extends Slot {
                 contextHelpIcon.setInnerHTML("?");
                 contextHelpIcon.setClassName(CONTEXT_HELP_CLASSNAME);
 
-                // The star should not be read by the screen reader, as it is
+                // The question mark should not be read by the screen reader, as it is
                 // purely visual. Required state is set at the element level for
                 // the screen reader.
                 Roles.getTextboxRole().setAriaHiddenState(contextHelpIcon, true);

@@ -1162,6 +1162,7 @@
                 <xs:attributeGroup ref="hasTabIndex"/>
                 <xs:attributeGroup ref="hasEditable"/>
                 <xs:attributeGroup ref="hasDatasource"/>
+                <xs:attributeGroup ref="hasContextHelp"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -2217,6 +2218,7 @@
                 <xs:attributeGroup ref="hasCaptionSource"/>
                 <xs:attributeGroup ref="hasDatasourceProp"/>
                 <xs:attributeGroup ref="hasTabIndex"/>
+                <xs:attributeGroup ref="hasContextHelp"/>
 
                 <xs:attribute name="refreshOptionsOnLookupClose" type="xs:boolean"/>
                 <xs:attribute name="position" type="tokenListPosition"/>
