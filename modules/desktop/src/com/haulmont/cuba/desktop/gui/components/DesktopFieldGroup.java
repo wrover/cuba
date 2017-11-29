@@ -377,7 +377,7 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
                     tooltipBtn.setToolTipText(DesktopComponentsHelper.getTooltipText(
                             fci.getContextHelpText(),
                             fci.isContextHelpTextHtmlEnabled()));
-                    fci.setToolTipButton(new ToolTipButton());
+                    fci.setToolTipButton(tooltipBtn);
                 } else {
                     fci.setToolTipButton(null);
                 }
@@ -514,7 +514,7 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             tooltipBtn.setToolTipText(DesktopComponentsHelper.getTooltipText(
                     fci.getContextHelpText(),
                     fci.isContextHelpTextHtmlEnabled()));
-            fci.setToolTipButton(new ToolTipButton());
+            fci.setToolTipButton(tooltipBtn);
         } else {
             fci.setToolTipButton(null);
         }
