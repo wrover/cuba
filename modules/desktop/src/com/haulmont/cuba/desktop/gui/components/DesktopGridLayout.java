@@ -21,6 +21,7 @@ import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.cuba.desktop.gui.data.DesktopContainerHelper;
 import com.haulmont.cuba.desktop.sys.layout.BoxLayoutAdapter;
 import com.haulmont.cuba.desktop.sys.layout.GridLayoutAdapter;
+import com.haulmont.cuba.desktop.sys.layout.MigLayoutHelper;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Frame;
@@ -95,8 +96,8 @@ public class DesktopGridLayout extends DesktopAbstractComponent<JPanel> implemen
             hasContextHelp = true;
         }
 
-        // if component have description without caption, we need to wrap
-        // component to view Description button horizontally after component
+        // if component have context help without caption, we need to wrap
+        // component to view context help button horizontally after component
         if (hasContextHelp) {
             JPanel wrapper = new LayoutSlot();
             BoxLayoutAdapter adapter = BoxLayoutAdapter.create(wrapper);
@@ -354,6 +355,14 @@ public class DesktopGridLayout extends DesktopAbstractComponent<JPanel> implemen
             JComponent composition;
             if (wrappers.containsKey(child)) {
                 composition = wrappers.get(child).getFirst();
+                CC constraints = MigLayoutHelper.getConstraints(child);
+                if (child.getWidth() == -1.0) {
+                    MigLayoutHelper.applyWidth(constraints, -1, UNITS_PIXELS, false);
+                } else {
+                    MigLayoutHelper.applyWidth(constraints, 100, UNITS_PERCENTAGE, false);
+                }
+                BoxLayoutAdapter adapter = wrappers.get(child).getSecond();
+                adapter.updateConstraints(DesktopComponentsHelper.getComposition(child), constraints);
             } else {
                 composition = DesktopComponentsHelper.getComposition(child);
             }

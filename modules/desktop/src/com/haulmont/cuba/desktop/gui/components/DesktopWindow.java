@@ -1006,8 +1006,8 @@ public class DesktopWindow implements Window, Component.Disposable,
         }
 
         JComponent composition = DesktopComponentsHelper.getComposition(component);
-        // if component have description without caption, we need to wrap
-        // component to view Description button horizontally after component
+        // if component have context help without caption, we need to wrap
+        // component to view context help button horizontally after component
         if (hasContextHelp) {
             JPanel wrapper = new JPanel();
             BoxLayoutAdapter adapter = BoxLayoutAdapter.create(wrapper);
@@ -1403,6 +1403,14 @@ public class DesktopWindow implements Window, Component.Disposable,
             JComponent composition;
             if (wrappers.containsKey(child)) {
                 composition = wrappers.get(child).getFirst();
+                CC constraints = MigLayoutHelper.getConstraints(child);
+                if (child.getWidth() == -1.0) {
+                    MigLayoutHelper.applyWidth(constraints, -1, UNITS_PIXELS, false);
+                } else {
+                    MigLayoutHelper.applyWidth(constraints, 100, UNITS_PERCENTAGE, false);
+                }
+                BoxLayoutAdapter adapter = wrappers.get(child).getSecond();
+                adapter.updateConstraints(DesktopComponentsHelper.getComposition(child), constraints);
             } else {
                 composition = DesktopComponentsHelper.getComposition(child);
             }
