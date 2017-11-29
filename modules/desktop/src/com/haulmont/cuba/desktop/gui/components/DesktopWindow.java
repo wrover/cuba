@@ -993,7 +993,7 @@ public class DesktopWindow implements Window, Component.Disposable,
         int implIndex = getActualIndex(index);
 
         ComponentCaption caption = null;
-        boolean haveDescription = false;
+        boolean hasContextHelp = false;
         if (DesktopContainerHelper.hasExternalCaption(component)) {
             caption = new ComponentCaption(component);
             captions.put(component, caption);
@@ -1002,13 +1002,13 @@ public class DesktopWindow implements Window, Component.Disposable,
         } else if (DesktopContainerHelper.hasExternalContextHelp(component)) {
             caption = new ComponentCaption(component);
             captions.put(component, caption);
-            haveDescription = true;
+            hasContextHelp = true;
         }
 
         JComponent composition = DesktopComponentsHelper.getComposition(component);
         // if component have description without caption, we need to wrap
         // component to view Description button horizontally after component
-        if (haveDescription) {
+        if (hasContextHelp) {
             JPanel wrapper = new JPanel();
             BoxLayoutAdapter adapter = BoxLayoutAdapter.create(wrapper);
             adapter.setExpandLayout(true);
@@ -1376,16 +1376,15 @@ public class DesktopWindow implements Window, Component.Disposable,
     @Override
     public void updateComponent(Component child) {
         boolean componentReAdded = false;
-        if (DesktopContainerHelper.mayHaveExternalCaption(child)) {
+        if (DesktopContainerHelper.mayHaveExternalCaption(child)
+                || DesktopContainerHelper.mayHaveExternalContextHelp(child)) {
             if (captions.containsKey(child)
                     && !DesktopContainerHelper.hasExternalCaption(child)
-                    && !DesktopContainerHelper.hasExternalDescription(child)
                     && !DesktopContainerHelper.hasExternalContextHelp(child)) {
                 reAddChild(child);
                 componentReAdded = true;
             } else if (!captions.containsKey(child)
                     && (DesktopContainerHelper.hasExternalCaption(child)
-                    || DesktopContainerHelper.hasExternalDescription(child)
                     || DesktopContainerHelper.hasExternalContextHelp(child))) {
                 reAddChild(child);
                 componentReAdded = true;

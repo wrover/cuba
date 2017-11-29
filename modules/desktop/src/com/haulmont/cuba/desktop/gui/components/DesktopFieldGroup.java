@@ -371,10 +371,12 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
                 DesktopAbstractComponent fieldImpl = (DesktopAbstractComponent) fieldComponent;
                 fci.setComposition(fieldImpl);
 
-                if (fci.getDescription() != null) {
+                if (fci.getContextHelpText() != null) {
                     ToolTipButton tooltipBtn = new ToolTipButton();
                     tooltipBtn.setVisible(fieldComponent.isVisible());
-                    tooltipBtn.setToolTipText(fci.getDescription());
+                    tooltipBtn.setToolTipText(DesktopComponentsHelper.getTooltipText(
+                            fci.getContextHelpText(),
+                            fci.isContextHelpTextHtmlEnabled()));
                     fci.setToolTipButton(new ToolTipButton());
                 } else {
                     fci.setToolTipButton(null);
@@ -455,11 +457,13 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
                     impl.add(label, labelCc.cell(colIndex * 3, insertRowIndex, 1, 1));
                 }
 
-                if (Strings.isNullOrEmpty(fci.getDescription())) {
+                if (Strings.isNullOrEmpty(fci.getContextHelpText())) {
                     fci.setToolTipButton(null);
                 } else if (fci.getToolTipButton() == null) {
                     ToolTipButton toolTipButton = new ToolTipButton();
-                    toolTipButton.setToolTipText(fci.getDescription());
+                    toolTipButton.setToolTipText(DesktopComponentsHelper.getTooltipText(
+                            fci.getContextHelpText(),
+                            fci.isContextHelpTextHtmlEnabled()));
                     toolTipButton.setVisible(fieldComponent.isVisible());
                     fci.setToolTipButton(toolTipButton);
                 }
@@ -504,10 +508,12 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         DesktopAbstractComponent fieldImpl = (DesktopAbstractComponent) fci.getComponentNN();
         fci.setComposition(fieldImpl);
 
-        if (fci.getDescription() != null) {
+        if (fci.getContextHelpText() != null) {
             ToolTipButton tooltipBtn = new ToolTipButton();
             tooltipBtn.setVisible(fci.getComponentNN().isVisible());
-            tooltipBtn.setToolTipText(fci.getDescription());
+            tooltipBtn.setToolTipText(DesktopComponentsHelper.getTooltipText(
+                    fci.getContextHelpText(),
+                    fci.isContextHelpTextHtmlEnabled()));
             fci.setToolTipButton(new ToolTipButton());
         } else {
             fci.setToolTipButton(null);
@@ -1428,10 +1434,6 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             if (component instanceof Field) {
                 return ((Field) component).getContextHelpText();
             }
-            if (composition != null && isWrapped()) {
-                // TODO: gg, ???
-//                return composition.getContextHelpText();
-            }
             return targetContextHelpText;
         }
 
@@ -1439,9 +1441,6 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         public void setContextHelpText(String contextHelpText) {
             if (component instanceof Field) {
                 ((Field) component).setContextHelpText(contextHelpText);
-            } else if (composition != null && isWrapped()) {
-                // TODO: gg, ???
-//                composition.setContextHelpText(contextHelpText);
             } else {
                 this.targetContextHelpText = contextHelpText;
             }
@@ -1452,10 +1451,6 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             if (component instanceof Field) {
                 return ((Field) component).isContextHelpTextHtmlEnabled();
             }
-            if (composition != null && isWrapped()) {
-                // TODO: gg, ???
-//                return composition.isContextHelpTextHtmlEnabled();
-            }
             return targetContextHelpTextHtmlEnabled;
         }
 
@@ -1463,9 +1458,6 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         public void setContextHelpTextHtmlEnabled(Boolean enabled) {
             if (component instanceof Field) {
                 ((Field) component).setContextHelpTextHtmlEnabled(enabled);
-            } else if (composition != null && isWrapped()) {
-                // TODO: gg, ???
-//                composition.setContextHelpTextHtmlEnabled(enabled);
             } else {
                 this.targetContextHelpTextHtmlEnabled = enabled;
             }

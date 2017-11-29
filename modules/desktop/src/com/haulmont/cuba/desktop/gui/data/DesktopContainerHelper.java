@@ -57,6 +57,10 @@ public class DesktopContainerHelper {
         return false;
     }
 
+    public static boolean mayHaveExternalContextHelp(Component component) {
+        return component instanceof HasContextHelp;
+    }
+
     public static boolean hasExternalContextHelp(Component component) {
         if (component instanceof HasContextHelp) {
             final String contextHelp = ((HasContextHelp) component).getContextHelpText();

@@ -22,7 +22,6 @@ import com.haulmont.cuba.desktop.sys.layout.BoxLayoutAdapter;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Component.HasContextHelp;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -40,12 +39,15 @@ public class ComponentCaption extends JPanel {
     }
 
     private void takeOwnerProperties() {
-        if (label == null) {
-            label = new JLabel();
-            add(label);
+        if (!(owner instanceof DesktopCheckBox)) {
+            if (label == null) {
+                label = new JLabel();
+                add(label);
+            }
+
+            label.setText(((Component.HasCaption) owner).getCaption());
         }
 
-        label.setText(((Component.HasCaption) owner).getCaption());
         String contextHelpText = getContextHelpText();
         if (StringUtils.isNotEmpty(contextHelpText)) {
             if (toolTipButton == null) {
@@ -66,14 +68,10 @@ public class ComponentCaption extends JPanel {
 
     protected String getContextHelpText() {
         if (owner instanceof HasContextHelp) {
-            String contextHelpText = ((HasContextHelp) owner).getContextHelpText();
-            boolean htmlEnabled = ((HasContextHelp) owner).isContextHelpTextHtmlEnabled();
-
-            if (StringUtils.isNotEmpty(contextHelpText)) {
-                return htmlEnabled ? contextHelpText : StringEscapeUtils.escapeHtml(contextHelpText);
-            }
+            return DesktopComponentsHelper.getTooltipText(
+                    ((HasContextHelp) owner).getContextHelpText(),
+                    ((HasContextHelp) owner).isContextHelpTextHtmlEnabled());
         }
-
         return null;
     }
 

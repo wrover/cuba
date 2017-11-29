@@ -28,6 +28,8 @@ import com.haulmont.cuba.desktop.sys.vcl.JTabbedPaneExt;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Frame;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.Action;
@@ -459,5 +461,12 @@ public class DesktopComponentsHelper {
                 LoggerFactory.getLogger(DesktopComponentsHelper.class).warn("Error while problem component focusing", e);
             }
         }
+    }
+
+    public static String getTooltipText(String contextHelpText, boolean contextHelpTextHtmlEnabled) {
+        if (StringUtils.isNotEmpty(contextHelpText)) {
+            return contextHelpTextHtmlEnabled ? contextHelpText : StringEscapeUtils.escapeHtml(contextHelpText);
+        }
+        return null;
     }
 }
