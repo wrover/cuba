@@ -999,7 +999,7 @@ public class DesktopWindow implements Window, Component.Disposable,
             captions.put(component, caption);
             getContainer().add(caption, layoutAdapter.getCaptionConstraints(component), implIndex);  // CAUTION this dramatically wrong
             implIndex++;
-        } else if (DesktopContainerHelper.hasExternalDescription(component)) {
+        } else if (DesktopContainerHelper.hasExternalContextHelp(component)) {
             caption = new ComponentCaption(component);
             captions.put(component, caption);
             haveDescription = true;
@@ -1379,12 +1379,14 @@ public class DesktopWindow implements Window, Component.Disposable,
         if (DesktopContainerHelper.mayHaveExternalCaption(child)) {
             if (captions.containsKey(child)
                     && !DesktopContainerHelper.hasExternalCaption(child)
-                    && !DesktopContainerHelper.hasExternalDescription(child)) {
+                    && !DesktopContainerHelper.hasExternalDescription(child)
+                    && !DesktopContainerHelper.hasExternalContextHelp(child)) {
                 reAddChild(child);
                 componentReAdded = true;
             } else if (!captions.containsKey(child)
                     && (DesktopContainerHelper.hasExternalCaption(child)
-                    || DesktopContainerHelper.hasExternalDescription(child))) {
+                    || DesktopContainerHelper.hasExternalDescription(child)
+                    || DesktopContainerHelper.hasExternalContextHelp(child))) {
                 reAddChild(child);
                 componentReAdded = true;
             } else if (captions.containsKey(child)) {

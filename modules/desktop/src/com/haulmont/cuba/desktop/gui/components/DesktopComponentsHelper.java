@@ -42,6 +42,8 @@ public class DesktopComponentsHelper {
 
     public static final int BUTTON_HEIGHT = 30;
     public static final int FIELD_HEIGHT = 28;
+    public static final int TOOLTIP_WIDTH = 500;
+
 
     // todo move nimbus constants to theme
     public static final Color defaultBgColor = (Color) UIManager.get("nimbusLightBackground");

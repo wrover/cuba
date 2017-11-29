@@ -89,7 +89,7 @@ public class DesktopGridLayout extends DesktopAbstractComponent<JPanel> implemen
             caption = new ComponentCaption(component);
             captions.put(component, caption);
             impl.add(caption, layoutAdapter.getCaptionConstraints(component, col, row, col2, row2));
-        } else if (DesktopContainerHelper.hasExternalDescription(component)) {
+        } else if (DesktopContainerHelper.hasExternalContextHelp(component)) {
             caption = new ComponentCaption(component);
             captions.put(component, caption);
             haveDescription = true;
@@ -330,12 +330,14 @@ public class DesktopGridLayout extends DesktopAbstractComponent<JPanel> implemen
         if (DesktopContainerHelper.mayHaveExternalCaption(child)) {
             if (captions.containsKey(child)
                     && !DesktopContainerHelper.hasExternalCaption(child)
-                    && !DesktopContainerHelper.hasExternalDescription(child)) {
+                    && !DesktopContainerHelper.hasExternalDescription(child)
+                    && !DesktopContainerHelper.hasExternalContextHelp(child)) {
                 reAddChild(child);
                 componentReAdded = true;
             } else if (!captions.containsKey(child)
                     && (DesktopContainerHelper.hasExternalCaption(child)
-                        || DesktopContainerHelper.hasExternalDescription(child))) {
+                    || DesktopContainerHelper.hasExternalDescription(child)
+                    || DesktopContainerHelper.hasExternalContextHelp(child))) {
                 reAddChild(child);
                 componentReAdded = true;
             } else if (captions.containsKey(child)) {

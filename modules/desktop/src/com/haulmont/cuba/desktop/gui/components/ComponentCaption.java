@@ -21,6 +21,9 @@ import com.haulmont.cuba.desktop.sys.DesktopToolTipManager;
 import com.haulmont.cuba.desktop.sys.layout.BoxLayoutAdapter;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
 import com.haulmont.cuba.gui.components.Component;
+import com.haulmont.cuba.gui.components.Component.HasContextHelp;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 
@@ -43,14 +46,15 @@ public class ComponentCaption extends JPanel {
         }
 
         label.setText(((Component.HasCaption) owner).getCaption());
-        if (((Component.HasCaption) owner).getDescription() != null) {
+        String contextHelpText = getContextHelpText();
+        if (StringUtils.isNotEmpty(contextHelpText)) {
             if (toolTipButton == null) {
                 toolTipButton = new ToolTipButton();
                 toolTipButton.setFocusable(false);
                 DesktopToolTipManager.getInstance().registerTooltip(toolTipButton);
                 add(toolTipButton);
             }
-            toolTipButton.setToolTipText(((Component.HasCaption) owner).getDescription());
+            toolTipButton.setToolTipText(contextHelpText);
         } else if (toolTipButton != null) {
             remove(toolTipButton);
             toolTipButton = null;
@@ -58,6 +62,19 @@ public class ComponentCaption extends JPanel {
 
         setVisible(owner.isVisible());
         setEnabled(owner.isEnabled());
+    }
+
+    protected String getContextHelpText() {
+        if (owner instanceof HasContextHelp) {
+            String contextHelpText = ((HasContextHelp) owner).getContextHelpText();
+            boolean htmlEnabled = ((HasContextHelp) owner).isContextHelpTextHtmlEnabled();
+
+            if (StringUtils.isNotEmpty(contextHelpText)) {
+                return htmlEnabled ? contextHelpText : StringEscapeUtils.escapeHtml(contextHelpText);
+            }
+        }
+
+        return null;
     }
 
     public void update() {

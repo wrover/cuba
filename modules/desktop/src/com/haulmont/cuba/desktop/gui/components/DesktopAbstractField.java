@@ -34,6 +34,7 @@ import com.haulmont.cuba.gui.components.compatibility.ComponentValueListenerWrap
 import com.haulmont.cuba.gui.components.validators.BeanValidator;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.ValueListener;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -51,6 +52,9 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
 
     protected boolean required;
     protected String requiredMessage;
+
+    protected String contextHelpText;
+    protected Boolean contextHelpTextHtmlEnable = false;
 
     protected Set<Validator> validators = new LinkedHashSet<>();
 
@@ -293,23 +297,29 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
 
     @Override
     public String getContextHelpText() {
-        // TODO: gg, implement
-        return null;
+        return contextHelpText;
     }
 
     @Override
     public void setContextHelpText(String contextHelpText) {
-        // TODO: gg, implement
+        if (!ObjectUtils.equals(this.contextHelpText, contextHelpText)) {
+            this.contextHelpText = contextHelpText;
+
+            requestContainerUpdate();
+        }
     }
 
     @Override
     public boolean isContextHelpTextHtmlEnabled() {
-        // TODO: gg, implement
-        return false;
+        return contextHelpTextHtmlEnable;
     }
 
     @Override
     public void setContextHelpTextHtmlEnabled(boolean enabled) {
-        // TODO: gg, implement
+        if (!ObjectUtils.equals(this.contextHelpTextHtmlEnable, enabled)) {
+            contextHelpTextHtmlEnable = enabled;
+
+            requestContainerUpdate();
+        }
     }
 }

@@ -17,6 +17,7 @@
 
 package com.haulmont.cuba.desktop.sys;
 
+import com.haulmont.cuba.desktop.gui.components.DesktopComponentsHelper;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
 
 import javax.swing.*;
@@ -116,6 +117,9 @@ public class DesktopToolTipManager extends MouseAdapter {
     public void registerTooltip(final JComponent component) {
         component.removeKeyListener(fieldKeyListener);
         component.addKeyListener(fieldKeyListener);
+
+        component.removeMouseListener(componentMouseListener);
+        component.addMouseListener(componentMouseListener);
     }
 
     /**
@@ -198,16 +202,24 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
 
         component = field;
+
+        UIDefaults lafDefaults = UIManager.getLookAndFeelDefaults();
+        int tooltipWidth = lafDefaults.getInt("Tooltip.width");
+        if (tooltipWidth == 0) {
+            tooltipWidth = DesktopComponentsHelper.TOOLTIP_WIDTH;
+        }
+
         final JToolTip toolTip = new JToolTip();
 
         toolTip.setTipText("<html>" + text + "</html>");
+//        toolTip.setTipText("<html><body width=\"" + tooltipWidth + "px\">" + text + "</body></html>");
         final Popup tooltipContainer = PopupFactory.getSharedInstance().getPopup(field, toolTip, x, y);
         tooltipContainer.show();
         window = tooltipContainer;
         toolTipWindow = toolTip;
 
         tooltipShowing = true;
-        if ((!(field instanceof ToolTipButton)) && ((field instanceof AbstractButton) || (field instanceof JLabel))) {
+        if (!(field instanceof ToolTipButton)) {
             toolTip.addMouseListener(this);
             field.addMouseListener(this);
         }
@@ -243,7 +255,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         @Override
         public void mouseEntered(MouseEvent e) {
             if (window != null) {
-                if (e.getSource() != component && e.getSource() != toolTipWindow && component instanceof AbstractButton) {
+                if (e.getSource() != component && e.getSource() != toolTipWindow) {
                     hideTooltip();
                     cmp = (JComponent) e.getSource();
                     showTimer.start();
