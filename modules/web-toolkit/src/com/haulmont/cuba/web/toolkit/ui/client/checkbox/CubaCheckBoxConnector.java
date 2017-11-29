@@ -18,7 +18,6 @@
 package com.haulmont.cuba.web.toolkit.ui.client.checkbox;
 
 import com.google.gwt.aria.client.Roles;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.haulmont.cuba.web.toolkit.ui.CubaCheckBox;
 import com.vaadin.client.VTooltip;
@@ -52,7 +51,9 @@ public class CubaCheckBoxConnector extends CheckBoxConnector {
 
         super.onStateChanged(stateChangeEvent);
 
-        if (getState().contextHelpText != null && !getState().contextHelpText.isEmpty()) {
+        if (!getWidget().captionManagedByLayout
+                && getState().contextHelpText != null
+                && !getState().contextHelpText.isEmpty()) {
             getWidget().contextHelpIcon = DOM.createSpan();
             getWidget().contextHelpIcon.setInnerHTML("?");
             getWidget().contextHelpIcon.setClassName(CONTEXT_HELP_CLASSNAME);
