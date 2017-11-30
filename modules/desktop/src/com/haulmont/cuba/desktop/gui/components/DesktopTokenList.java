@@ -606,6 +606,8 @@ public class DesktopTokenList extends DesktopAbstractField<JPanel> implements To
     public void setContextHelpText(String contextHelpText) {
         if (!ObjectUtils.equals(this.contextHelpText, contextHelpText)) {
             this.contextHelpText = contextHelpText;
+
+            // for now, DesktopTokenList doesn't provide context help
         }
     }
 

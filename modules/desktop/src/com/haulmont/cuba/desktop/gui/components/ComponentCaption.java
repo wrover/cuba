@@ -68,7 +68,7 @@ public class ComponentCaption extends JPanel {
 
     protected String getContextHelpText() {
         if (owner instanceof HasContextHelp) {
-            return DesktopComponentsHelper.getTooltipText(
+            return DesktopComponentsHelper.getContextHelpText(
                     ((HasContextHelp) owner).getContextHelpText(),
                     ((HasContextHelp) owner).isContextHelpTextHtmlEnabled());
         }

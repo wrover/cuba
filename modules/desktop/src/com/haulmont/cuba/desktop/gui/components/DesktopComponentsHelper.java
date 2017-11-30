@@ -463,7 +463,7 @@ public class DesktopComponentsHelper {
         }
     }
 
-    public static String getTooltipText(String contextHelpText, boolean contextHelpTextHtmlEnabled) {
+    public static String getContextHelpText(String contextHelpText, boolean contextHelpTextHtmlEnabled) {
         if (StringUtils.isNotEmpty(contextHelpText)) {
             return contextHelpTextHtmlEnabled ? contextHelpText : StringEscapeUtils.escapeHtml(contextHelpText);
         }

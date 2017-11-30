@@ -19,10 +19,15 @@ package com.haulmont.cuba.desktop.sys;
 
 import com.haulmont.cuba.desktop.gui.components.DesktopComponentsHelper;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
+import com.haulmont.cuba.gui.components.Component;
+import com.haulmont.cuba.gui.components.Component.HasContextHelp;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that encapsulates displaying of tooltips for all components.
@@ -47,6 +52,7 @@ public class DesktopToolTipManager extends MouseAdapter {
     private KeyListener fieldKeyListener = new FieldKeyListener();
     private ActionListener btnActionListener = new ButtonClickListener();
 
+    protected Map<JComponent, Component> wrappers = new HashMap<>();
 
     private static DesktopToolTipManager instance;
 
@@ -123,6 +129,19 @@ public class DesktopToolTipManager extends MouseAdapter {
     }
 
     /**
+     * TODO
+     * @param component
+     * @param wrapper
+     */
+    public void registerTooltip(final JComponent component, final Component wrapper) {
+        wrappers.remove(component);
+        wrappers.put(component, wrapper);
+
+        component.removeKeyListener(fieldKeyListener);
+        component.addKeyListener(fieldKeyListener);
+    }
+
+    /**
      * Register tooltip for {@link javax.swing.AbstractButton}.
      * Tooltip is displayed when the user hovers over a button
      * ToolTip text is taken from {@link javax.swing.JComponent#getToolTipText()}.
@@ -172,6 +191,10 @@ public class DesktopToolTipManager extends MouseAdapter {
     private void showTooltip(JComponent field, String text) {
         if (!field.isShowing())
             return;
+
+        if (StringUtils.isEmpty(text)) {
+            return;
+        }
 
         PointerInfo pointerInfo = MouseInfo.getPointerInfo();
         if (pointerInfo == null) {
@@ -290,7 +313,20 @@ public class DesktopToolTipManager extends MouseAdapter {
             if (e.getKeyCode() == F1_CODE) {
                 hideTooltip();
                 JComponent field = (JComponent) e.getSource();
-                showTooltip(field, field.getToolTipText());
+
+                String text = null;
+                if (e.isShiftDown()) {
+                    Component wrapper = wrappers.get(field);
+                    if (wrapper instanceof HasContextHelp) {
+                        text = DesktopComponentsHelper.getContextHelpText(
+                                ((HasContextHelp) wrapper).getContextHelpText(),
+                                ((HasContextHelp) wrapper).isContextHelpTextHtmlEnabled());
+                    }
+                } else {
+                    text = field.getToolTipText();
+                }
+
+                showTooltip(field, text);
             } else {
                 if (tooltipShowing) {
                     hideTooltip();
