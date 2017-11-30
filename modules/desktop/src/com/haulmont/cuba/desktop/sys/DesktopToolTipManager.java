@@ -24,6 +24,7 @@ import com.haulmont.cuba.gui.components.Component.HasContextHelp;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
@@ -234,16 +235,8 @@ public class DesktopToolTipManager extends MouseAdapter {
 
         component = field;
 
-        UIDefaults lafDefaults = UIManager.getLookAndFeelDefaults();
-        int tooltipWidth = lafDefaults.getInt("Tooltip.width");
-        if (tooltipWidth == 0) {
-            tooltipWidth = DesktopComponentsHelper.TOOLTIP_WIDTH;
-        }
-
-        final JToolTip toolTip = new JToolTip();
-
-        toolTip.setTipText("<html>" + text + "</html>");
-//        toolTip.setTipText("<html><body width=\"" + tooltipWidth + "px\">" + text + "</body></html>");
+        final JToolTip toolTip = new CubaToolTip();
+        toolTip.setTipText(text);
         final Popup tooltipContainer = PopupFactory.getSharedInstance().getPopup(field, toolTip, x, y);
         tooltipContainer.show();
         window = tooltipContainer;
@@ -253,6 +246,28 @@ public class DesktopToolTipManager extends MouseAdapter {
         if (!(field instanceof ToolTipButton)) {
             toolTip.addMouseListener(this);
             field.addMouseListener(this);
+        }
+    }
+
+    private class CubaToolTip extends JToolTip {
+        @Override
+        public void setTipText(String tipText) {
+            UIDefaults lafDefaults = UIManager.getLookAndFeelDefaults();
+            int maxTooltipWidth = lafDefaults.getInt("Tooltip.maxWidth");
+            if (maxTooltipWidth == 0) {
+                maxTooltipWidth = DesktopComponentsHelper.TOOLTIP_WIDTH;
+            }
+
+            FontMetrics fontMetrics = StyleContext.getDefaultStyleContext().getFontMetrics(getFont());
+            int actualWidth = SwingUtilities.computeStringWidth(fontMetrics, tipText);
+
+            if (actualWidth < maxTooltipWidth) {
+                tipText = "<html>" + tipText + "</html>";
+            } else {
+                tipText = "<html><body width=\"" + maxTooltipWidth + "px\">" + tipText + "</body></html>";
+            }
+
+            super.setTipText(tipText);
         }
     }
 
