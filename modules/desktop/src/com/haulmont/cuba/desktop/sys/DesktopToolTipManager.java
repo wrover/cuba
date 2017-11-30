@@ -115,7 +115,7 @@ public class DesktopToolTipManager extends MouseAdapter {
 
     /**
      * Register tooltip for component.
-     * Tooltip is displayed when user press F1 on focused component
+     * The tooltip is displayed when a user either presses F1 on a focused component or hovers over it.
      * ToolTip text is taken from {@link javax.swing.JComponent#getToolTipText()}.
      *
      * @param component component to register
@@ -129,9 +129,17 @@ public class DesktopToolTipManager extends MouseAdapter {
     }
 
     /**
-     * TODO
-     * @param component
-     * @param wrapper
+     * Registers a tooltip for a component.
+     * <p>
+     * The tooltip with text taken from {@link javax.swing.JComponent#getToolTipText()}
+     * is displayed when a user either presses {@code F1} on a focused component or hovers over it.
+     * <p>
+     * The tooltip with context help text is displayed when a user presses {@code Shift-F1}.
+     * The context help text is taken from {@link HasContextHelp#getContextHelpText()}
+     * if given {@code wrapper} implements {@link HasContextHelp} interface.
+     *
+     * @param component component to register
+     * @param wrapper   cuba wrapper which contains context help info
      */
     public void registerTooltip(final JComponent component, final Component wrapper) {
         wrappers.remove(component);
