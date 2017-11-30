@@ -27,7 +27,6 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.BeanValidation;
 import com.haulmont.cuba.core.global.MessageTools;
 import com.haulmont.cuba.core.global.MetadataTools;
-import com.haulmont.cuba.desktop.sys.DesktopToolTipManager;
 import com.haulmont.cuba.gui.components.Field;
 import com.haulmont.cuba.gui.components.RequiredValueMissingException;
 import com.haulmont.cuba.gui.components.ValidationException;
@@ -305,8 +304,6 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
     public void setContextHelpText(String contextHelpText) {
         if (!ObjectUtils.equals(this.contextHelpText, contextHelpText)) {
             this.contextHelpText = contextHelpText;
-
-            DesktopToolTipManager.getInstance().registerTooltip(impl, this);
 
             requestContainerUpdate();
         }

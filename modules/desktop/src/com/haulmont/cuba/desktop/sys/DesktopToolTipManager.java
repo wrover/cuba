@@ -19,16 +19,12 @@ package com.haulmont.cuba.desktop.sys;
 
 import com.haulmont.cuba.desktop.gui.components.DesktopComponentsHelper;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
-import com.haulmont.cuba.gui.components.Component;
-import com.haulmont.cuba.gui.components.Component.HasContextHelp;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Class that encapsulates displaying of tooltips for all components.
@@ -52,8 +48,6 @@ public class DesktopToolTipManager extends MouseAdapter {
     private MouseListener componentMouseListener = new ComponentMouseListener();
     private KeyListener fieldKeyListener = new FieldKeyListener();
     private ActionListener btnActionListener = new ButtonClickListener();
-
-    protected Map<JComponent, Component> wrappers = new HashMap<>();
 
     private static DesktopToolTipManager instance;
 
@@ -127,27 +121,6 @@ public class DesktopToolTipManager extends MouseAdapter {
 
         component.removeMouseListener(componentMouseListener);
         component.addMouseListener(componentMouseListener);
-    }
-
-    /**
-     * Registers a tooltip for a component.
-     * <p>
-     * The tooltip with text taken from {@link javax.swing.JComponent#getToolTipText()}
-     * is displayed when a user either presses {@code F1} on a focused component or hovers over it.
-     * <p>
-     * The tooltip with context help text is displayed when a user presses {@code Shift-F1}.
-     * The context help text is taken from {@link HasContextHelp#getContextHelpText()}
-     * if given {@code wrapper} implements {@link HasContextHelp} interface.
-     *
-     * @param component component to register
-     * @param wrapper   cuba wrapper which contains context help info
-     */
-    public void registerTooltip(final JComponent component, final Component wrapper) {
-        wrappers.remove(component);
-        wrappers.put(component, wrapper);
-
-        component.removeKeyListener(fieldKeyListener);
-        component.addKeyListener(fieldKeyListener);
     }
 
     /**
@@ -336,20 +309,7 @@ public class DesktopToolTipManager extends MouseAdapter {
             if (e.getKeyCode() == F1_CODE) {
                 hideTooltip();
                 JComponent field = (JComponent) e.getSource();
-
-                String text = null;
-                if (e.isShiftDown()) {
-                    Component wrapper = wrappers.get(field);
-                    if (wrapper instanceof HasContextHelp) {
-                        text = DesktopComponentsHelper.getContextHelpText(
-                                ((HasContextHelp) wrapper).getContextHelpText(),
-                                ((HasContextHelp) wrapper).isContextHelpTextHtmlEnabled());
-                    }
-                } else {
-                    text = field.getToolTipText();
-                }
-
-                showTooltip(field, text);
+                showTooltip(field, field.getToolTipText());
             } else {
                 if (tooltipShowing) {
                     hideTooltip();
