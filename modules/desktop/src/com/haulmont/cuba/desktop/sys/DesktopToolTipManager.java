@@ -33,21 +33,21 @@ public class DesktopToolTipManager extends MouseAdapter {
 
     public static final int F1_CODE = 112;
 
-    private static int CLOSE_TIME = 500;
-    private static int SHOW_TIME = 1000;
+    protected static int CLOSE_TIME = 500;
+    protected static int SHOW_TIME = 1000;
 
-    private boolean tooltipShowing = false;
+    protected boolean tooltipShowing = false;
 
-    private JToolTip toolTipWindow;
-    private Popup window;
-    private JComponent component;
+    protected JToolTip toolTipWindow;
+    protected Popup window;
+    protected JComponent component;
 
-    private Timer showTimer = new Timer(SHOW_TIME, null);
-    private Timer closeTimer;
+    protected Timer showTimer = new Timer(SHOW_TIME, null);
+    protected Timer closeTimer;
 
-    private MouseListener componentMouseListener = new ComponentMouseListener();
-    private KeyListener fieldKeyListener = new FieldKeyListener();
-    private ActionListener btnActionListener = new ButtonClickListener();
+    protected MouseListener componentMouseListener = new ComponentMouseListener();
+    protected KeyListener fieldKeyListener = new FieldKeyListener();
+    protected ActionListener btnActionListener = new ButtonClickListener();
 
     private static DesktopToolTipManager instance;
 
@@ -63,23 +63,20 @@ public class DesktopToolTipManager extends MouseAdapter {
         return instance;
     }
 
-    private DesktopToolTipManager() {
+    protected DesktopToolTipManager() {
         closeTimer = new Timer(CLOSE_TIME, null);
         closeTimer.setRepeats(false);
-        closeTimer.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                window.hide();
-                window = null;
-                tooltipShowing = false;
-                toolTipWindow.removeMouseListener(DesktopToolTipManager.this);
-                component.removeMouseListener(DesktopToolTipManager.this);
+        closeTimer.addActionListener(e -> {
+            window.hide();
+            window = null;
+            tooltipShowing = false;
+            toolTipWindow.removeMouseListener(DesktopToolTipManager.this);
+            component.removeMouseListener(DesktopToolTipManager.this);
 
-            }
         });
 
         Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
-            private MouseEvent event;
+            protected MouseEvent event;
 
             @Override
             public void eventDispatched(AWTEvent e) {
@@ -98,7 +95,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         }, AWTEvent.MOUSE_EVENT_MASK);
     }
 
-    private boolean isPointInComponent(Point point, JComponent component) {
+    protected boolean isPointInComponent(Point point, JComponent component) {
         if (!component.isShowing())
             return false;
 
@@ -159,7 +156,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         btn.addActionListener(btnActionListener);
     }
 
-    private void hideTooltip() {
+    protected void hideTooltip() {
         closeTimer.stop();
         if (window != null) {
             window.hide();
@@ -170,7 +167,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private void showTooltip(JComponent field, String text) {
+    protected void showTooltip(JComponent field, String text) {
         if (!field.isShowing())
             return;
 
@@ -222,7 +219,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private class CubaToolTip extends JToolTip {
+    protected class CubaToolTip extends JToolTip {
         @Override
         public void setTipText(String tipText) {
             UIDefaults lafDefaults = UIManager.getLookAndFeelDefaults();
@@ -256,9 +253,9 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private class ComponentMouseListener extends MouseAdapter {
+    protected class ComponentMouseListener extends MouseAdapter {
 
-        private JComponent cmp;
+        protected JComponent cmp;
 
         {
             showTimer.setRepeats(false);
@@ -303,7 +300,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private class FieldKeyListener extends KeyAdapter {
+    protected class FieldKeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == F1_CODE) {
@@ -318,7 +315,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private class ButtonClickListener implements ActionListener {
+    protected class ButtonClickListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
