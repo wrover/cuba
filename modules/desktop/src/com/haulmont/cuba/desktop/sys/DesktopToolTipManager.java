@@ -17,8 +17,12 @@
 
 package com.haulmont.cuba.desktop.sys;
 
+import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.Configuration;
+import com.haulmont.cuba.desktop.DesktopConfig;
 import com.haulmont.cuba.desktop.gui.components.DesktopComponentsHelper;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
+import com.haulmont.cuba.gui.components.KeyCombination;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -31,8 +35,6 @@ import java.awt.event.*;
  */
 public class DesktopToolTipManager extends MouseAdapter {
 
-    public static final int F1_CODE = 112;
-
     protected static int CLOSE_TIME = 500;
     protected static int SHOW_TIME = 1000;
 
@@ -44,6 +46,8 @@ public class DesktopToolTipManager extends MouseAdapter {
 
     protected Timer showTimer = new Timer(SHOW_TIME, null);
     protected Timer closeTimer;
+
+    protected Configuration configuration = AppBeans.get(Configuration.NAME);
 
     protected MouseListener componentMouseListener = new ComponentMouseListener();
     protected KeyListener fieldKeyListener = new FieldKeyListener();
@@ -303,7 +307,11 @@ public class DesktopToolTipManager extends MouseAdapter {
     protected class FieldKeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == F1_CODE) {
+            String showTooltipShortcut = configuration.getConfig(DesktopConfig.class).getShowTooltipShortcut();
+            KeyStroke keyStroke = DesktopComponentsHelper
+                    .convertKeyCombination(KeyCombination.create(showTooltipShortcut));
+
+            if (KeyStroke.getKeyStrokeForEvent(e).equals(keyStroke)) {
                 hideTooltip();
                 JComponent field = (JComponent) e.getSource();
                 showTooltip(field, field.getToolTipText());
