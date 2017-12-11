@@ -69,7 +69,8 @@ public interface GroupTable<E extends Entity> extends Table<E> {
     void setShowItemsCountForGroup(boolean showItemsCountForGroup);
 
     /**
-     * Returns aggregation results for the given group info instance.
+     * Returns a map with aggregation results for the given group info instance,
+     * where keys are table column ids and values are aggregation value.
      *
      * @param info the group info instance
      * @return aggregation results for the given group info instance
