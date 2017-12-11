@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.sql.Time;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @org.springframework.stereotype.Component(FieldGroupFieldFactory.NAME)
@@ -62,11 +63,26 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
 
     protected GeneratedField createFieldComponent(FieldGroup.FieldConfig fc) {
         Datasource targetDs = fc.getTargetDatasource();
-
+        String property = fc.getProperty();
         MetaClass metaClass = targetDs.getMetaClass();
-        MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, fc.getProperty());
 
-        if (mpp != null) {
+        Map<String, MetaComponentFactory> factories = AppBeans.getAll(MetaComponentFactory.class);
+        MetaComponentFactory factory = AppBeans.get(MetaComponentFactory.NAME);
+
+
+        MetaContext context = new MetaContext(metaClass, property);
+
+        Component component = factory.createComponent(context);
+        if (component instanceof Field) {
+            ((Field) component).setDatasource(targetDs, property);
+            return new GeneratedField(component);
+        }
+
+
+//        MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, fc.getProperty());
+
+
+        /*if (mpp != null) {
             Range mppRange = mpp.getRange();
             if (mppRange.isDatatype()) {
                 Datatype datatype = mppRange.asDatatype();
@@ -135,7 +151,7 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         } else {
             exceptionMessage = String.format("Can't create field \"%s\" with given data type", fc.getProperty());
         }
-        throw new UnsupportedOperationException(exceptionMessage);
+        throw new UnsupportedOperationException(exceptionMessage);*/
     }
 
     @Nullable
