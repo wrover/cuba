@@ -17,7 +17,7 @@
 package com.haulmont.cuba.gui.components;
 
 import com.google.common.base.Strings;
-import com.haulmont.bali.util.Preconditions;
+import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.chile.core.datatypes.Datatype;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
@@ -28,7 +28,6 @@ import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesUtils;
 import com.haulmont.cuba.core.app.dynamicattributes.PropertyType;
 import com.haulmont.cuba.core.entity.CategoryAttribute;
 import com.haulmont.cuba.core.entity.FileDescriptor;
-import com.haulmont.cuba.core.entity.annotation.CurrencyValue;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.ComponentsHelper;
@@ -38,15 +37,14 @@ import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.RuntimePropsDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.sql.Time;
 import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 @org.springframework.stereotype.Component(FieldGroupFieldFactory.NAME)
 public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
@@ -65,86 +63,76 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         Datasource targetDs = fc.getTargetDatasource();
         String property = fc.getProperty();
         MetaClass metaClass = targetDs.getMetaClass();
+        MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, fc.getProperty());
 
+        MetaContext context = new MetaContext(metaClass, property, targetDs,
+                ParamsMap.of("xmlDescriptor", fc.getXmlDescriptor()));
+
+        // TODO: gg, choose factory
         Map<String, MetaComponentFactory> factories = AppBeans.getAll(MetaComponentFactory.class);
-        MetaComponentFactory factory = AppBeans.get(MetaComponentFactory.NAME);
+        factories.remove(MetaComponentFactory.NAME);
 
+        if (MapUtils.isNotEmpty(factories)) {
+            // TODO: gg, implement
+            throw new UnsupportedOperationException();
+        } else {
+            MetaComponentFactory factory = AppBeans.get(MetaComponentFactory.NAME);
 
-        MetaContext context = new MetaContext(metaClass, property);
-
-        Component component = factory.createComponent(context);
-        if (component instanceof Field) {
-            ((Field) component).setDatasource(targetDs, property);
-            return new GeneratedField(component);
-        }
-
-
-//        MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, fc.getProperty());
-
-
-        /*if (mpp != null) {
-            Range mppRange = mpp.getRange();
-            if (mppRange.isDatatype()) {
-                Datatype datatype = mppRange.asDatatype();
-
-                MetaProperty metaProperty = mpp.getMetaProperty();
-                if (DynamicAttributesUtils.isDynamicAttribute(metaProperty)) {
-                    CategoryAttribute categoryAttribute = DynamicAttributesUtils.getCategoryAttribute(metaProperty);
-                    if (categoryAttribute != null && categoryAttribute.getDataType() == PropertyType.ENUMERATION) {
-                        return createEnumField(fc);
-                    }
+            Component component = factory.createComponent(context);
+            if (component != null) {
+                if (component instanceof Field) {
+                    ((Field) component).setDatasource(targetDs, property);
                 }
 
-                if (fc.getXmlDescriptor() != null
-                        && "true".equalsIgnoreCase(fc.getXmlDescriptor().attributeValue("link"))) {
-                    return createDatatypeLinkField(fc);
-                } else if (datatype.getJavaClass().equals(String.class)) {
-                    if (fc.getXmlDescriptor() != null
-                            && fc.getXmlDescriptor().attribute("mask") != null) {
-                        return createMaskedField(fc);
-                    } else {
-                        return createStringField(fc);
-                    }
-                } else if (datatype.getJavaClass().equals(UUID.class)) {
-                    return createUuidField(fc);
-                } else if (datatype.getJavaClass().equals(Boolean.class)) {
-                    return createBooleanField(fc);
-                } else if ((datatype.getJavaClass().equals(java.sql.Date.class)) || (datatype.getJavaClass().equals(Date.class))) {
-                    return createDateField(fc);
-                } else if (datatype.getJavaClass().equals(Time.class)) {
-                    return createTimeField(fc);
-                } else if (Number.class.isAssignableFrom(datatype.getJavaClass())) {
-                    if (fc.getXmlDescriptor() != null
-                            && fc.getXmlDescriptor().attribute("mask") != null) {
-                        GeneratedField generatedField = createMaskedField(fc);
-                        MaskedField maskedField = (MaskedField) generatedField.getComponent();
-                        maskedField.setValueMode(MaskedField.ValueMode.MASKED);
-                        maskedField.setSendNullRepresentation(false);
-                        return new GeneratedField(maskedField);
-                    } else {
-                        GeneratedField currencyField = createCurrencyField(fc);
-                        if (currencyField != null) {
-                            return currencyField;
+                if (mpp != null) {
+                    Range mppRange = mpp.getRange();
+                    if (mppRange.isDatatype()) {
+                        Datatype datatype = mppRange.asDatatype();
+
+                        if (fc.getXmlDescriptor() != null
+                                && "true".equalsIgnoreCase(fc.getXmlDescriptor().attributeValue("link"))) {
+                            return createDatatypeLinkField(fc);
+                        } else if (datatype.getJavaClass().equals(String.class)) {
+                            if (fc.getXmlDescriptor() != null
+                                    && fc.getXmlDescriptor().attribute("mask") != null) {
+                                return createMaskedField(fc);
+                            } else {
+                                return createStringField(fc);
+                            }
+                        } else if ((datatype.getJavaClass().equals(java.sql.Date.class))
+                                || (datatype.getJavaClass().equals(Date.class))) {
+                            // TODO: gg, check if DateField?
+                            setDateFieldAttributes((DateField) component, fc);
+                        } else if (datatype.getJavaClass().equals(Time.class)) {
+                            // TODO: gg, check if TimeField?
+                            setTimeFieldAttributes((TimeField) component, fc);
+                        } else if (Number.class.isAssignableFrom(datatype.getJavaClass())) {
+                            if (fc.getXmlDescriptor() != null
+                                    && fc.getXmlDescriptor().attribute("mask") != null) {
+                                GeneratedField generatedField = createMaskedField(fc);
+                                MaskedField maskedField = (MaskedField) generatedField.getComponent();
+                                maskedField.setValueMode(MaskedField.ValueMode.MASKED);
+                                maskedField.setSendNullRepresentation(false);
+                                return new GeneratedField(maskedField);
+                            }
+                        }
+                    } else if (mppRange.isClass()) {
+                        MetaProperty metaProperty = mpp.getMetaProperty();
+                        Class<?> javaType = metaProperty.getJavaType();
+                        if (!FileDescriptor.class.isAssignableFrom(javaType)) {
+                            return createEntityField(fc);
                         }
 
-                        return createNumberField(fc);
                     }
                 }
 
-            } else if (mppRange.isClass()) {
-                MetaProperty metaProperty = mpp.getMetaProperty();
-                Class<?> javaType = metaProperty.getJavaType();
-                if (FileDescriptor.class.isAssignableFrom(javaType)) {
-                    return createFileUploadField(fc);
-                }
-
-                return createEntityField(fc);
-            } else if (mppRange.isEnum()) {
-                return createEnumField(fc);
+                return new GeneratedField(component);
             }
+            // TODO: gg, more detailed message
+            throw new UnsupportedOperationException();
         }
 
-        String exceptionMessage;
+        /*String exceptionMessage;
         if (mpp != null) {
             exceptionMessage = String.format("Can't create field \"%s\" with data type: %s", fc.getProperty(),
                     mpp.getRange().asDatatype());
@@ -152,49 +140,6 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
             exceptionMessage = String.format("Can't create field \"%s\" with given data type", fc.getProperty());
         }
         throw new UnsupportedOperationException(exceptionMessage);*/
-    }
-
-    @Nullable
-    protected GeneratedField createCurrencyField(FieldGroup.FieldConfig fc) {
-        String property = fc.getProperty();
-        if (DynamicAttributesUtils.isDynamicAttribute(property))
-            return null;
-
-        Datasource datasource = fc.getTargetDatasource();
-
-        MetaPropertyPath mpp = datasource.getMetaClass().getPropertyPath(property);
-        Preconditions.checkNotNullArgument(mpp, "Could not resolve property path '%s' in '%s'",
-                property, datasource.getMetaClass());
-
-        Object currencyAnnotation = mpp.getMetaProperty().getAnnotations().get(CurrencyValue.class.getName());
-        if (currencyAnnotation == null) {
-            return null;
-        }
-
-        CurrencyField currencyField = componentsFactory.createComponent(CurrencyField.class);
-        currencyField.setDatasource(datasource, property);
-
-        return new GeneratedField(currencyField);
-    }
-
-    protected GeneratedField createUuidField(FieldGroup.FieldConfig fc) {
-        MaskedField maskedField = componentsFactory.createComponent(MaskedField.class);
-        maskedField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-        maskedField.setMask("hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh");
-        maskedField.setSendNullRepresentation(false);
-        return new GeneratedField(maskedField);
-    }
-
-    protected GeneratedField createNumberField(FieldGroup.FieldConfig fc) {
-        TextField textField = componentsFactory.createComponent(TextField.class);
-        textField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-        return new GeneratedField(textField);
-    }
-
-    protected GeneratedField createBooleanField(FieldGroup.FieldConfig fc) {
-        CheckBox checkBox = componentsFactory.createComponent(CheckBox.class);
-        checkBox.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-        return new GeneratedField(checkBox);
     }
 
     protected GeneratedField createMaskedField(FieldGroup.FieldConfig fc) {
@@ -251,13 +196,6 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         return new GeneratedField(textField);
     }
 
-    protected GeneratedField createEnumField(FieldGroup.FieldConfig fc) {
-        LookupField lookupField = componentsFactory.createComponent(LookupField.class);
-        lookupField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-
-        return new GeneratedField(lookupField);
-    }
-
     protected GeneratedField createDatatypeLinkField(FieldGroup.FieldConfig fc) {
         EntityLinkField linkField = componentsFactory.createComponent(EntityLinkField.class);
 
@@ -268,10 +206,7 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         return new GeneratedField(linkField);
     }
 
-    protected GeneratedField createDateField(FieldGroup.FieldConfig fc) {
-        DateField dateField = componentsFactory.createComponent(DateField.class);
-        dateField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-
+    protected void setDateFieldAttributes(DateField dateField, FieldGroup.FieldConfig fc) {
         Element xmlDescriptor = fc.getXmlDescriptor();
 
         String resolution = xmlDescriptor == null ? null : xmlDescriptor.attributeValue("resolution");
@@ -298,40 +233,15 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
             }
             dateField.setDateFormat(dateFormat);
         }
-
-        return new GeneratedField(dateField);
     }
 
-    protected GeneratedField createTimeField(FieldGroup.FieldConfig fc) {
-        TimeField timeField = componentsFactory.createComponent(TimeField.class);
-        timeField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-
+    protected void setTimeFieldAttributes(TimeField timeField, FieldGroup.FieldConfig fc) {
         if (fc.getXmlDescriptor() != null) {
             String showSeconds = fc.getXmlDescriptor().attributeValue("showSeconds");
             if (Boolean.parseBoolean(showSeconds)) {
                 timeField.setShowSeconds(true);
             }
         }
-        return new GeneratedField(timeField);
-    }
-
-    protected GeneratedField createFileUploadField(FieldGroup.FieldConfig fc) {
-        FileUploadField fileUploadField = componentsFactory.createComponent(FileUploadField.class);
-        fileUploadField.setMode(FileUploadField.FileStoragePutMode.IMMEDIATE);
-
-        fileUploadField.setUploadButtonCaption(null);
-        fileUploadField.setUploadButtonDescription(messages.getMainMessage("upload.submit"));
-        fileUploadField.setUploadButtonIcon("icons/upload.png");
-
-        fileUploadField.setClearButtonCaption(null);
-        fileUploadField.setClearButtonIcon("icons/remove.png");
-        fileUploadField.setClearButtonDescription(messages.getMainMessage("upload.clear"));
-
-        fileUploadField.setShowFileName(true);
-        fileUploadField.setShowClearButton(true);
-
-        fileUploadField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
-        return new GeneratedField(fileUploadField);
     }
 
     protected GeneratedField createEntityField(FieldGroup.FieldConfig fc) {

@@ -17,14 +17,30 @@
 package com.haulmont.cuba.gui.components;
 
 import com.haulmont.chile.core.model.MetaClass;
+import com.haulmont.cuba.gui.data.Datasource;
+
+import java.util.Map;
 
 public class MetaContext {
     protected MetaClass metaClass;
     protected String property;
+    protected Datasource datasource;
+    protected Map<String, Object> parameters;
 
     public MetaContext(MetaClass metaClass, String property) {
+        this(metaClass, property, null, null);
+    }
+
+    public MetaContext(MetaClass metaClass, String property, Datasource datasource) {
+        this(metaClass, property, datasource, null);
+    }
+
+    public MetaContext(MetaClass metaClass, String property,
+                       Datasource datasource, Map<String, Object> parameters) {
         this.metaClass = metaClass;
         this.property = property;
+        this.datasource = datasource;
+        this.parameters = parameters;
     }
 
     public MetaClass getMetaClass() {
@@ -33,5 +49,13 @@ public class MetaContext {
 
     public String getProperty() {
         return property;
+    }
+
+    public Datasource getDatasource() {
+        return datasource;
+    }
+
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 }

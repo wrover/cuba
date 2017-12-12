@@ -16,7 +16,6 @@
 
 package com.haulmont.cuba.gui.components;
 
-import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
 import com.haulmont.chile.core.model.MetaPropertyPath;
@@ -30,7 +29,6 @@ import com.haulmont.cuba.core.entity.annotation.CurrencyValue;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.ComponentsHelper;
-import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
@@ -81,7 +79,12 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
                 } else if (type.equals(Time.class)) {
                     return createTimeField();
                 } else if (Number.class.isAssignableFrom(type)) {
-                    return createNumberField(mpp);
+                    Field currencyField = createCurrencyField(mpp);
+                    if (currencyField != null) {
+                        return currencyField;
+                    }
+
+                    return createNumberField();
                 }
             } else if (mppRange.isClass()) {
                 MetaProperty metaProperty = mpp.getMetaProperty();
@@ -137,12 +140,7 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         return componentsFactory.createComponent(TimeField.class);
     }
 
-    protected Field createNumberField(MetaPropertyPath mpp) {
-        Field currencyField = createCurrencyField(mpp);
-        if (currencyField != null) {
-            return currencyField;
-        }
-
+    protected Field createNumberField() {
         return componentsFactory.createComponent(TextField.class);
     }
 
@@ -194,26 +192,19 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         PickerField pickerField;
         if (optionsDatasource == null) {
             pickerField = componentsFactory.createComponent(PickerField.class);
-//            pickerField.setDatasource(datasource, property);
             pickerField.addLookupAction();
             if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty())) {
                 DynamicAttributesGuiTools dynamicAttributesGuiTools = AppBeans.get(DynamicAttributesGuiTools.class);
                 DynamicAttributesMetaProperty dynamicAttributesMetaProperty = (DynamicAttributesMetaProperty) mpp.getMetaProperty();
                 dynamicAttributesGuiTools.initEntityPickerField(pickerField, dynamicAttributesMetaProperty.getAttribute());
             }
-            PickerField.LookupAction lookupAction =
-                    (PickerField.LookupAction) pickerField.getActionNN(PickerField.LookupAction.NAME);
-            // Opening lookup screen in another mode will close editor
-            lookupAction.setLookupScreenOpenType(WindowManager.OpenType.DIALOG);
-            // In case of adding special logic for lookup screen opened from DataGrid editor
-            lookupAction.setLookupScreenParams(ParamsMap.of("dataGridEditor", true));
+
             boolean actionsByMetaAnnotations = ComponentsHelper.createActionsByMetaAnnotations(pickerField);
             if (!actionsByMetaAnnotations) {
                 pickerField.addClearAction();
             }
         } else {
             LookupPickerField lookupPickerField = componentsFactory.createComponent(LookupPickerField.class);
-//            lookupPickerField.setDatasource(datasource, property);
             lookupPickerField.setOptionsDatasource(optionsDatasource);
 
             pickerField = lookupPickerField;
