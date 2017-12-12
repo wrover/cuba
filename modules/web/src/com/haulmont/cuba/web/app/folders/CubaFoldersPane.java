@@ -496,8 +496,7 @@ public class CubaFoldersPane extends VerticalLayout {
 
     protected Component createSearchFoldersPane() {
         searchFoldersTree = new CubaTree();
-
-        searchFoldersLabel.setCubaId("searchFoldersTree");
+        searchFoldersTree.setCubaId("searchFoldersTree");
 
         searchFoldersTree.setSelectable(false);
         searchFoldersTree.setItemStyleGenerator(new FolderTreeStyleProvider());
