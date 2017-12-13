@@ -77,7 +77,7 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
 
         // Step 1. Trying to find custom factories
         Map<String, MetaComponentFactory> factoryMap = AppBeans.getAll(MetaComponentFactory.class);
-        factoryMap.remove(MetaComponentFactoryImpl.NAME);
+        MetaComponentFactory defaultFactory = factoryMap.remove(MetaComponentFactoryImpl.NAME);
 
         if (MapUtils.isNotEmpty(factoryMap)) {
             List<MetaComponentFactory> availableFactories = new ArrayList<>(factoryMap.values());
@@ -133,8 +133,11 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         }
 
         // Step 3. Create a default field
-        MetaComponentFactory factory = AppBeans.get(MetaComponentFactoryImpl.NAME);
-        Component component = factory.createComponent(context);
+        if (defaultFactory == null) {
+            defaultFactory = AppBeans.get(MetaComponentFactoryImpl.NAME);
+        }
+
+        Component component = defaultFactory.createComponent(context);
         if (component != null) {
             return new GeneratedField(component);
         }
