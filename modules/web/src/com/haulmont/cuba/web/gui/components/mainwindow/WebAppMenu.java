@@ -21,6 +21,7 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.TestIdManager;
 import com.haulmont.cuba.gui.components.mainwindow.AppMenu;
 import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.gui.components.VaadinExtensionUtils;
 import com.haulmont.cuba.web.gui.components.WebAbstractComponent;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.haulmont.cuba.web.sys.MenuBuilder;
@@ -351,7 +352,8 @@ public class WebAppMenu extends WebAbstractComponent<CubaMenuBar> implements App
             MenuBar.MenuItem delegateItem = this.getDelegateItem();
 
             // The only place where the parent is set
-            childItem.setParent(delegateItem);
+            VaadinExtensionUtils.setPrivateField(childItem, "itsParent", delegateItem);
+
             delegateItem.getChildren().add(childItem);
             menu.registerMenuItem(menuItem);
 
@@ -368,7 +370,8 @@ public class WebAppMenu extends WebAbstractComponent<CubaMenuBar> implements App
             MenuBar.MenuItem delegateItem = this.getDelegateItem();
 
             // The only place where the parent is set
-            childItem.setParent(delegateItem);
+            VaadinExtensionUtils.setPrivateField(childItem, "itsParent", delegateItem);
+
             delegateItem.getChildren().add(index, childItem);
             menu.registerMenuItem(menuItem);
 

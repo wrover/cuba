@@ -60,7 +60,7 @@ public class WebPopupButton extends WebAbstractComponent<CubaPopupButton>
                 super.setPopupVisible(popupVisible);
             }
         };
-        component.setImmediate(true);
+
         component.addPopupVisibilityListener(event ->
                 getEventRouter().fireEvent(PopupVisibilityListener.class,
                         PopupVisibilityListener::popupVisibilityChange,
@@ -266,14 +266,15 @@ public class WebPopupButton extends WebAbstractComponent<CubaPopupButton>
 
 
         Button vButton = (Button) button.getComposition();
-        vButton.setImmediate(true);
         vButton.setSizeFull();
         vButton.setStyleName(CONTEXT_MENU_BUTTON_STYLENAME);
 
-        if (AppUI.getCurrent().isTestMode()) {
+        AppUI ui = AppUI.getCurrent();
+
+        if (ui.isTestMode()) {
             String debugId = getDebugId();
             if (debugId != null) {
-                button.setDebugId(AppUI.getCurrent().getTestIdManager().getTestId(debugId + "_" + action.getId()));
+                button.setDebugId(ui.getTestIdManager().getTestId(debugId + "_" + action.getId()));
             }
             button.setId(action.getId());
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2016 Haulmont.
+ * Copyright (c) 2008-2017 Haulmont.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 package com.haulmont.cuba.web.gui.components;
 
@@ -46,7 +45,7 @@ import java.util.List;
 
 import static com.haulmont.cuba.gui.ComponentsHelper.handleFilteredAttributes;
 
-public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
+public abstract class WebV8AbstractField<T extends com.vaadin.ui.AbstractField>
         extends WebAbstractComponent<T> implements Field {
 
     protected static final int VALIDATORS_LIST_INITIAL_CAPACITY = 4;
@@ -55,7 +54,7 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
     protected MetaProperty metaProperty;
     protected MetaPropertyPath metaPropertyPath;
 
-    protected List<Field.Validator> validators; // lazily initialized list
+    protected List<Validator> validators; // lazily initialized list
 
     protected Object prevValue;
 
@@ -95,7 +94,8 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
             metaProperty = null;
             metaPropertyPath = null;
 
-            component.setPropertyDataSource(null);
+//            vaadin8
+//            component.setPropertyDataSource(null);
 
             //noinspection unchecked
             this.datasource.removeItemChangeListener(securityWeakItemChangeListener);
@@ -120,7 +120,8 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
             initFieldConverter();
 
             itemWrapper = createDatasourceWrapper(datasource, Collections.singleton(metaPropertyPath));
-            component.setPropertyDataSource(itemWrapper.getItemProperty(metaPropertyPath));
+//            vaadin8
+//            component.setPropertyDataSource(itemWrapper.getItemProperty(metaPropertyPath));
 
             initRequired(metaPropertyPath);
 
@@ -204,22 +205,25 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
 
     @Override
     public boolean isRequired() {
-        return component.isRequired();
+        return component.isRequiredIndicatorVisible();
     }
 
     @Override
     public void setRequired(boolean required) {
-        component.setRequired(required);
+        component.setRequiredIndicatorVisible(required);
     }
 
     @Override
     public void setRequiredMessage(String msg) {
-        component.setRequiredError(msg);
+//        vaadin8
+//        component.setRequiredError(msg);
     }
 
     @Override
     public String getRequiredMessage() {
-        return component.getRequiredError();
+//        vaadin8
+//        return component.getRequiredError();
+        return "";
     }
 
     @Override
@@ -230,8 +234,9 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
 
     @Override
     public void setValue(Object value) {
-        //noinspection unchecked
-        component.setValueIgnoreReadOnly(value);
+        // vaadin8 set Value ignoring read-only
+//        component.setValueIgnoreReadOnly(value);
+        component.setValue(value);
     }
 
     @Override
@@ -324,7 +329,7 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
     }
 
     @Override
-    public void addValidator(Field.Validator validator) {
+    public void addValidator(Validator validator) {
         if (validators == null) {
             validators = new ArrayList<>(VALIDATORS_LIST_INITIAL_CAPACITY);
         }
@@ -334,7 +339,7 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
     }
 
     @Override
-    public void removeValidator(Field.Validator validator) {
+    public void removeValidator(Validator validator) {
         if (validators != null) {
             validators.remove(validator);
         }
@@ -380,7 +385,7 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
 
         if (validators != null) {
             try {
-                for (Field.Validator validator : validators) {
+                for (Validator validator : validators) {
                     validator.validate(value);
                 }
             } catch (ValidationException e) {
@@ -392,23 +397,30 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
     }
 
     protected void commit() {
-        component.commit();
+//        vaadin8
+//        component.commit();
     }
 
     protected void discard() {
-        component.discard();
+//        vaadin8
+//        component.discard();
     }
 
     protected boolean isBuffered() {
-        return component.isBuffered();
+//        vaadin8
+//        return component.isBuffered();
+        return false;
     }
 
     protected void setBuffered(boolean buffered) {
-        component.setBuffered(buffered);
+//        vaadin8
+//        component.setBuffered(buffered);
     }
 
     protected boolean isModified() {
-        return component.isModified();
+//        vaadin8
+//        return component.isModified();
+        return false;
     }
 
     protected boolean isEmpty(Object value) {
@@ -425,25 +437,5 @@ public abstract class WebAbstractField<T extends com.vaadin.v7.ui.AbstractField>
         }
 
         return getClass().getSimpleName();
-    }
-
-    @Override
-    public String getContextHelpText() {
-        return component.getContextHelpText();
-    }
-
-    @Override
-    public void setContextHelpText(String contextHelpText) {
-        component.setContextHelpText(contextHelpText);
-    }
-
-    @Override
-    public boolean isContextHelpTextHtmlEnabled() {
-        return component.isContextHelpTextHtmlEnabled();
-    }
-
-    @Override
-    public void setContextHelpTextHtmlEnabled(boolean enabled) {
-        component.setContextHelpTextHtmlEnabled(enabled);
     }
 }

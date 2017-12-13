@@ -16,44 +16,25 @@
 
 package com.haulmont.cuba.web.sys;
 
-import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.web.ScreenProfiler;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.UidlWriter;
-import com.vaadin.ui.UI;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.List;
 
 public class CubaUidlWriter extends UidlWriter {
+    private static final Logger log = LoggerFactory.getLogger(CubaUidlWriter.class);
+
     protected static final String JAVASCRIPT_EXTENSION = ".js";
     protected static final String CSS_EXTENSION = ".css";
     protected static final String VAADIN_WEBJARS_PREFIX = "VAADIN/webjars/";
 
-    private final Logger log = LoggerFactory.getLogger(CubaUidlWriter.class);
-
-    protected ScreenProfiler profiler = AppBeans.get(ScreenProfiler.NAME);
-
-    @Override
-    protected void writePerformanceData(UI ui, Writer writer) throws IOException {
-        super.writePerformanceData(ui, writer);
-
-        String profilerMarker = profiler.getCurrentProfilerMarker(ui);
-        if (profilerMarker != null) {
-            profiler.setCurrentProfilerMarker(ui, null);
-            long lastRequestTimestamp = ui.getSession().getLastRequestTimestamp();
-            writer.write(String.format(", \"profilerMarker\": \"%s\", \"profilerEventTs\": \"%s\", \"profilerServerTime\": %s",
-                    profilerMarker, lastRequestTimestamp, System.currentTimeMillis() - lastRequestTimestamp));
-        }
-    }
-
+    /*
     @SuppressWarnings("deprecation")
     @Override
     protected void handleAdditionalDependencies(List<Class<? extends ClientConnector>> newConnectorTypes,
@@ -78,6 +59,7 @@ public class CubaUidlWriter extends UidlWriter {
             }
         }
     }
+*/
 
     protected String processResourceUri(String uri) {
         int propertyFirstIndex = uri.indexOf("${");

@@ -21,12 +21,12 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.vaadin.client.*;
-import com.vaadin.client.ui.AbstractFieldConnector;
 import com.vaadin.client.ui.ImageIcon;
 import com.vaadin.client.ui.aria.AriaHelper;
-import com.vaadin.shared.AbstractFieldState;
 import com.vaadin.shared.ComponentConstants;
 import com.vaadin.shared.ui.ComponentStateUtil;
+import com.vaadin.v7.client.ui.AbstractFieldConnector;
+import com.vaadin.v7.shared.AbstractFieldState;
 
 public class CubaCaptionWidget extends VCaption {
 
@@ -53,7 +53,7 @@ public class CubaCaptionWidget extends VCaption {
     public boolean updateCaption() {
         ComponentConnector owner = getOwner();
 
-        /* CAUTION copied from super class with small changes */
+        // CAUTION copied from super class with small changes
         boolean wasPlacedAfterComponent = placedAfterComponent;
 
         // Caption is placed after component unless there is some part which

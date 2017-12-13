@@ -34,9 +34,7 @@ import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenType;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.CheckBox;
-import com.haulmont.cuba.gui.components.Field;
 import com.haulmont.cuba.gui.components.Formatter;
-import com.haulmont.cuba.gui.components.Table;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.formatters.CollectionFormatter;
 import com.haulmont.cuba.gui.config.WindowConfig;
@@ -61,14 +59,17 @@ import com.haulmont.cuba.web.toolkit.ui.CubaEnhancedTable;
 import com.haulmont.cuba.web.toolkit.ui.CubaResizableTextAreaWrapper;
 import com.haulmont.cuba.web.toolkit.ui.CubaTextArea;
 import com.haulmont.cuba.web.toolkit.ui.client.resizabletextarea.ResizeDirection;
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Resource;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.v7.data.Item;
+import com.vaadin.v7.data.Property;
+import com.vaadin.v7.ui.AbstractSelect;
+import com.vaadin.v7.ui.CustomField;
+import com.vaadin.v7.ui.TableFieldFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -85,7 +86,7 @@ import java.util.*;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
-public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhancedTable, E extends Entity>
+public abstract class WebAbstractTable<T extends com.vaadin.v7.ui.Table & CubaEnhancedTable, E extends Entity>
         extends WebAbstractList<T, E>
         implements Table<E>, LookupComponent.LookupSelectionChangeNotifier {
 
@@ -247,7 +248,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         columns.remove(column.getId());
         columnsOrder.remove(column);
 
-        if (!(component.getContainerDataSource() instanceof com.vaadin.data.Container.ItemSetChangeNotifier)) {
+        if (!(component.getContainerDataSource() instanceof com.vaadin.v7.data.Container.ItemSetChangeNotifier)) {
             component.refreshRowCache();
         }
         column.setOwner(null);
@@ -280,13 +281,13 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
     }
 
     protected void addGeneratedColumn(Object id, Object generator) {
-        component.addGeneratedColumn(id, (com.vaadin.ui.Table.ColumnGenerator) generator);
+        component.addGeneratedColumn(id, (com.vaadin.v7.ui.Table.ColumnGenerator) generator);
     }
 
     protected void removeGeneratedColumn(Object id) {
         boolean wasEnabled = component.disableContentBufferRefreshing();
 
-        com.vaadin.ui.Table.ColumnGenerator columnGenerator = component.getColumnGenerator(id);
+        com.vaadin.v7.ui.Table.ColumnGenerator columnGenerator = component.getColumnGenerator(id);
         if (columnGenerator instanceof CustomColumnGenerator) {
             CustomColumnGenerator tableGenerator = (CustomColumnGenerator) columnGenerator;
             if (tableGenerator.getAssociatedRuntimeColumn() != null) {
@@ -327,7 +328,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         if (printable != null) {
             return printable;
         } else {
-            com.vaadin.ui.Table.ColumnGenerator vColumnGenerator = component.getColumnGenerator(getColumn(columnId).getId());
+            com.vaadin.v7.ui.Table.ColumnGenerator vColumnGenerator = component.getColumnGenerator(getColumn(columnId).getId());
             if (vColumnGenerator instanceof CustomColumnGenerator) {
                 ColumnGenerator columnGenerator = ((CustomColumnGenerator) vColumnGenerator).getColumnGenerator();
                 if (columnGenerator instanceof Printable)
@@ -350,7 +351,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
             component.disableContentBufferRefreshing();
 
             if (datasource != null) {
-                com.vaadin.data.Container ds = component.getContainerDataSource();
+                com.vaadin.v7.data.Container ds = component.getContainerDataSource();
 
                 @SuppressWarnings("unchecked")
                 final Collection<MetaPropertyPath> propertyIds = (Collection<MetaPropertyPath>) ds.getContainerPropertyIds();
@@ -366,7 +367,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
 
                         final Table.Column column = getColumn(propertyId.toString());
                         if (BooleanUtils.isTrue(column.isEditable())) {
-                            com.vaadin.ui.Table.ColumnGenerator generator = component.getColumnGenerator(column.getId());
+                            com.vaadin.v7.ui.Table.ColumnGenerator generator = component.getColumnGenerator(column.getId());
                             if (generator != null) {
                                 if (generator instanceof SystemTableColumnGenerator) {
                                     // remove default generator
@@ -622,12 +623,11 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
 
     protected void initComponent(final T component) {
         component.setMultiSelect(false);
-        component.setImmediate(true);
         component.setValidationVisible(false);
         component.setShowBufferedSourceException(false);
 
         component.setBeforePaintListener(() -> {
-            com.vaadin.ui.Table.CellStyleGenerator generator = component.getCellStyleGenerator();
+            com.vaadin.v7.ui.Table.CellStyleGenerator generator = component.getCellStyleGenerator();
             if (generator instanceof WebAbstractTable.StyleGeneratorAdapter) {
                 //noinspection unchecked
                 ((StyleGeneratorAdapter) generator).resetExceptionHandledFlag();
@@ -689,7 +689,8 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
                     LookupSelectionChangeListener::lookupValueChanged, selectionChangeEvent);
         });
 
-        component.addShortcutListener(new ShortcutListener("tableEnter", com.vaadin.event.ShortcutAction.KeyCode.ENTER, null) {
+        component.addShortcutListener(new ShortcutListener("tableEnter",
+                com.vaadin.event.ShortcutAction.KeyCode.ENTER, null) {
             @Override
             public void handleAction(Object sender, Object target) {
                 if (target == WebAbstractTable.this.component) {
@@ -867,7 +868,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         return null;
     }
 
-    protected Collection<MetaPropertyPath> createColumns(com.vaadin.data.Container ds) {
+    protected Collection<MetaPropertyPath> createColumns(com.vaadin.v7.data.Container ds) {
         @SuppressWarnings("unchecked")
         final Collection<MetaPropertyPath> properties = (Collection<MetaPropertyPath>) ds.getContainerPropertyIds();
 
@@ -1112,9 +1113,9 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
     }
 
     protected void createStubsForGeneratedColumns() {
-        com.vaadin.ui.Table.ColumnGenerator columnGeneratorStub = new com.vaadin.ui.Table.ColumnGenerator() {
+        com.vaadin.v7.ui.Table.ColumnGenerator columnGeneratorStub = new com.vaadin.v7.ui.Table.ColumnGenerator() {
             @Override
-            public Object generateCell(com.vaadin.ui.Table source, Object itemId, Object columnId) {
+            public Object generateCell(com.vaadin.v7.ui.Table source, Object itemId, Object columnId) {
                 return null;
             }
         };
@@ -1175,11 +1176,11 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
     public void setRowHeaderMode(com.haulmont.cuba.gui.components.Table.RowHeaderMode rowHeaderMode) {
         switch (rowHeaderMode) {
             case NONE: {
-                component.setRowHeaderMode(com.vaadin.ui.Table.RowHeaderMode.HIDDEN);
+                component.setRowHeaderMode(com.vaadin.v7.ui.Table.RowHeaderMode.HIDDEN);
                 break;
             }
             case ICON: {
-                component.setRowHeaderMode(com.vaadin.ui.Table.RowHeaderMode.ICON_ONLY);
+                component.setRowHeaderMode(com.vaadin.v7.ui.Table.RowHeaderMode.ICON_ONLY);
                 break;
             }
             default: {
@@ -1608,7 +1609,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
                 new CustomColumnGenerator(generator, associatedRuntimeColumn) {
                     @SuppressWarnings("unchecked")
                     @Override
-                    public Object generateCell(com.vaadin.ui.Table source, Object itemId, Object columnId) {
+                    public Object generateCell(com.vaadin.v7.ui.Table source, Object itemId, Object columnId) {
                         Entity entity = getDatasource().getItem(itemId);
 
                         com.haulmont.cuba.gui.components.Component component = getColumnGenerator().generateCell(entity);
@@ -1631,8 +1632,8 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
                         com.vaadin.ui.Component vComponent = component.unwrapComposition(Component.class);
 
                         // wrap field for show required asterisk
-                        if ((vComponent instanceof com.vaadin.ui.Field)
-                                && (((com.vaadin.ui.Field) vComponent).isRequired())) {
+                        if ((vComponent instanceof com.vaadin.v7.ui.Field)
+                                && (((com.vaadin.v7.ui.Field) vComponent).isRequired())) {
                             VerticalLayout layout = new VerticalLayout();
                             layout.addComponent(vComponent);
 
@@ -2032,10 +2033,10 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         }
     }
 
-    protected interface SystemTableColumnGenerator extends com.vaadin.ui.Table.ColumnGenerator {
+    protected interface SystemTableColumnGenerator extends com.vaadin.v7.ui.Table.ColumnGenerator {
     }
 
-    protected static abstract class CustomColumnGenerator implements com.vaadin.ui.Table.ColumnGenerator {
+    protected static abstract class CustomColumnGenerator implements com.vaadin.v7.ui.Table.ColumnGenerator {
 
         protected ColumnGenerator columnGenerator;
 
@@ -2217,7 +2218,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         }
 
         @Override
-        public Object generateCell(com.vaadin.ui.Table source, Object itemId, Object columnId) {
+        public Object generateCell(com.vaadin.v7.ui.Table source, Object itemId, Object columnId) {
             final Property property = source.getItem(itemId).getItemProperty(columnId);
             final Object value = property.getValue();
 
@@ -2300,7 +2301,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
 
     protected class CalculatableColumnGenerator implements SystemTableColumnGenerator {
         @Override
-        public com.vaadin.ui.Component generateCell(com.vaadin.ui.Table source, Object itemId, Object columnId) {
+        public com.vaadin.ui.Component generateCell(com.vaadin.v7.ui.Table source, Object itemId, Object columnId) {
             return generateCell((AbstractSelect) source, itemId, columnId);
         }
 
@@ -2318,7 +2319,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
 
             final com.vaadin.ui.Label label = new com.vaadin.ui.Label();
             WebComponentsHelper.setLabelText(label, propertyWrapper.getValue(), formatter);
-            label.setWidth("-1px");
+            label.setWidthUndefined();
 
             //add property change listener that will update a label value
             propertyWrapper.addListener(new CalculatablePropertyValueChangeListener(label, formatter));
@@ -2365,7 +2366,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         }
 
         @Override
-        public com.vaadin.ui.Field<?> createField(com.vaadin.data.Container container,
+        public com.vaadin.v7.ui.Field<?> createField(com.vaadin.v7.data.Container container,
                                                   Object itemId, Object propertyId, Component uiContext) {
 
             String fieldPropertyId = String.valueOf(propertyId);
@@ -2404,8 +2405,8 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
             columnComponent.setParent(webTable);
 
             Component componentImpl = getComponentImplementation(columnComponent);
-            if (componentImpl instanceof com.vaadin.ui.Field) {
-                return (com.vaadin.ui.Field<?>) componentImpl;
+            if (componentImpl instanceof com.vaadin.v7.ui.Field) {
+                return (com.vaadin.v7.ui.Field<?>) componentImpl;
             }
 
             return new EditableColumnFieldWrapper(componentImpl, columnComponent);
@@ -2414,8 +2415,8 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         protected Component getComponentImplementation(com.haulmont.cuba.gui.components.Component columnComponent) {
             com.vaadin.ui.Component composition = WebComponentsHelper.getComposition(columnComponent);
             Component componentImpl = composition;
-            if (composition instanceof com.vaadin.ui.Field
-                    && ((com.vaadin.ui.Field) composition).isRequired()) {
+            if (composition instanceof com.vaadin.v7.ui.Field
+                    && ((com.vaadin.v7.ui.Field) composition).isRequired()) {
                 VerticalLayout layout = new VerticalLayout();
                 layout.addComponent(composition);
 
@@ -2597,7 +2598,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         if (columnCollapseListeners == null) {
             columnCollapseListeners = new LinkedList<>();
 
-            component.addColumnCollapseListener((com.vaadin.ui.Table.ColumnCollapseListener) event -> {
+            component.addColumnCollapseListener((com.vaadin.v7.ui.Table.ColumnCollapseListener) event -> {
                 Column collapsedColumn = getColumn(event.getPropertyId().toString());
                 boolean collapsed = component.isColumnCollapsed(event.getPropertyId());
 
@@ -2662,13 +2663,13 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
     @Override
     public void setColumnHeaderVisible(boolean visible) {
         component.setColumnHeaderMode(visible ?
-                com.vaadin.ui.Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID :
-                com.vaadin.ui.Table.ColumnHeaderMode.HIDDEN);
+                com.vaadin.v7.ui.Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID :
+                com.vaadin.v7.ui.Table.ColumnHeaderMode.HIDDEN);
     }
 
     @Override
     public boolean isColumnHeaderVisible() {
-        if (component.getColumnHeaderMode() == com.vaadin.ui.Table.ColumnHeaderMode.HIDDEN) {
+        if (component.getColumnHeaderMode() == com.vaadin.v7.ui.Table.ColumnHeaderMode.HIDDEN) {
             return false;
         } else {
             return true;
@@ -2790,12 +2791,12 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
 
     }
 
-    protected class StyleGeneratorAdapter implements com.vaadin.ui.Table.CellStyleGenerator {
+    protected class StyleGeneratorAdapter implements com.vaadin.v7.ui.Table.CellStyleGenerator {
         protected boolean exceptionHandled = false;
 
         @SuppressWarnings({"unchecked"})
         @Override
-        public String getStyle(com.vaadin.ui.Table source, Object itemId, Object propertyId) {
+        public String getStyle(com.vaadin.v7.ui.Table source, Object itemId, Object propertyId) {
             if (exceptionHandled) {
                 return null;
             }
@@ -2908,7 +2909,7 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
         getEventRouter().removeListener(LookupSelectionChangeListener.class, listener);
     }
 
-    protected void handleColumnCollapsed(com.vaadin.ui.Table.ColumnCollapseEvent event) {
+    protected void handleColumnCollapsed(com.vaadin.v7.ui.Table.ColumnCollapseEvent event) {
         Object propertyId = event.getPropertyId();
         boolean columnCollapsed = component.isColumnCollapsed(propertyId);
 
@@ -2916,13 +2917,13 @@ public abstract class WebAbstractTable<T extends com.vaadin.ui.Table & CubaEnhan
     }
 
     protected static class TableComposition extends CssLayout {
-        protected com.vaadin.ui.Table table;
+        protected com.vaadin.v7.ui.Table table;
 
-        public com.vaadin.ui.Table getTable() {
+        public com.vaadin.v7.ui.Table getTable() {
             return table;
         }
 
-        public void setTable(com.vaadin.ui.Table table) {
+        public void setTable(com.vaadin.v7.ui.Table table) {
             this.table = table;
         }
 
