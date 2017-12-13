@@ -67,13 +67,15 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         // Step 0. Making preparation
         Datasource targetDs = fc.getTargetDatasource();
         String property = fc.getProperty();
+        Element xmlDescriptor = fc.getXmlDescriptor();
         MetaClass metaClass = targetDs.getMetaClass();
         MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, fc.getProperty());
 
         MetaContext context = new MetaContext(metaClass, property, targetDs,
-                ParamsMap.of("xmlDescriptor", fc.getXmlDescriptor()));
+                ParamsMap.of(MetaContext.PARAM_XML_DESCRIPTOR, xmlDescriptor,
+                        MetaContext.PARAM_CALLING_CODE, FieldGroupFieldFactory.NAME));
 
-        // Step 1. Trying to find a custom factory
+        // Step 1. Trying to find custom factories
         Map<String, MetaComponentFactory> factoryMap = AppBeans.getAll(MetaComponentFactory.class);
         factoryMap.remove(MetaComponentFactoryImpl.NAME);
 
@@ -96,12 +98,12 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
             if (mppRange.isDatatype()) {
                 Datatype datatype = mppRange.asDatatype();
 
-                if (fc.getXmlDescriptor() != null
-                        && "true".equalsIgnoreCase(fc.getXmlDescriptor().attributeValue("link"))) {
+                if (xmlDescriptor != null
+                        && "true".equalsIgnoreCase(xmlDescriptor.attributeValue("link"))) {
                     return createDatatypeLinkField(fc);
                 } else if (datatype.getJavaClass().equals(String.class)) {
-                    if (fc.getXmlDescriptor() != null
-                            && fc.getXmlDescriptor().attribute("mask") != null) {
+                    if (xmlDescriptor != null
+                            && xmlDescriptor.attribute("mask") != null) {
                         return createMaskedField(fc);
                     } else {
                         return createStringField(fc);
@@ -112,8 +114,8 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
                 } else if (datatype.getJavaClass().equals(Time.class)) {
                     return createTimeField(fc);
                 } else if (Number.class.isAssignableFrom(datatype.getJavaClass())
-                        && fc.getXmlDescriptor() != null
-                        && fc.getXmlDescriptor().attribute("mask") != null) {
+                        && xmlDescriptor != null
+                        && xmlDescriptor.attribute("mask") != null) {
                     GeneratedField generatedField = createMaskedField(fc);
                     MaskedField maskedField = (MaskedField) generatedField.getComponent();
                     maskedField.setValueMode(MaskedField.ValueMode.MASKED);

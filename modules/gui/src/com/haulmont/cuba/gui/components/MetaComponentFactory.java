@@ -21,15 +21,21 @@ import javax.annotation.Nullable;
 public interface MetaComponentFactory {
 
     /**
-     * Defines the highest precedence for {@link org.springframework.core.Ordered} platform agents.
+     * Defines the highest precedence for {@link org.springframework.core.Ordered} component factories.
      */
     int HIGHEST_PLATFORM_PRECEDENCE = 100;
 
     /**
-     * Defines the lowest precedence for {@link org.springframework.core.Ordered} platform agents.
+     * Defines the lowest precedence for {@link org.springframework.core.Ordered} component factories.
      */
     int LOWEST_PLATFORM_PRECEDENCE = 1000;
 
+    /**
+     * Creates a component according to the given {@link MetaContext}.
+     *
+     * @param context the {@link MetaContext} instance
+     * @return a component according to the given {@link MetaContext}
+     */
     @Nullable
     Component createComponent(MetaContext context);
 }

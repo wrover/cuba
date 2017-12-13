@@ -61,9 +61,10 @@ public class DataGridEditorFieldFactoryImpl implements DataGridEditorFieldFactor
         MetaClass metaClass = datasource.getMetaClass();
         MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, property);
 
-        MetaContext context = new MetaContext(metaClass, property, datasource);
+        MetaContext context = new MetaContext(metaClass, property, datasource,
+                ParamsMap.of(MetaContext.PARAM_CALLING_CODE, DataGridEditorFieldFactory.NAME));
 
-        // Step 1. Trying to find a custom factory
+        // Step 1. Trying to find custom factories
         Map<String, MetaComponentFactory> factoryMap = AppBeans.getAll(MetaComponentFactory.class);
         factoryMap.remove(MetaComponentFactoryImpl.NAME);
 

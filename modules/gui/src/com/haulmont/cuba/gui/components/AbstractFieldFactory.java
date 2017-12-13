@@ -64,9 +64,10 @@ public abstract class AbstractFieldFactory implements FieldFactory {
         MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, property);
 
         MetaContext context = new MetaContext(metaClass, property, datasource,
-                ParamsMap.of("xmlDescriptor", xmlDescriptor));
+                ParamsMap.of(MetaContext.PARAM_XML_DESCRIPTOR, xmlDescriptor,
+                        MetaContext.PARAM_CALLING_CODE, "cuba_AbstractFieldFactory"));
 
-        // Step 1. Trying to find a custom factory
+        // Step 1. Trying to find custom factories
         Map<String, MetaComponentFactory> factoryMap = AppBeans.getAll(MetaComponentFactory.class);
         factoryMap.remove(MetaComponentFactoryImpl.NAME);
 
