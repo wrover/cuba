@@ -19,7 +19,16 @@ package com.haulmont.cuba.gui.components;
 import javax.annotation.Nullable;
 
 public interface MetaComponentFactory {
-    String NAME = "cuba_MetaComponentFactory";
+
+    /**
+     * Defines the highest precedence for {@link org.springframework.core.Ordered} platform agents.
+     */
+    int HIGHEST_PLATFORM_PRECEDENCE = 100;
+
+    /**
+     * Defines the lowest precedence for {@link org.springframework.core.Ordered} platform agents.
+     */
+    int LOWEST_PLATFORM_PRECEDENCE = 1000;
 
     @Nullable
     Component createComponent(MetaContext context);

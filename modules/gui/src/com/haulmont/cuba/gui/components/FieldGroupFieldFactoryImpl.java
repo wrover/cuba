@@ -40,10 +40,13 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.inject.Inject;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @org.springframework.stereotype.Component(FieldGroupFieldFactory.NAME)
@@ -60,6 +63,7 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
     }
 
     protected GeneratedField createFieldComponent(FieldGroup.FieldConfig fc) {
+        // Step 0. Making preparation
         Datasource targetDs = fc.getTargetDatasource();
         String property = fc.getProperty();
         MetaClass metaClass = targetDs.getMetaClass();
@@ -68,78 +72,78 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         MetaContext context = new MetaContext(metaClass, property, targetDs,
                 ParamsMap.of("xmlDescriptor", fc.getXmlDescriptor()));
 
-        // TODO: gg, choose factory
-        Map<String, MetaComponentFactory> factories = AppBeans.getAll(MetaComponentFactory.class);
-        factories.remove(MetaComponentFactory.NAME);
+        // Step 1. Trying to find a custom factory
+        Map<String, MetaComponentFactory> factoryMap = AppBeans.getAll(MetaComponentFactory.class);
+        factoryMap.remove(MetaComponentFactoryImpl.NAME);
 
-        if (MapUtils.isNotEmpty(factories)) {
-            // TODO: gg, implement
-            throw new UnsupportedOperationException();
-        } else {
-            MetaComponentFactory factory = AppBeans.get(MetaComponentFactory.NAME);
+        if (MapUtils.isNotEmpty(factoryMap)) {
+            List<MetaComponentFactory> availableFactories = new ArrayList<>(factoryMap.values());
 
-            Component component = factory.createComponent(context);
-            if (component != null) {
-                if (component instanceof Field) {
-                    ((Field) component).setDatasource(targetDs, property);
+            AnnotationAwareOrderComparator.sort(availableFactories);
+
+            for (MetaComponentFactory factory : availableFactories) {
+                Component component = factory.createComponent(context);
+                if (component != null) {
+                    return new GeneratedField(component);
                 }
-
-                if (mpp != null) {
-                    Range mppRange = mpp.getRange();
-                    if (mppRange.isDatatype()) {
-                        Datatype datatype = mppRange.asDatatype();
-
-                        if (fc.getXmlDescriptor() != null
-                                && "true".equalsIgnoreCase(fc.getXmlDescriptor().attributeValue("link"))) {
-                            return createDatatypeLinkField(fc);
-                        } else if (datatype.getJavaClass().equals(String.class)) {
-                            if (fc.getXmlDescriptor() != null
-                                    && fc.getXmlDescriptor().attribute("mask") != null) {
-                                return createMaskedField(fc);
-                            } else {
-                                return createStringField(fc);
-                            }
-                        } else if ((datatype.getJavaClass().equals(java.sql.Date.class))
-                                || (datatype.getJavaClass().equals(Date.class))) {
-                            // TODO: gg, check if DateField?
-                            setDateFieldAttributes((DateField) component, fc);
-                        } else if (datatype.getJavaClass().equals(Time.class)) {
-                            // TODO: gg, check if TimeField?
-                            setTimeFieldAttributes((TimeField) component, fc);
-                        } else if (Number.class.isAssignableFrom(datatype.getJavaClass())) {
-                            if (fc.getXmlDescriptor() != null
-                                    && fc.getXmlDescriptor().attribute("mask") != null) {
-                                GeneratedField generatedField = createMaskedField(fc);
-                                MaskedField maskedField = (MaskedField) generatedField.getComponent();
-                                maskedField.setValueMode(MaskedField.ValueMode.MASKED);
-                                maskedField.setSendNullRepresentation(false);
-                                return new GeneratedField(maskedField);
-                            }
-                        }
-                    } else if (mppRange.isClass()) {
-                        MetaProperty metaProperty = mpp.getMetaProperty();
-                        Class<?> javaType = metaProperty.getJavaType();
-                        if (!FileDescriptor.class.isAssignableFrom(javaType)) {
-                            return createEntityField(fc);
-                        }
-
-                    }
-                }
-
-                return new GeneratedField(component);
             }
-            // TODO: gg, more detailed message
-            throw new UnsupportedOperationException();
         }
 
-        /*String exceptionMessage;
+        // Step 2. Check if we need to create a specific field
+        if (mpp != null) {
+            Range mppRange = mpp.getRange();
+            if (mppRange.isDatatype()) {
+                Datatype datatype = mppRange.asDatatype();
+
+                if (fc.getXmlDescriptor() != null
+                        && "true".equalsIgnoreCase(fc.getXmlDescriptor().attributeValue("link"))) {
+                    return createDatatypeLinkField(fc);
+                } else if (datatype.getJavaClass().equals(String.class)) {
+                    if (fc.getXmlDescriptor() != null
+                            && fc.getXmlDescriptor().attribute("mask") != null) {
+                        return createMaskedField(fc);
+                    } else {
+                        return createStringField(fc);
+                    }
+                } else if ((datatype.getJavaClass().equals(java.sql.Date.class))
+                        || (datatype.getJavaClass().equals(Date.class))) {
+                    return createDateField(fc);
+                } else if (datatype.getJavaClass().equals(Time.class)) {
+                    return createTimeField(fc);
+                } else if (Number.class.isAssignableFrom(datatype.getJavaClass())
+                        && fc.getXmlDescriptor() != null
+                        && fc.getXmlDescriptor().attribute("mask") != null) {
+                    GeneratedField generatedField = createMaskedField(fc);
+                    MaskedField maskedField = (MaskedField) generatedField.getComponent();
+                    maskedField.setValueMode(MaskedField.ValueMode.MASKED);
+                    maskedField.setSendNullRepresentation(false);
+                    return new GeneratedField(maskedField);
+                }
+            } else if (mppRange.isClass()) {
+                MetaProperty metaProperty = mpp.getMetaProperty();
+                Class<?> javaType = metaProperty.getJavaType();
+                if (!FileDescriptor.class.isAssignableFrom(javaType)) {
+                    return createEntityField(fc);
+                }
+            }
+        }
+
+        // Step 3. Create a default field
+        MetaComponentFactory factory = AppBeans.get(MetaComponentFactoryImpl.NAME);
+        Component component = factory.createComponent(context);
+        if (component != null) {
+            return new GeneratedField(component);
+        }
+
+        // Step 4. No component created, throw the exception
+        String exceptionMessage;
         if (mpp != null) {
             exceptionMessage = String.format("Can't create field \"%s\" with data type: %s", fc.getProperty(),
                     mpp.getRange().asDatatype());
         } else {
             exceptionMessage = String.format("Can't create field \"%s\" with given data type", fc.getProperty());
         }
-        throw new UnsupportedOperationException(exceptionMessage);*/
+        throw new UnsupportedOperationException(exceptionMessage);
     }
 
     protected GeneratedField createMaskedField(FieldGroup.FieldConfig fc) {
@@ -206,7 +210,10 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         return new GeneratedField(linkField);
     }
 
-    protected void setDateFieldAttributes(DateField dateField, FieldGroup.FieldConfig fc) {
+    protected GeneratedField createDateField(FieldGroup.FieldConfig fc) {
+        DateField dateField = componentsFactory.createComponent(DateField.class);
+        dateField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
+
         Element xmlDescriptor = fc.getXmlDescriptor();
 
         String resolution = xmlDescriptor == null ? null : xmlDescriptor.attributeValue("resolution");
@@ -233,15 +240,21 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
             }
             dateField.setDateFormat(dateFormat);
         }
+
+        return new GeneratedField(dateField);
     }
 
-    protected void setTimeFieldAttributes(TimeField timeField, FieldGroup.FieldConfig fc) {
+    protected GeneratedField createTimeField(FieldGroup.FieldConfig fc) {
+        TimeField timeField = componentsFactory.createComponent(TimeField.class);
+        timeField.setDatasource(fc.getTargetDatasource(), fc.getProperty());
+
         if (fc.getXmlDescriptor() != null) {
             String showSeconds = fc.getXmlDescriptor().attributeValue("showSeconds");
             if (Boolean.parseBoolean(showSeconds)) {
                 timeField.setShowSeconds(true);
             }
         }
+        return new GeneratedField(timeField);
     }
 
     protected GeneratedField createEntityField(FieldGroup.FieldConfig fc) {

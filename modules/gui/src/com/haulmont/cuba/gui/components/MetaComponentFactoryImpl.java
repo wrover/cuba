@@ -32,6 +32,8 @@ import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -40,8 +42,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-@org.springframework.stereotype.Component(MetaComponentFactory.NAME)
-public class MetaComponentFactoryImpl implements MetaComponentFactory {
+@org.springframework.stereotype.Component(MetaComponentFactoryImpl.NAME)
+public class MetaComponentFactoryImpl implements MetaComponentFactory, Ordered {
+    public static final String NAME = "cuba_MetaComponentFactory";
 
     @Inject
     protected Messages messages;
@@ -64,39 +67,39 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
                 if (DynamicAttributesUtils.isDynamicAttribute(metaProperty)) {
                     CategoryAttribute categoryAttribute = DynamicAttributesUtils.getCategoryAttribute(metaProperty);
                     if (categoryAttribute != null && categoryAttribute.getDataType() == PropertyType.ENUMERATION) {
-                        return createEnumField();
+                        return createEnumField(context);
                     }
                 }
 
                 if (type.equals(String.class)) {
-                    return createStringField();
+                    return createStringField(context);
                 } else if (type.equals(UUID.class)) {
-                    return createUuidField();
+                    return createUuidField(context);
                 } else if (type.equals(Boolean.class)) {
-                    return createBooleanField();
+                    return createBooleanField(context);
                 } else if (type.equals(java.sql.Date.class) || type.equals(Date.class)) {
-                    return createDateField();
+                    return createDateField(context);
                 } else if (type.equals(Time.class)) {
-                    return createTimeField();
+                    return createTimeField(context);
                 } else if (Number.class.isAssignableFrom(type)) {
-                    Field currencyField = createCurrencyField(mpp);
+                    Field currencyField = createCurrencyField(context, mpp);
                     if (currencyField != null) {
                         return currencyField;
                     }
 
-                    return createNumberField();
+                    return createNumberField(context);
                 }
             } else if (mppRange.isClass()) {
                 MetaProperty metaProperty = mpp.getMetaProperty();
                 Class<?> javaType = metaProperty.getJavaType();
                 if (FileDescriptor.class.isAssignableFrom(javaType)) {
-                    return createFileUploadField();
+                    return createFileUploadField(context);
                 }
                 if (!Collection.class.isAssignableFrom(javaType)) {
-                    return createEntityField(mpp);
+                    return createEntityField(context, mpp);
                 }
             } else if (mppRange.isEnum()) {
-                return createEnumField();
+                return createEnumField(context);
             }
         }
 
@@ -113,39 +116,56 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         return mpp;
     }
 
-    protected Field createEnumField() {
-        return componentsFactory.createComponent(LookupField.class);
+    protected void setDatasource(Field field, MetaContext context) {
+        if (context.getDatasource() != null && StringUtils.isNotEmpty(context.getProperty())) {
+            field.setDatasource(context.getDatasource(), context.getProperty());
+        }
     }
 
-    protected Field createStringField() {
-        return componentsFactory.createComponent(TextField.class);
+    protected Field createEnumField(MetaContext context) {
+        LookupField component = componentsFactory.createComponent(LookupField.class);
+        setDatasource(component, context);
+        return component;
     }
 
-    protected Field createUuidField() {
+    protected Field createStringField(MetaContext context) {
+        TextField component = componentsFactory.createComponent(TextField.class);
+        setDatasource(component, context);
+        return component;
+    }
+
+    protected Field createUuidField(MetaContext context) {
         MaskedField maskedField = componentsFactory.createComponent(MaskedField.class);
+        setDatasource(maskedField, context);
         maskedField.setMask("hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh");
         maskedField.setSendNullRepresentation(false);
         return maskedField;
     }
 
-    protected Field createBooleanField() {
+    protected Field createBooleanField(MetaContext context) {
         return componentsFactory.createComponent(CheckBox.class);
     }
 
-    protected Field createDateField() {
-        return componentsFactory.createComponent(DateField.class);
+    protected Field createDateField(MetaContext context) {
+        DateField component = componentsFactory.createComponent(DateField.class);
+        setDatasource(component, context);
+        return component;
     }
 
-    protected Field createTimeField() {
-        return componentsFactory.createComponent(TimeField.class);
+    protected Field createTimeField(MetaContext context) {
+        TimeField component = componentsFactory.createComponent(TimeField.class);
+        setDatasource(component, context);
+        return component;
     }
 
-    protected Field createNumberField() {
-        return componentsFactory.createComponent(TextField.class);
+    protected Field createNumberField(MetaContext context) {
+        TextField component = componentsFactory.createComponent(TextField.class);
+        setDatasource(component, context);
+        return component;
     }
 
     @Nullable
-    protected Field createCurrencyField(MetaPropertyPath mpp) {
+    protected Field createCurrencyField(MetaContext context, MetaPropertyPath mpp) {
         if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty()))
             return null;
 
@@ -155,10 +175,12 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
             return null;
         }
 
-        return componentsFactory.createComponent(CurrencyField.class);
+        CurrencyField component = componentsFactory.createComponent(CurrencyField.class);
+        setDatasource(component, context);
+        return component;
     }
 
-    protected Field createFileUploadField() {
+    protected Field createFileUploadField(MetaContext context) {
         FileUploadField fileUploadField = (FileUploadField) componentsFactory.createComponent(FileUploadField.NAME);
         fileUploadField.setMode(FileUploadField.FileStoragePutMode.IMMEDIATE);
 
@@ -173,10 +195,12 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         fileUploadField.setShowFileName(true);
         fileUploadField.setShowClearButton(true);
 
+        setDatasource(fileUploadField, context);
+
         return fileUploadField;
     }
 
-    protected Field createEntityField(MetaPropertyPath mpp) {
+    protected Field createEntityField(MetaContext context, MetaPropertyPath mpp) {
         CollectionDatasource optionsDatasource = null;
 
         if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty())) {
@@ -192,6 +216,7 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         PickerField pickerField;
         if (optionsDatasource == null) {
             pickerField = componentsFactory.createComponent(PickerField.class);
+            setDatasource(pickerField, context);
             pickerField.addLookupAction();
             if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty())) {
                 DynamicAttributesGuiTools dynamicAttributesGuiTools = AppBeans.get(DynamicAttributesGuiTools.class);
@@ -205,6 +230,7 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
             }
         } else {
             LookupPickerField lookupPickerField = componentsFactory.createComponent(LookupPickerField.class);
+            setDatasource(lookupPickerField, context);
             lookupPickerField.setOptionsDatasource(optionsDatasource);
 
             pickerField = lookupPickerField;
@@ -213,5 +239,10 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         }
 
         return pickerField;
+    }
+
+    @Override
+    public int getOrder() {
+        return LOWEST_PLATFORM_PRECEDENCE;
     }
 }

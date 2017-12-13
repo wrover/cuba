@@ -39,12 +39,15 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static com.haulmont.cuba.gui.WindowManager.OpenType;
@@ -56,73 +59,78 @@ public abstract class AbstractFieldFactory implements FieldFactory {
 
     @Override
     public Component createField(Datasource datasource, String property, Element xmlDescriptor) {
+        // Step 0. Making preparation
         MetaClass metaClass = datasource.getMetaClass();
         MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, property);
 
         MetaContext context = new MetaContext(metaClass, property, datasource,
                 ParamsMap.of("xmlDescriptor", xmlDescriptor));
 
-        // TODO: gg, choose factory
-        Map<String, MetaComponentFactory> factories = AppBeans.getAll(MetaComponentFactory.class);
-        factories.remove(MetaComponentFactory.NAME);
+        // Step 1. Trying to find a custom factory
+        Map<String, MetaComponentFactory> factoryMap = AppBeans.getAll(MetaComponentFactory.class);
+        factoryMap.remove(MetaComponentFactoryImpl.NAME);
 
-        if (MapUtils.isNotEmpty(factories)) {
-            // TODO: gg, implement
-            throw new UnsupportedOperationException();
-        } else {
-            MetaComponentFactory factory = AppBeans.get(MetaComponentFactory.NAME);
+        if (MapUtils.isNotEmpty(factoryMap)) {
+            List<MetaComponentFactory> availableFactories = new ArrayList<>(factoryMap.values());
 
-            Component component = factory.createComponent(context);
-            if (component != null) {
-                if (component instanceof Field) {
-                    ((Field) component).setDatasource(datasource, property);
+            AnnotationAwareOrderComparator.sort(availableFactories);
+
+            for (MetaComponentFactory factory : availableFactories) {
+                Component component = factory.createComponent(context);
+                if (component != null) {
+                    return component;
                 }
-
-                if (mpp != null) {
-                    Range mppRange = mpp.getRange();
-                    if (mppRange.isDatatype()) {
-                        Class type = mppRange.asDatatype().getJavaClass();
-
-                        if (xmlDescriptor != null
-                                && "true".equalsIgnoreCase(xmlDescriptor.attributeValue("link"))) {
-                            return createDatatypeLinkField(datasource, property, xmlDescriptor);
-                        } else if (type.equals(String.class)) {
-                            if (xmlDescriptor != null
-                                    && xmlDescriptor.attribute("mask") != null) {
-                                return createMaskedField(datasource, property, xmlDescriptor);
-                            } else {
-                                return createStringField(datasource, property, xmlDescriptor);
-                            }
-                        } else if (type.equals(java.sql.Date.class) || type.equals(Date.class)) {
-                            setDateFieldAttributes((DateField) component, xmlDescriptor);
-                        } else if (type.equals(Time.class)) {
-                            setTimeFieldAttributes((TimeField) component, xmlDescriptor);
-                        } else if (Number.class.isAssignableFrom(type)) {
-                            if (xmlDescriptor != null
-                                    && xmlDescriptor.attribute("mask") != null) {
-                                MaskedField maskedField = (MaskedField) createMaskedField(datasource, property, xmlDescriptor);
-                                maskedField.setValueMode(MaskedField.ValueMode.MASKED);
-                                maskedField.setSendNullRepresentation(false);
-                                return maskedField;
-                            }
-                        }
-                    } else if (mppRange.isClass()) {
-                        MetaProperty metaProperty = mpp.getMetaProperty();
-                        Class<?> javaType = metaProperty.getJavaType();
-                        if (!FileDescriptor.class.isAssignableFrom(javaType)
-                                && !Collection.class.isAssignableFrom(javaType)) {
-                            createEntityField(datasource, property, mpp, xmlDescriptor);
-                        }
-                    }
-                }
-
-                return component;
             }
-            // TODO: gg, more detailed message
-            throw new UnsupportedOperationException();
         }
 
-        /*String exceptionMessage;
+        // Step 2. Check if we need to create a specific field
+        if (mpp != null) {
+            Range mppRange = mpp.getRange();
+            if (mppRange.isDatatype()) {
+                Class type = mppRange.asDatatype().getJavaClass();
+
+                if (xmlDescriptor != null
+                        && "true".equalsIgnoreCase(xmlDescriptor.attributeValue("link"))) {
+                    return createDatatypeLinkField(datasource, property, xmlDescriptor);
+                } else if (type.equals(String.class)) {
+                    if (xmlDescriptor != null
+                            && xmlDescriptor.attribute("mask") != null) {
+                        return createMaskedField(datasource, property, xmlDescriptor);
+                    } else {
+                        return createStringField(datasource, property, xmlDescriptor);
+                    }
+                } else if (type.equals(java.sql.Date.class) || type.equals(Date.class)) {
+                    return createDateField(datasource, property, mpp, xmlDescriptor);
+                } else if (type.equals(Time.class)) {
+                    return createTimeField(datasource, property, xmlDescriptor);
+                } else if (Number.class.isAssignableFrom(type)) {
+                    if (xmlDescriptor != null
+                            && xmlDescriptor.attribute("mask") != null) {
+                        MaskedField maskedField = (MaskedField) createMaskedField(datasource, property, xmlDescriptor);
+                        maskedField.setValueMode(MaskedField.ValueMode.MASKED);
+                        maskedField.setSendNullRepresentation(false);
+                        return maskedField;
+                    }
+                }
+            } else if (mppRange.isClass()) {
+                MetaProperty metaProperty = mpp.getMetaProperty();
+                Class<?> javaType = metaProperty.getJavaType();
+                if (!FileDescriptor.class.isAssignableFrom(javaType)
+                        && !Collection.class.isAssignableFrom(javaType)) {
+                    return createEntityField(datasource, property, mpp, xmlDescriptor);
+                }
+            }
+        }
+
+        // Step 3. Create a default field
+        MetaComponentFactory factory = AppBeans.get(MetaComponentFactoryImpl.NAME);
+        Component component = factory.createComponent(context);
+        if (component != null) {
+            return component;
+        }
+
+        // Step 4. No component created, throw the exception
+        String exceptionMessage;
         if (mpp != null) {
             String name = mpp.getRange().isDatatype()
                     ? mpp.getRange().asDatatype().toString()
@@ -131,7 +139,7 @@ public abstract class AbstractFieldFactory implements FieldFactory {
         } else {
             exceptionMessage = String.format("Can't create field \"%s\" with given data type", property);
         }
-        throw new UnsupportedOperationException(exceptionMessage);*/
+        throw new UnsupportedOperationException(exceptionMessage);
     }
 
     protected Component createDatatypeLinkField(Datasource datasource, String property, Element xmlDescriptor) {
@@ -214,7 +222,11 @@ public abstract class AbstractFieldFactory implements FieldFactory {
         return textField;
     }
 
-    protected void setDateFieldAttributes(DateField dateField, Element xmlDescriptor) {
+    protected Component createDateField(Datasource datasource, String property, MetaPropertyPath mpp,
+                                        Element xmlDescriptor) {
+        DateField dateField = componentsFactory.createComponent(DateField.class);
+        dateField.setDatasource(datasource, property);
+
         final String resolution = xmlDescriptor == null ? null : xmlDescriptor.attributeValue("resolution");
         String dateFormat = xmlDescriptor == null ? null : xmlDescriptor.attributeValue("dateFormat");
 
@@ -240,15 +252,21 @@ public abstract class AbstractFieldFactory implements FieldFactory {
             }
             dateField.setDateFormat(dateFormat);
         }
+
+        return dateField;
     }
 
-    protected void setTimeFieldAttributes(TimeField timeField, Element xmlDescriptor) {
+    protected Component createTimeField(Datasource datasource, String property, Element xmlDescriptor) {
+        TimeField timeField = componentsFactory.createComponent(TimeField.class);
+        timeField.setDatasource(datasource, property);
+
         if (xmlDescriptor != null) {
             String showSeconds = xmlDescriptor.attributeValue("showSeconds");
             if (Boolean.parseBoolean(showSeconds)) {
                 timeField.setShowSeconds(true);
             }
         }
+        return timeField;
     }
 
     protected Component createEntityField(Datasource datasource, String property, MetaPropertyPath mpp, Element xmlDescriptor) {
