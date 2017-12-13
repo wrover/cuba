@@ -45,6 +45,7 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import javax.inject.Inject;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +123,8 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
             } else if (mppRange.isClass()) {
                 MetaProperty metaProperty = mpp.getMetaProperty();
                 Class<?> javaType = metaProperty.getJavaType();
-                if (!FileDescriptor.class.isAssignableFrom(javaType)) {
+                if (!FileDescriptor.class.isAssignableFrom(javaType)
+                        && !Collection.class.isAssignableFrom(javaType)) {
                     return createEntityField(fc);
                 }
             }
@@ -138,10 +140,12 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         // Step 4. No component created, throw the exception
         String exceptionMessage;
         if (mpp != null) {
-            exceptionMessage = String.format("Can't create field \"%s\" with data type: %s", fc.getProperty(),
-                    mpp.getRange().asDatatype());
+            String name = mpp.getRange().isDatatype()
+                    ? mpp.getRange().asDatatype().toString()
+                    : mpp.getRange().asClass().getName();
+            exceptionMessage = String.format("Can't create field \"%s\" with data type: %s", property, name);
         } else {
-            exceptionMessage = String.format("Can't create field \"%s\" with given data type", fc.getProperty());
+            exceptionMessage = String.format("Can't create field \"%s\" with given data type", property);
         }
         throw new UnsupportedOperationException(exceptionMessage);
     }
