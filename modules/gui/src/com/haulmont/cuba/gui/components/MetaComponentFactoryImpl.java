@@ -143,7 +143,9 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory, Ordered {
     }
 
     protected Field createBooleanField(MetaContext context) {
-        return componentsFactory.createComponent(CheckBox.class);
+        CheckBox component = componentsFactory.createComponent(CheckBox.class);
+        setDatasource(component, context);
+        return component;
     }
 
     protected Field createDateField(MetaContext context) {
