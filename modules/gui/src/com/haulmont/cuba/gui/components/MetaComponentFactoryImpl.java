@@ -171,7 +171,6 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory, Ordered {
         if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty()))
             return null;
 
-        // TODO: gg, test with double
         Object currencyAnnotation = mpp.getMetaProperty().getAnnotations().get(CurrencyValue.class.getName());
         if (currencyAnnotation == null) {
             return null;
