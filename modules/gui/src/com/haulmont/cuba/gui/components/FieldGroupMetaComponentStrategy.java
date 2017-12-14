@@ -56,8 +56,8 @@ public class FieldGroupMetaComponentStrategy extends AbstractMetaComponentStrate
     @Nullable
     @Override
     public Component createComponent(MetaContext context) {
-        if (context.getComponentClass() != null
-                && !FieldGroup.class.isAssignableFrom(context.getComponentClass())) {
+        if (context.getComponentClass() == null
+                || !FieldGroup.class.isAssignableFrom(context.getComponentClass())) {
             return null;
         }
 

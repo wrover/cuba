@@ -77,7 +77,7 @@ public class MetaContext {
      */
     public MetaContext(MetaClass metaClass, String property,
                        @Nullable Datasource datasource, @Nullable Class componentClass) {
-        this(metaClass, property, datasource, null, null, null);
+        this(metaClass, property, datasource, null, null, componentClass);
     }
 
     /**

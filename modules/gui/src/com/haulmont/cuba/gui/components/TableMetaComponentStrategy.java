@@ -52,8 +52,8 @@ public class TableMetaComponentStrategy extends AbstractMetaComponentStrategy im
     @Nullable
     @Override
     public Component createComponent(MetaContext context) {
-        if (context.getComponentClass() != null
-                && !Table.class.isAssignableFrom(context.getComponentClass())) {
+        if (context.getComponentClass() == null
+                || !Table.class.isAssignableFrom(context.getComponentClass())) {
             return null;
         }
 

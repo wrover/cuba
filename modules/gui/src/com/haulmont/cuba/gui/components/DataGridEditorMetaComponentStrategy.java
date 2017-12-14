@@ -47,8 +47,8 @@ public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentSt
     @Nullable
     @Override
     public Component createComponent(MetaContext context) {
-        if (context.getComponentClass() != null
-                && !DataGrid.class.isAssignableFrom(context.getComponentClass())) {
+        if (context.getComponentClass() == null
+                || !DataGrid.class.isAssignableFrom(context.getComponentClass())) {
             return null;
         }
 
