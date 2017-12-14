@@ -17,23 +17,23 @@
 package com.haulmont.cuba.gui.components;
 
 import com.haulmont.chile.core.model.MetaClass;
+import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.data.Datasource;
+import org.dom4j.Element;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 
 /**
  * A class that stores information that can be used to create
  * a component in a {@link MetaComponentFactory} implementation.
  */
 public class MetaContext {
-    public static final String PARAM_XML_DESCRIPTOR = "xmlDescriptor";
-    public static final String PARAM_CALLING_CODE = "callingCode";
-
     protected MetaClass metaClass;
     protected String property;
     protected Datasource datasource;
-    protected Map<String, Object> parameters;
+    protected CollectionDatasource optionsDatasource;
+    protected Element xmlDescriptor;
+    protected Class componentClass;
 
     /**
      * Creates an instance of MetaContext.
@@ -42,7 +42,7 @@ public class MetaContext {
      * @param property  a property of meta class for which a component should be created
      */
     public MetaContext(MetaClass metaClass, String property) {
-        this(metaClass, property, null, null);
+        this(metaClass, property, null, null, null, null);
     }
 
     /**
@@ -53,34 +53,52 @@ public class MetaContext {
      * @param datasource a datasource that can be used to create the component
      */
     public MetaContext(MetaClass metaClass, String property, @Nullable Datasource datasource) {
-        this(metaClass, property, datasource, null);
+        this(metaClass, property, datasource, null, null, null);
     }
 
     /**
      * Creates an instance of MetaContext.
      *
-     * @param metaClass  an instance of {@link MetaClass} for which a component should be created
-     * @param property   a property of meta class for which a component should be created
-     * @param parameters additional parameters that can be used to create the component
+     * @param metaClass      an instance of {@link MetaClass} for which a component should be created
+     * @param property       a property of meta class for which a component should be created
+     * @param componentClass
      */
-    public MetaContext(MetaClass metaClass, String property, @Nullable Map<String, Object> parameters) {
-        this(metaClass, property, null, parameters);
+    public MetaContext(MetaClass metaClass, String property, @Nullable Class componentClass) {
+        this(metaClass, property, null, null, null, componentClass);
     }
 
     /**
      * Creates an instance of MetaContext.
      *
-     * @param metaClass  an instance of {@link MetaClass} for which a component should be created
-     * @param property   a property of meta class for which a component should be created
-     * @param datasource a datasource that can be used to create the component
-     * @param parameters additional parameters that can be used to create the component
+     * @param metaClass      an instance of {@link MetaClass} for which a component should be created
+     * @param property       a property of meta class for which a component should be created
+     * @param datasource     a datasource that can be used to create the component
+     * @param componentClass
      */
     public MetaContext(MetaClass metaClass, String property,
-                       @Nullable Datasource datasource, @Nullable Map<String, Object> parameters) {
+                       @Nullable Datasource datasource, @Nullable Class componentClass) {
+        this(metaClass, property, datasource, null, null, null);
+    }
+
+    /**
+     * Creates an instance of MetaContext.
+     *
+     * @param metaClass         an instance of {@link MetaClass} for which a component should be created
+     * @param property          a property of meta class for which a component should be created
+     * @param datasource        a datasource that can be used to create the component
+     * @param optionsDatasource
+     * @param xmlDescriptor
+     * @param componentClass
+     */
+    public MetaContext(MetaClass metaClass, String property, @Nullable Datasource datasource,
+                       @Nullable CollectionDatasource optionsDatasource, @Nullable Element xmlDescriptor,
+                       @Nullable Class componentClass) {
         this.metaClass = metaClass;
         this.property = property;
         this.datasource = datasource;
-        this.parameters = parameters;
+        this.optionsDatasource = optionsDatasource;
+        this.xmlDescriptor = xmlDescriptor;
+        this.componentClass = componentClass;
     }
 
     /**
@@ -105,11 +123,18 @@ public class MetaContext {
         return datasource;
     }
 
-    /**
-     * @return additional parameters that can be used to create the component
-     */
     @Nullable
-    public Map<String, Object> getParameters() {
-        return parameters;
+    public CollectionDatasource getOptionsDatasource() {
+        return optionsDatasource;
+    }
+
+    @Nullable
+    public Element getXmlDescriptor() {
+        return xmlDescriptor;
+    }
+
+    @Nullable
+    public Class getComponentClass() {
+        return componentClass;
     }
 }

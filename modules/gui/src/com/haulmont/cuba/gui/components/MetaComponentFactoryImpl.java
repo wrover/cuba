@@ -32,19 +32,22 @@ import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.core.Ordered;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-@org.springframework.stereotype.Component(MetaComponentFactoryImpl.NAME)
-public class MetaComponentFactoryImpl implements MetaComponentFactory, Ordered {
-    public static final String NAME = "cuba_MetaComponentFactory";
+@org.springframework.stereotype.Component(MetaComponentFactory.NAME)
+public class MetaComponentFactoryImpl implements MetaComponentFactory {
 
     @Inject
     protected Messages messages;
@@ -55,9 +58,46 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory, Ordered {
     @Nullable
     @Override
     public Component createComponent(MetaContext context) {
+        // Step 1. Trying to find custom factories
+        // TODO: gg,
+        Map<String, MetaComponentStrategy> strategyMap = AppBeans.getAll(MetaComponentStrategy.class);
+        if (MapUtils.isNotEmpty(strategyMap)) {
+            List<MetaComponentStrategy> strategies = new ArrayList<>(strategyMap.values());
+
+            AnnotationAwareOrderComparator.sort(strategies);
+
+            for (MetaComponentStrategy strategy : strategies) {
+                Component component = strategy.createComponent(context);
+                if (component != null) {
+                    return component;
+                }
+            }
+        }
+
+        // Step 2. Create a default field
         String property = context.getProperty();
         MetaPropertyPath mpp = resolveMetaPropertyPath(context.getMetaClass(), property);
 
+        Component component = createComponentInternal(context, mpp);
+        if (component != null) {
+            return component;
+        }
+
+        // Step 3. No component created, throw the exception
+        String exceptionMessage;
+        if (mpp != null) {
+            String name = mpp.getRange().isDatatype()
+                    ? mpp.getRange().asDatatype().toString()
+                    : mpp.getRange().asClass().getName();
+            exceptionMessage = String.format("Can't create field \"%s\" with data type: %s", property, name);
+        } else {
+            exceptionMessage = String.format("Can't create field \"%s\" with given data type", property);
+        }
+        throw new UnsupportedOperationException(exceptionMessage);
+    }
+
+    @Nullable
+    protected Component createComponentInternal(MetaContext context, MetaPropertyPath mpp) {
         if (mpp != null) {
             Range mppRange = mpp.getRange();
             if (mppRange.isDatatype()) {
@@ -240,10 +280,5 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory, Ordered {
         }
 
         return pickerField;
-    }
-
-    @Override
-    public int getOrder() {
-        return LOWEST_PLATFORM_PRECEDENCE;
     }
 }
