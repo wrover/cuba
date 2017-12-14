@@ -39,8 +39,11 @@ public class DataGridEditorFieldFactoryImpl implements DataGridEditorFieldFactor
         MetaContext context = new MetaContext(metaClass, property, datasource, DataGrid.class);
 
         Component component = metaComponentFactory.createComponent(context);
-        // TODO: gg, check
-        return (Field) component;
+        if (component instanceof Field) {
+            return (Field) component;
+        }
+
+        throw new IllegalStateException("Editor field must implement com.haulmont.cuba.gui.components.Field");
     }
 
     protected MetaClass resolveMetaClass(Datasource datasource) {

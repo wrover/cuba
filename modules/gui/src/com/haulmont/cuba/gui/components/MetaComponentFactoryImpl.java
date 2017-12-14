@@ -93,7 +93,7 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         } else {
             exceptionMessage = String.format("Can't create field \"%s\" with given data type", property);
         }
-        throw new UnsupportedOperationException(exceptionMessage);
+        throw new IllegalArgumentException(exceptionMessage);
     }
 
     @Nullable

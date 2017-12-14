@@ -17,14 +17,10 @@
 package com.haulmont.cuba.gui.components;
 
 import com.haulmont.bali.util.ParamsMap;
-import com.haulmont.chile.core.model.MetaClass;
-import com.haulmont.chile.core.model.MetaProperty;
 import com.haulmont.chile.core.model.MetaPropertyPath;
-import com.haulmont.chile.core.model.Range;
 import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesMetaProperty;
 import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesUtils;
 import com.haulmont.cuba.core.entity.CategoryAttribute;
-import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.WindowManager;
@@ -35,7 +31,6 @@ import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.Collection;
 
 @org.springframework.stereotype.Component(DataGridEditorMetaComponentStrategy.NAME)
 public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
@@ -52,24 +47,10 @@ public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentSt
             return null;
         }
 
-        MetaClass metaClass = context.getMetaClass();
-        MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, context.getProperty());
-
-        if (mpp != null) {
-            Range mppRange = mpp.getRange();
-            if (mppRange.isClass()) {
-                MetaProperty metaProperty = mpp.getMetaProperty();
-                Class<?> javaType = metaProperty.getJavaType();
-                if (!FileDescriptor.class.isAssignableFrom(javaType)
-                        && !Collection.class.isAssignableFrom(javaType)) {
-                    return createEntityField(context, mpp);
-                }
-            }
-        }
-
-        return null;
+        return createComponentInternal(context);
     }
 
+    @Override
     protected Field createEntityField(MetaContext context, MetaPropertyPath mpp) {
         CollectionDatasource optionsDatasource = null;
 
