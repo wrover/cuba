@@ -26,18 +26,13 @@ import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
-import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 @org.springframework.stereotype.Component(DataGridEditorMetaComponentStrategy.NAME)
 public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
     public static final String NAME = "cuba_DataGridEditorMetaComponentStrategy";
-
-    @Inject
-    protected ComponentsFactory componentsFactory;
 
     @Nullable
     @Override
