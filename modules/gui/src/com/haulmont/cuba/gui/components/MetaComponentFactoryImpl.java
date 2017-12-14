@@ -32,18 +32,14 @@ import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.sql.Time;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @org.springframework.stereotype.Component(MetaComponentFactory.NAME)
@@ -51,26 +47,21 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
 
     @Inject
     protected Messages messages;
-
     @Inject
     protected ComponentsFactory componentsFactory;
+    @Inject
+    protected List<MetaComponentStrategy> metaComponentStrategies;
 
     @Nullable
     @Override
     public Component createComponent(MetaContext context) {
         // Step 1. Trying to find custom factories
-        // TODO: gg,
-        Map<String, MetaComponentStrategy> strategyMap = AppBeans.getAll(MetaComponentStrategy.class);
-        if (MapUtils.isNotEmpty(strategyMap)) {
-            List<MetaComponentStrategy> strategies = new ArrayList<>(strategyMap.values());
+        List<MetaComponentStrategy> strategies = getMetaComponentStrategies();
 
-            AnnotationAwareOrderComparator.sort(strategies);
-
-            for (MetaComponentStrategy strategy : strategies) {
-                Component component = strategy.createComponent(context);
-                if (component != null) {
-                    return component;
-                }
+        for (MetaComponentStrategy strategy : strategies) {
+            Component component = strategy.createComponent(context);
+            if (component != null) {
+                return component;
             }
         }
 
@@ -280,5 +271,9 @@ public class MetaComponentFactoryImpl implements MetaComponentFactory {
         }
 
         return pickerField;
+    }
+
+    public List<MetaComponentStrategy> getMetaComponentStrategies() {
+        return metaComponentStrategies;
     }
 }
