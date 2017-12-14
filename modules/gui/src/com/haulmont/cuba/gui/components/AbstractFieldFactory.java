@@ -51,42 +51,4 @@ public abstract class AbstractFieldFactory implements FieldFactory {
 
     @Nullable
     protected abstract CollectionDatasource getOptionsDatasource(Datasource datasource, String property);
-
-    protected static class InvokeEntityLinkClickHandler implements EntityLinkClickHandler {
-        protected final String invokeMethodName;
-
-        public InvokeEntityLinkClickHandler(String invokeMethodName) {
-            this.invokeMethodName = invokeMethodName;
-        }
-
-        @Override
-        public void onClick(EntityLinkField field) {
-            Window frame = ComponentsHelper.getWindow(field);
-            if (frame == null) {
-                throw new IllegalStateException("Please specify Frame for EntityLinkField");
-            }
-
-            Object controller = ComponentsHelper.getFrameController(frame);
-            Method method;
-            try {
-                method = controller.getClass().getMethod(invokeMethodName, EntityLinkField.class);
-                try {
-                    method.invoke(controller, field);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            } catch (NoSuchMethodException e) {
-                try {
-                    method = controller.getClass().getMethod(invokeMethodName);
-                    try {
-                        method.invoke(controller);
-                    } catch (Exception e1) {
-                        throw new RuntimeException(e1);
-                    }
-                } catch (NoSuchMethodException e1) {
-                    throw new IllegalStateException(String.format("No suitable methods named %s for invoke", invokeMethodName));
-                }
-            }
-        }
-    }
 }

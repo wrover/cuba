@@ -35,6 +35,7 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
+import java.lang.reflect.Method;
 import java.sql.Time;
 import java.util.Collection;
 import java.util.Date;
@@ -284,7 +285,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
 
             final String invokeMethodName = xmlDescriptor.attributeValue("linkInvoke");
             if (StringUtils.isNotEmpty(invokeMethodName)) {
-                linkField.setCustomClickHandler(new AbstractFieldFactory.InvokeEntityLinkClickHandler(invokeMethodName));
+                linkField.setCustomClickHandler(new InvokeEntityLinkClickHandler(invokeMethodName));
             }
 
             String openTypeAttribute = xmlDescriptor.attributeValue("linkScreenOpenType");
@@ -308,6 +309,44 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
     protected void setDatasource(Field field, MetaContext context) {
         if (context.getDatasource() != null && StringUtils.isNotEmpty(context.getProperty())) {
             field.setDatasource(context.getDatasource(), context.getProperty());
+        }
+    }
+
+    protected static class InvokeEntityLinkClickHandler implements EntityLinkField.EntityLinkClickHandler {
+        protected final String invokeMethodName;
+
+        public InvokeEntityLinkClickHandler(String invokeMethodName) {
+            this.invokeMethodName = invokeMethodName;
+        }
+
+        @Override
+        public void onClick(EntityLinkField field) {
+            Window frame = ComponentsHelper.getWindow(field);
+            if (frame == null) {
+                throw new IllegalStateException("Please specify Frame for EntityLinkField");
+            }
+
+            Object controller = ComponentsHelper.getFrameController(frame);
+            Method method;
+            try {
+                method = controller.getClass().getMethod(invokeMethodName, EntityLinkField.class);
+                try {
+                    method.invoke(controller, field);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (NoSuchMethodException e) {
+                try {
+                    method = controller.getClass().getMethod(invokeMethodName);
+                    try {
+                        method.invoke(controller);
+                    } catch (Exception e1) {
+                        throw new RuntimeException(e1);
+                    }
+                } catch (NoSuchMethodException e1) {
+                    throw new IllegalStateException(String.format("No suitable methods named %s for invoke", invokeMethodName));
+                }
+            }
         }
     }
 }
