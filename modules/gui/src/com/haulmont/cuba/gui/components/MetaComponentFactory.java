@@ -24,6 +24,7 @@ public interface MetaComponentFactory {
      *
      * @param context the {@link MetaContext} instance
      * @return a component according to the given {@link MetaContext}
+     * @throws IllegalArgumentException if no component can be created for a given meta context
      */
     Component createComponent(MetaContext context);
 }

@@ -61,7 +61,7 @@ public class MetaContext {
      *
      * @param metaClass      an instance of {@link MetaClass} for which a component should be created
      * @param property       a property of meta class for which a component should be created
-     * @param componentClass
+     * @param componentClass a component class for which a component should be created
      */
     public MetaContext(MetaClass metaClass, String property, @Nullable Class componentClass) {
         this(metaClass, property, null, null, null, componentClass);
@@ -73,7 +73,7 @@ public class MetaContext {
      * @param metaClass      an instance of {@link MetaClass} for which a component should be created
      * @param property       a property of meta class for which a component should be created
      * @param datasource     a datasource that can be used to create the component
-     * @param componentClass
+     * @param componentClass a component class for which a component should be created
      */
     public MetaContext(MetaClass metaClass, String property,
                        @Nullable Datasource datasource, @Nullable Class componentClass) {
@@ -86,9 +86,9 @@ public class MetaContext {
      * @param metaClass         an instance of {@link MetaClass} for which a component should be created
      * @param property          a property of meta class for which a component should be created
      * @param datasource        a datasource that can be used to create the component
-     * @param optionsDatasource
-     * @param xmlDescriptor
-     * @param componentClass
+     * @param optionsDatasource a datasource that can be used as optional to create the component
+     * @param xmlDescriptor     an XML descriptor which contains additional information
+     * @param componentClass    a component class for which a component should be created
      */
     public MetaContext(MetaClass metaClass, String property, @Nullable Datasource datasource,
                        @Nullable CollectionDatasource optionsDatasource, @Nullable Element xmlDescriptor,
@@ -123,16 +123,25 @@ public class MetaContext {
         return datasource;
     }
 
+    /**
+     * @return a datasource that can be used as optional to create the component
+     */
     @Nullable
     public CollectionDatasource getOptionsDatasource() {
         return optionsDatasource;
     }
 
+    /**
+     * @return an XML descriptor which contains additional information
+     */
     @Nullable
     public Element getXmlDescriptor() {
         return xmlDescriptor;
     }
 
+    /**
+     * @return a component class for which a component should be created
+     */
     @Nullable
     public Class getComponentClass() {
         return componentClass;

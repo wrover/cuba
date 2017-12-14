@@ -24,23 +24,9 @@ public interface FieldGroupFieldFactory {
 
     /**
      * Generated Component for {@link FieldGroup} using declarative descriptor.
-     * <p>
-     * Creation sequence:
-     * <ol>
-     * <li>Trying to find custom factories. If at least one factory exists, except the default, then:
-     * <ol style="list-style-type: lower-alpha;">
-     * <li>Iterate over factories according to the {@link org.springframework.core.Ordered} interface.</li>
-     * <li>The first not null component will be returned.</li>
-     * </ol>
-     * </li>
-     * <li>If either there are no custom factories or none&nbsp;of them returned a component, check if we need to create a specific component.</li>
-     * <li>If no specific&nbsp;component was created, create a component using the default factory.</li>
-     * <li>Throw an UnsupportedOperationException if no component was created</li>
-     * </ol>
      *
      * @param fieldConfig configuration of field
      * @return generated component info
-     * @throws UnsupportedOperationException if field cannot be created
      */
     GeneratedField createField(FieldGroup.FieldConfig fieldConfig);
 

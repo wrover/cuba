@@ -220,8 +220,9 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
                 CategoryAttribute attribute = metaProperty.getAttribute();
                 if (Boolean.TRUE.equals(attribute.getLookup())) {
                     DynamicAttributesGuiTools dynamicAttributesGuiTools = AppBeans.get(DynamicAttributesGuiTools.class);
-                    optionsDatasource = dynamicAttributesGuiTools.createOptionsDatasourceForLookup(metaProperty.getRange().asClass(),
-                            attribute.getJoinClause(), attribute.getWhereClause());
+                    optionsDatasource = dynamicAttributesGuiTools
+                            .createOptionsDatasourceForLookup(metaProperty.getRange().asClass(),
+                                    attribute.getJoinClause(), attribute.getWhereClause());
                 }
             }
 
@@ -233,9 +234,12 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
                 if (mpp.getMetaProperty().getType() == MetaProperty.Type.ASSOCIATION) {
                     pickerField.addLookupAction();
                     if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty())) {
-                        DynamicAttributesGuiTools dynamicAttributesGuiTools = AppBeans.get(DynamicAttributesGuiTools.class);
-                        DynamicAttributesMetaProperty dynamicAttributesMetaProperty = (DynamicAttributesMetaProperty) mpp.getMetaProperty();
-                        dynamicAttributesGuiTools.initEntityPickerField(pickerField, dynamicAttributesMetaProperty.getAttribute());
+                        DynamicAttributesGuiTools dynamicAttributesGuiTools =
+                                AppBeans.get(DynamicAttributesGuiTools.class);
+                        DynamicAttributesMetaProperty dynamicAttributesMetaProperty =
+                                (DynamicAttributesMetaProperty) mpp.getMetaProperty();
+                        dynamicAttributesGuiTools.initEntityPickerField(pickerField,
+                                dynamicAttributesMetaProperty.getAttribute());
                     }
                     boolean actionsByMetaAnnotations = ComponentsHelper.createActionsByMetaAnnotations(pickerField);
                     if (!actionsByMetaAnnotations) {
@@ -333,18 +337,21 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
                 try {
                     method.invoke(controller, field);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(String.format("Can't invoke method with name '%s'",
+                            invokeMethodName), e);
                 }
             } catch (NoSuchMethodException e) {
                 try {
                     method = controller.getClass().getMethod(invokeMethodName);
                     try {
                         method.invoke(controller);
-                    } catch (Exception e1) {
-                        throw new RuntimeException(e1);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(String.format("Can't invoke method with name '%s'",
+                                invokeMethodName), ex);
                     }
                 } catch (NoSuchMethodException e1) {
-                    throw new IllegalStateException(String.format("No suitable methods named %s for invoke", invokeMethodName));
+                    throw new IllegalStateException(String.format("No suitable methods named '%s' for invoke",
+                            invokeMethodName));
                 }
             }
         }
