@@ -35,18 +35,19 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
-import javax.inject.Inject;
 import java.sql.Time;
 import java.util.Collection;
 import java.util.Date;
 
 public abstract class AbstractMetaComponentStrategy implements MetaComponentStrategy {
 
-    @Inject
     protected Messages messages;
-
-    @Inject
     protected ComponentsFactory componentsFactory;
+
+    public AbstractMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+        this.messages = messages;
+        this.componentsFactory = componentsFactory;
+    }
 
     protected Component createComponentInternal(MetaContext context) {
         MetaClass metaClass = context.getMetaClass();

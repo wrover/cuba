@@ -16,6 +16,8 @@
 
 package com.haulmont.cuba.gui.components;
 
+import com.haulmont.cuba.core.global.Messages;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
@@ -23,6 +25,10 @@ import javax.annotation.Nullable;
 @org.springframework.stereotype.Component(FieldGroupMetaComponentStrategy.NAME)
 public class FieldGroupMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
     public static final String NAME = "cuba_FieldGroupMetaComponentStrategy";
+
+    public FieldGroupMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+        super(messages, componentsFactory);
+    }
 
     @Nullable
     @Override

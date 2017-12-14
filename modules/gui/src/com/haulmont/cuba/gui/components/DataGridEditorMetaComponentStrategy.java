@@ -22,10 +22,12 @@ import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesMetaPropert
 import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesUtils;
 import com.haulmont.cuba.core.entity.CategoryAttribute;
 import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
@@ -33,6 +35,10 @@ import javax.annotation.Nullable;
 @org.springframework.stereotype.Component(DataGridEditorMetaComponentStrategy.NAME)
 public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
     public static final String NAME = "cuba_DataGridEditorMetaComponentStrategy";
+
+    public DataGridEditorMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+        super(messages, componentsFactory);
+    }
 
     @Nullable
     @Override
