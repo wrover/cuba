@@ -373,6 +373,27 @@ public interface Component {
          * @param enabled true if field accepts context help text in HTML format, false otherwise
          */
         void setContextHelpTextHtmlEnabled(boolean enabled);
+
+        void addContextHelpIconClickListener(ContextHelpIconClickListener listener);
+
+        void removeContextHelpIconClickListener(ContextHelpIconClickListener listener);
+    }
+
+    @FunctionalInterface
+    interface ContextHelpIconClickListener {
+        void iconClick(ContextHelpIconClickEvent event);
+    }
+
+    class ContextHelpIconClickEvent extends EventObject {
+
+        public ContextHelpIconClickEvent(HasContextHelp component) {
+            super(component);
+        }
+
+        @Override
+        public HasContextHelp getSource() {
+            return (HasContextHelp) super.getSource();
+        }
     }
 
     /**
