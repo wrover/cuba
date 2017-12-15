@@ -20,11 +20,11 @@ public interface MetaComponentFactory {
     String NAME = "cuba_MetaComponentFactory";
 
     /**
-     * Creates a component according to the given {@link MetaContext}.
+     * Creates a component according to the given {@link ComponentGenerationContext}.
      *
-     * @param context the {@link MetaContext} instance
-     * @return a component according to the given {@link MetaContext}
-     * @throws IllegalArgumentException if no component can be created for a given meta context
+     * @param context the {@link ComponentGenerationContext} instance
+     * @return a component according to the given {@link ComponentGenerationContext}
+     * @throws IllegalArgumentException if no component can be created for a given context
      */
-    Component createComponent(MetaContext context);
+    Component createComponent(ComponentGenerationContext context);
 }

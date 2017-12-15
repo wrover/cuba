@@ -30,11 +30,11 @@ public interface MetaComponentStrategy {
     int LOWEST_PLATFORM_PRECEDENCE = 1000;
 
     /**
-     * Creates a component according to the given {@link MetaContext}.
+     * Creates a component according to the given {@link ComponentGenerationContext}.
      *
-     * @param context the {@link MetaContext} instance
-     * @return a component according to the given {@link MetaContext}
+     * @param context the {@link ComponentGenerationContext} instance
+     * @return a component according to the given {@link ComponentGenerationContext}
      */
     @Nullable
-    Component createComponent(MetaContext context);
+    Component createComponent(ComponentGenerationContext context);
 }

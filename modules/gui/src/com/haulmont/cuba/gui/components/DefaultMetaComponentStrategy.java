@@ -32,7 +32,7 @@ public class DefaultMetaComponentStrategy extends AbstractMetaComponentStrategy 
 
     @Nullable
     @Override
-    public Component createComponent(MetaContext context) {
+    public Component createComponent(ComponentGenerationContext context) {
         return createComponentInternal(context);
     }
 

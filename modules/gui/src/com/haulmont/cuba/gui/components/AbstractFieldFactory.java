@@ -19,16 +19,12 @@ package com.haulmont.cuba.gui.components;
 
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.RuntimePropsDatasource;
 import org.dom4j.Element;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
-
-import static com.haulmont.cuba.gui.components.EntityLinkField.EntityLinkClickHandler;
 
 public abstract class AbstractFieldFactory implements FieldFactory {
 
@@ -38,7 +34,7 @@ public abstract class AbstractFieldFactory implements FieldFactory {
     public Component createField(Datasource datasource, String property, Element xmlDescriptor) {
         MetaClass metaClass = resolveMetaClass(datasource);
 
-        MetaContext context = new MetaContext(metaClass, property, datasource,
+        ComponentGenerationContext context = new ComponentGenerationContext(metaClass, property, datasource,
                 getOptionsDatasource(datasource, property), xmlDescriptor, Table.class);
 
         return metaComponentFactory.createComponent(context);

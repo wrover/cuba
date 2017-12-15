@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  * A class that stores information that can be used to create
  * a component in a {@link MetaComponentFactory} implementation.
  */
-public class MetaContext {
+public class ComponentGenerationContext {
     protected MetaClass metaClass;
     protected String property;
     protected Datasource datasource;
@@ -41,7 +41,7 @@ public class MetaContext {
      * @param metaClass an instance of {@link MetaClass} for which a component should be created
      * @param property  a property of meta class for which a component should be created
      */
-    public MetaContext(MetaClass metaClass, String property) {
+    public ComponentGenerationContext(MetaClass metaClass, String property) {
         this(metaClass, property, null, null, null, null);
     }
 
@@ -52,7 +52,7 @@ public class MetaContext {
      * @param property   a property of meta class for which a component should be created
      * @param datasource a datasource that can be used to create the component
      */
-    public MetaContext(MetaClass metaClass, String property, @Nullable Datasource datasource) {
+    public ComponentGenerationContext(MetaClass metaClass, String property, @Nullable Datasource datasource) {
         this(metaClass, property, datasource, null, null, null);
     }
 
@@ -63,7 +63,7 @@ public class MetaContext {
      * @param property       a property of meta class for which a component should be created
      * @param componentClass a component class for which a component should be created
      */
-    public MetaContext(MetaClass metaClass, String property, @Nullable Class componentClass) {
+    public ComponentGenerationContext(MetaClass metaClass, String property, @Nullable Class componentClass) {
         this(metaClass, property, null, null, null, componentClass);
     }
 
@@ -75,8 +75,8 @@ public class MetaContext {
      * @param datasource     a datasource that can be used to create the component
      * @param componentClass a component class for which a component should be created
      */
-    public MetaContext(MetaClass metaClass, String property,
-                       @Nullable Datasource datasource, @Nullable Class componentClass) {
+    public ComponentGenerationContext(MetaClass metaClass, String property,
+                                      @Nullable Datasource datasource, @Nullable Class componentClass) {
         this(metaClass, property, datasource, null, null, componentClass);
     }
 
@@ -90,9 +90,9 @@ public class MetaContext {
      * @param xmlDescriptor     an XML descriptor which contains additional information
      * @param componentClass    a component class for which a component should be created
      */
-    public MetaContext(MetaClass metaClass, String property, @Nullable Datasource datasource,
-                       @Nullable CollectionDatasource optionsDatasource, @Nullable Element xmlDescriptor,
-                       @Nullable Class componentClass) {
+    public ComponentGenerationContext(MetaClass metaClass, String property, @Nullable Datasource datasource,
+                                      @Nullable CollectionDatasource optionsDatasource, @Nullable Element xmlDescriptor,
+                                      @Nullable Class componentClass) {
         this.metaClass = metaClass;
         this.property = property;
         this.datasource = datasource;

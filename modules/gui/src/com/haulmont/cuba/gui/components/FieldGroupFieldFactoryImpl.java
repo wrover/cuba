@@ -36,8 +36,8 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
     protected GeneratedField createFieldComponent(FieldGroup.FieldConfig fc) {
         MetaClass metaClass = resolveMetaClass(fc.getTargetDatasource());
 
-        MetaContext context = new MetaContext(metaClass, fc.getProperty(), fc.getTargetDatasource(),
-                fc.getOptionsDatasource(), fc.getXmlDescriptor(), FieldGroup.class);
+        ComponentGenerationContext context = new ComponentGenerationContext(metaClass, fc.getProperty(),
+                fc.getTargetDatasource(), fc.getOptionsDatasource(), fc.getXmlDescriptor(), FieldGroup.class);
 
         return new GeneratedField(metaComponentFactory.createComponent(context));
     }

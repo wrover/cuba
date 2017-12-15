@@ -42,7 +42,7 @@ public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentSt
 
     @Nullable
     @Override
-    public Component createComponent(MetaContext context) {
+    public Component createComponent(ComponentGenerationContext context) {
         if (context.getComponentClass() == null
                 || !DataGrid.class.isAssignableFrom(context.getComponentClass())) {
             return null;
@@ -52,14 +52,14 @@ public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentSt
     }
 
     @Override
-    protected Component createStringField(MetaContext context, MetaPropertyPath mpp) {
+    protected Component createStringField(ComponentGenerationContext context, MetaPropertyPath mpp) {
         TextField component = componentsFactory.createComponent(TextField.class);
         setDatasource(component, context);
         return component;
     }
 
     @Override
-    protected Field createEntityField(MetaContext context, MetaPropertyPath mpp) {
+    protected Field createEntityField(ComponentGenerationContext context, MetaPropertyPath mpp) {
         CollectionDatasource optionsDatasource = null;
 
         if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty())) {
@@ -79,8 +79,10 @@ public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentSt
             pickerField.addLookupAction();
             if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty())) {
                 DynamicAttributesGuiTools dynamicAttributesGuiTools = AppBeans.get(DynamicAttributesGuiTools.class);
-                DynamicAttributesMetaProperty dynamicAttributesMetaProperty = (DynamicAttributesMetaProperty) mpp.getMetaProperty();
-                dynamicAttributesGuiTools.initEntityPickerField(pickerField, dynamicAttributesMetaProperty.getAttribute());
+                DynamicAttributesMetaProperty dynamicAttributesMetaProperty =
+                        (DynamicAttributesMetaProperty) mpp.getMetaProperty();
+                dynamicAttributesGuiTools.initEntityPickerField(pickerField,
+                        dynamicAttributesMetaProperty.getAttribute());
             }
             PickerField.LookupAction lookupAction =
                     (PickerField.LookupAction) pickerField.getActionNN(PickerField.LookupAction.NAME);

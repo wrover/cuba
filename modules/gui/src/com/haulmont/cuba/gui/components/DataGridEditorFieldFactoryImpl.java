@@ -36,7 +36,7 @@ public class DataGridEditorFieldFactoryImpl implements DataGridEditorFieldFactor
     protected Field createFieldComponent(Datasource datasource, String property) {
         MetaClass metaClass = resolveMetaClass(datasource);
 
-        MetaContext context = new MetaContext(metaClass, property, datasource, DataGrid.class);
+        ComponentGenerationContext context = new ComponentGenerationContext(metaClass, property, datasource, DataGrid.class);
 
         Component component = metaComponentFactory.createComponent(context);
         if (component instanceof Field) {

@@ -53,7 +53,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         this.componentsFactory = componentsFactory;
     }
 
-    protected Component createComponentInternal(MetaContext context) {
+    protected Component createComponentInternal(ComponentGenerationContext context) {
         MetaClass metaClass = context.getMetaClass();
         MetaPropertyPath mpp = resolveMetaPropertyPath(metaClass, context.getProperty());
         Element xmlDescriptor = context.getXmlDescriptor();
@@ -124,7 +124,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return null;
     }
 
-    protected Component createDatatypeLinkField(MetaContext context) {
+    protected Component createDatatypeLinkField(ComponentGenerationContext context) {
         EntityLinkField linkField = componentsFactory.createComponent(EntityLinkField.class);
 
         setDatasource(linkField, context);
@@ -133,13 +133,13 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return linkField;
     }
 
-    protected Field createEnumField(MetaContext context) {
+    protected Field createEnumField(ComponentGenerationContext context) {
         LookupField component = componentsFactory.createComponent(LookupField.class);
         setDatasource(component, context);
         return component;
     }
 
-    protected Component createMaskedField(MetaContext context) {
+    protected Component createMaskedField(ComponentGenerationContext context) {
         MaskedField maskedField = componentsFactory.createComponent(MaskedField.class);
         setDatasource(maskedField, context);
 
@@ -158,7 +158,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return maskedField;
     }
 
-    protected Component createStringField(MetaContext context, MetaPropertyPath mpp) {
+    protected Component createStringField(ComponentGenerationContext context, MetaPropertyPath mpp) {
         TextInputField textField = null;
 
         Element xmlDescriptor = context.getXmlDescriptor();
@@ -195,7 +195,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return textField;
     }
 
-    protected Field createUuidField(MetaContext context) {
+    protected Field createUuidField(ComponentGenerationContext context) {
         MaskedField maskedField = componentsFactory.createComponent(MaskedField.class);
         setDatasource(maskedField, context);
         maskedField.setMask("hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh");
@@ -203,13 +203,13 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return maskedField;
     }
 
-    protected Field createBooleanField(MetaContext context) {
+    protected Field createBooleanField(ComponentGenerationContext context) {
         CheckBox component = componentsFactory.createComponent(CheckBox.class);
         setDatasource(component, context);
         return component;
     }
 
-    protected Component createDateField(MetaContext context) {
+    protected Component createDateField(ComponentGenerationContext context) {
         DateField dateField = componentsFactory.createComponent(DateField.class);
         setDatasource(dateField, context);
 
@@ -242,7 +242,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return dateField;
     }
 
-    protected Component createTimeField(MetaContext context) {
+    protected Component createTimeField(ComponentGenerationContext context) {
         TimeField timeField = componentsFactory.createComponent(TimeField.class);
         setDatasource(timeField, context);
 
@@ -257,14 +257,14 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return timeField;
     }
 
-    protected Field createNumberField(MetaContext context) {
+    protected Field createNumberField(ComponentGenerationContext context) {
         TextField component = componentsFactory.createComponent(TextField.class);
         setDatasource(component, context);
         return component;
     }
 
     @Nullable
-    protected Field createCurrencyField(MetaContext context, MetaPropertyPath mpp) {
+    protected Field createCurrencyField(ComponentGenerationContext context, MetaPropertyPath mpp) {
         if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty()))
             return null;
 
@@ -278,7 +278,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return component;
     }
 
-    protected Field createFileUploadField(MetaContext context) {
+    protected Field createFileUploadField(ComponentGenerationContext context) {
         FileUploadField fileUploadField = (FileUploadField) componentsFactory.createComponent(FileUploadField.NAME);
         fileUploadField.setMode(FileUploadField.FileStoragePutMode.IMMEDIATE);
 
@@ -298,7 +298,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return fileUploadField;
     }
 
-    protected Component createEntityField(MetaContext context, MetaPropertyPath mpp) {
+    protected Component createEntityField(ComponentGenerationContext context, MetaPropertyPath mpp) {
         String linkAttribute = null;
         Element xmlDescriptor = context.getXmlDescriptor();
         if (xmlDescriptor != null) {
@@ -372,7 +372,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         }
     }
 
-    protected void setLinkFieldAttributes(EntityLinkField linkField, MetaContext context) {
+    protected void setLinkFieldAttributes(EntityLinkField linkField, ComponentGenerationContext context) {
         Element xmlDescriptor = context.getXmlDescriptor();
         if (xmlDescriptor != null) {
             String linkScreen = xmlDescriptor.attributeValue("linkScreen");
@@ -403,7 +403,7 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return mpp;
     }
 
-    protected void setDatasource(Field field, MetaContext context) {
+    protected void setDatasource(Field field, ComponentGenerationContext context) {
         if (context.getDatasource() != null && StringUtils.isNotEmpty(context.getProperty())) {
             field.setDatasource(context.getDatasource(), context.getProperty());
         }
