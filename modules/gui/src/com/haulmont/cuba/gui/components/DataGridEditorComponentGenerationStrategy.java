@@ -32,11 +32,11 @@ import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
 
-@org.springframework.stereotype.Component(DataGridEditorMetaComponentStrategy.NAME)
-public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
+@org.springframework.stereotype.Component(DataGridEditorComponentGenerationStrategy.NAME)
+public class DataGridEditorComponentGenerationStrategy extends AbstractComponentGenerationStrategy implements Ordered {
     public static final String NAME = "cuba_DataGridEditorMetaComponentStrategy";
 
-    public DataGridEditorMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+    public DataGridEditorComponentGenerationStrategy(Messages messages, ComponentsFactory componentsFactory) {
         super(messages, componentsFactory);
     }
 

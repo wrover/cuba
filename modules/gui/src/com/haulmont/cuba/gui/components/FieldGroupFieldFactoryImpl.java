@@ -19,6 +19,7 @@ package com.haulmont.cuba.gui.components;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.RuntimePropsDatasource;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 
 import javax.inject.Inject;
 
@@ -26,7 +27,7 @@ import javax.inject.Inject;
 public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
 
     @Inject
-    protected MetaComponentFactory metaComponentFactory;
+    protected ComponentsFactory componentsFactory;
 
     @Override
     public GeneratedField createField(FieldGroup.FieldConfig fc) {
@@ -39,7 +40,7 @@ public class FieldGroupFieldFactoryImpl implements FieldGroupFieldFactory {
         ComponentGenerationContext context = new ComponentGenerationContext(metaClass, fc.getProperty(),
                 fc.getTargetDatasource(), fc.getOptionsDatasource(), fc.getXmlDescriptor(), FieldGroup.class);
 
-        return new GeneratedField(metaComponentFactory.createComponent(context));
+        return new GeneratedField(componentsFactory.createComponent(context));
     }
 
     protected MetaClass resolveMetaClass(Datasource datasource) {

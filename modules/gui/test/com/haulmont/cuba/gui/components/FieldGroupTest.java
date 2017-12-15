@@ -18,7 +18,6 @@ package com.haulmont.cuba.gui.components;
 
 import com.haulmont.cuba.client.testsupport.CubaClientTestCase;
 import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.core.global.View;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsBuilder;
@@ -35,8 +34,6 @@ import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -49,8 +46,6 @@ public class FieldGroupTest extends CubaClientTestCase {
     protected ComponentsFactory componentsFactory;
 
     protected TestFieldGroupFieldFactoryImpl fieldFactory;
-    protected TestDefaultMetaComponentStrategy defaultMetaComponentStrategy;
-    protected TestMetaComponentFactoryImpl metaComponentFactory;
 
     @SuppressWarnings("ReassignmentInjectVariable")
     @Before
@@ -58,18 +53,9 @@ public class FieldGroupTest extends CubaClientTestCase {
         addEntityPackage("com.haulmont.cuba");
         setupInfrastructure();
 
-        defaultMetaComponentStrategy = new TestDefaultMetaComponentStrategy(messages, componentsFactory);
-
-        metaComponentFactory = new TestMetaComponentFactoryImpl() {
-            @Override
-            public List<MetaComponentStrategy> getMetaComponentStrategies() {
-                return Collections.singletonList(defaultMetaComponentStrategy);
-            }
-        };
-
         fieldFactory = new TestFieldGroupFieldFactoryImpl() {
             {
-                this.metaComponentFactory = FieldGroupTest.this.metaComponentFactory;
+                this.componentsFactory = FieldGroupTest.this.componentsFactory;
             }
         };
 
@@ -78,15 +64,6 @@ public class FieldGroupTest extends CubaClientTestCase {
                 AppBeans.get(BackgroundWorker.NAME); result = backgroundWorker;
                 AppBeans.get(BackgroundWorker.class); result = backgroundWorker;
                 AppBeans.get(BackgroundWorker.NAME, BackgroundWorker.class); result = backgroundWorker;
-
-                AppBeans.get(DefaultMetaComponentStrategy.NAME); result = defaultMetaComponentStrategy;
-                AppBeans.get(DefaultMetaComponentStrategy.class); result = defaultMetaComponentStrategy;
-                AppBeans.get(DefaultMetaComponentStrategy.NAME,
-                        DefaultMetaComponentStrategy.class); result = defaultMetaComponentStrategy;
-
-                AppBeans.get(MetaComponentFactory.NAME); result = metaComponentFactory;
-                AppBeans.get(MetaComponentFactory.class); result = metaComponentFactory;
-                AppBeans.get(MetaComponentFactory.NAME, MetaComponentFactory.class); result = metaComponentFactory;
 
                 AppBeans.get(FieldGroupFieldFactory.NAME); result = fieldFactory;
                 AppBeans.get(FieldGroupFieldFactory.class); result = fieldFactory;
@@ -99,7 +76,7 @@ public class FieldGroupTest extends CubaClientTestCase {
         messages.init();
 
         componentsFactory = createComponentsFactory();
-        defaultMetaComponentStrategy.setComponentsFactory(componentsFactory);
+        fieldFactory.setComponentsFactory(componentsFactory);
     }
 
     protected void initExpectations() {
@@ -483,16 +460,6 @@ public class FieldGroupTest extends CubaClientTestCase {
     }
 
     protected static class TestFieldGroupFieldFactoryImpl extends FieldGroupFieldFactoryImpl {
-    }
-
-    protected static class TestMetaComponentFactoryImpl extends MetaComponentFactoryImpl {
-    }
-
-    protected static class TestDefaultMetaComponentStrategy extends DefaultMetaComponentStrategy {
-        public TestDefaultMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
-            super(messages, componentsFactory);
-        }
-
         public void setComponentsFactory(ComponentsFactory componentsFactory) {
             this.componentsFactory = componentsFactory;
         }

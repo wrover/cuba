@@ -18,7 +18,7 @@ package com.haulmont.cuba.gui.components;
 
 import javax.annotation.Nullable;
 
-public interface MetaComponentStrategy {
+public interface ComponentGenerationStrategy {
     /**
      * Defines the highest precedence for {@link org.springframework.core.Ordered} component strategies of the platform.
      */

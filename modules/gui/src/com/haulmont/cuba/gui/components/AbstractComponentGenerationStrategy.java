@@ -43,12 +43,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-public abstract class AbstractMetaComponentStrategy implements MetaComponentStrategy {
+public abstract class AbstractComponentGenerationStrategy implements ComponentGenerationStrategy {
 
     protected Messages messages;
     protected ComponentsFactory componentsFactory;
 
-    public AbstractMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+    public AbstractComponentGenerationStrategy(Messages messages, ComponentsFactory componentsFactory) {
         this.messages = messages;
         this.componentsFactory = componentsFactory;
     }

@@ -22,11 +22,11 @@ import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
 
-@org.springframework.stereotype.Component(DefaultMetaComponentStrategy.NAME)
-public class DefaultMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
+@org.springframework.stereotype.Component(DefaultComponentGenerationStrategy.NAME)
+public class DefaultComponentGenerationStrategy extends AbstractComponentGenerationStrategy implements Ordered {
     public static final String NAME = "cuba_DefaultMetaComponentStrategy";
 
-    public DefaultMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+    public DefaultComponentGenerationStrategy(Messages messages, ComponentsFactory componentsFactory) {
         super(messages, componentsFactory);
     }
 
