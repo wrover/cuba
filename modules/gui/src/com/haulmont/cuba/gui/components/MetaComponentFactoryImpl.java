@@ -16,39 +16,13 @@
 
 package com.haulmont.cuba.gui.components;
 
-import com.haulmont.chile.core.model.MetaClass;
-import com.haulmont.chile.core.model.MetaProperty;
-import com.haulmont.chile.core.model.MetaPropertyPath;
-import com.haulmont.chile.core.model.Range;
-import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesMetaProperty;
-import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesUtils;
-import com.haulmont.cuba.core.app.dynamicattributes.PropertyType;
-import com.haulmont.cuba.core.entity.CategoryAttribute;
-import com.haulmont.cuba.core.entity.FileDescriptor;
-import com.haulmont.cuba.core.entity.annotation.CurrencyValue;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.Messages;
-import com.haulmont.cuba.gui.ComponentsHelper;
-import com.haulmont.cuba.gui.data.CollectionDatasource;
-import com.haulmont.cuba.gui.dynamicattributes.DynamicAttributesGuiTools;
-import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
-import org.apache.commons.lang.StringUtils;
-
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.sql.Time;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @org.springframework.stereotype.Component(MetaComponentFactory.NAME)
 public class MetaComponentFactoryImpl implements MetaComponentFactory {
 
-    @Inject
-    protected Messages messages;
-    @Inject
-    protected ComponentsFactory componentsFactory;
     @Inject
     protected List<MetaComponentStrategy> metaComponentStrategies;
 
