@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 
 /**
  * A class that stores information that can be used to create
- * a component in a {@link MetaComponentFactory} implementation.
+ * a component by the {@link com.haulmont.cuba.gui.xml.layout.ComponentsFactory}.
  */
 public class ComponentGenerationContext {
     protected MetaClass metaClass;
