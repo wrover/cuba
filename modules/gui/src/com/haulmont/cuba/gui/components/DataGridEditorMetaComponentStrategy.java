@@ -52,6 +52,13 @@ public class DataGridEditorMetaComponentStrategy extends AbstractMetaComponentSt
     }
 
     @Override
+    protected Component createStringField(MetaContext context, MetaPropertyPath mpp) {
+        TextField component = componentsFactory.createComponent(TextField.class);
+        setDatasource(component, context);
+        return component;
+    }
+
+    @Override
     protected Field createEntityField(MetaContext context, MetaPropertyPath mpp) {
         CollectionDatasource optionsDatasource = null;
 

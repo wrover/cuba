@@ -25,6 +25,7 @@ import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesUtils;
 import com.haulmont.cuba.core.app.dynamicattributes.PropertyType;
 import com.haulmont.cuba.core.entity.CategoryAttribute;
 import com.haulmont.cuba.core.entity.FileDescriptor;
+import com.haulmont.cuba.core.entity.annotation.CurrencyValue;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.ComponentsHelper;
@@ -35,10 +36,12 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.sql.Time;
 import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 
 public abstract class AbstractMetaComponentStrategy implements MetaComponentStrategy {
 
@@ -60,32 +63,61 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
             if (mppRange.isDatatype()) {
                 Class type = mppRange.asDatatype().getJavaClass();
 
+                MetaProperty metaProperty = mpp.getMetaProperty();
+                if (DynamicAttributesUtils.isDynamicAttribute(metaProperty)) {
+                    CategoryAttribute categoryAttribute = DynamicAttributesUtils.getCategoryAttribute(metaProperty);
+                    if (categoryAttribute != null && categoryAttribute.getDataType() == PropertyType.ENUMERATION) {
+                        return createEnumField(context);
+                    }
+                }
+
                 if (xmlDescriptor != null
                         && "true".equalsIgnoreCase(xmlDescriptor.attributeValue("link"))) {
                     return createDatatypeLinkField(context);
-                } else if (type.equals(String.class)) {
-                    if (xmlDescriptor != null
-                            && xmlDescriptor.attribute("mask") != null) {
-                        return createMaskedField(context);
-                    } else {
-                        return createStringField(context, mpp);
+                } else {
+                    boolean hasMaskAttribute = xmlDescriptor != null
+                            && xmlDescriptor.attribute("mask") != null;
+
+                    if (type.equals(String.class)) {
+                        if (hasMaskAttribute) {
+                            return createMaskedField(context);
+                        } else {
+                            return createStringField(context, mpp);
+                        }
+                    } else if (type.equals(UUID.class)) {
+                        return createUuidField(context);
+                    } else if (type.equals(Boolean.class)) {
+                        return createBooleanField(context);
+                    } else if (type.equals(java.sql.Date.class) || type.equals(Date.class)) {
+                        return createDateField(context);
+                    } else if (type.equals(Time.class)) {
+                        return createTimeField(context);
+                    } else if (Number.class.isAssignableFrom(type)) {
+                        if (hasMaskAttribute) {
+                            return createMaskedField(context);
+                        } else {
+                            Field currencyField = createCurrencyField(context, mpp);
+                            if (currencyField != null) {
+                                return currencyField;
+                            }
+
+                            return createNumberField(context);
+                        }
                     }
-                } else if (type.equals(java.sql.Date.class) || type.equals(Date.class)) {
-                    return createDateField(context);
-                } else if (type.equals(Time.class)) {
-                    return createTimeField(context);
-                } else if (Number.class.isAssignableFrom(type)
-                        && xmlDescriptor != null
-                        && xmlDescriptor.attribute("mask") != null) {
-                    return createMaskedField(context);
                 }
             } else if (mppRange.isClass()) {
                 MetaProperty metaProperty = mpp.getMetaProperty();
                 Class<?> javaType = metaProperty.getJavaType();
-                if (!FileDescriptor.class.isAssignableFrom(javaType)
-                        && !Collection.class.isAssignableFrom(javaType)) {
+
+                if (FileDescriptor.class.isAssignableFrom(javaType)) {
+                    return createFileUploadField(context);
+                }
+
+                if (!Collection.class.isAssignableFrom(javaType)) {
                     return createEntityField(context, mpp);
                 }
+            } else if (mppRange.isEnum()) {
+                return createEnumField(context);
             }
         }
 
@@ -99,6 +131,12 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         setLinkFieldAttributes(linkField, context);
 
         return linkField;
+    }
+
+    protected Field createEnumField(MetaContext context) {
+        LookupField component = componentsFactory.createComponent(LookupField.class);
+        setDatasource(component, context);
+        return component;
     }
 
     protected Component createMaskedField(MetaContext context) {
@@ -157,6 +195,20 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         return textField;
     }
 
+    protected Field createUuidField(MetaContext context) {
+        MaskedField maskedField = componentsFactory.createComponent(MaskedField.class);
+        setDatasource(maskedField, context);
+        maskedField.setMask("hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh");
+        maskedField.setSendNullRepresentation(false);
+        return maskedField;
+    }
+
+    protected Field createBooleanField(MetaContext context) {
+        CheckBox component = componentsFactory.createComponent(CheckBox.class);
+        setDatasource(component, context);
+        return component;
+    }
+
     protected Component createDateField(MetaContext context) {
         DateField dateField = componentsFactory.createComponent(DateField.class);
         setDatasource(dateField, context);
@@ -203,6 +255,47 @@ public abstract class AbstractMetaComponentStrategy implements MetaComponentStra
         }
 
         return timeField;
+    }
+
+    protected Field createNumberField(MetaContext context) {
+        TextField component = componentsFactory.createComponent(TextField.class);
+        setDatasource(component, context);
+        return component;
+    }
+
+    @Nullable
+    protected Field createCurrencyField(MetaContext context, MetaPropertyPath mpp) {
+        if (DynamicAttributesUtils.isDynamicAttribute(mpp.getMetaProperty()))
+            return null;
+
+        Object currencyAnnotation = mpp.getMetaProperty().getAnnotations().get(CurrencyValue.class.getName());
+        if (currencyAnnotation == null) {
+            return null;
+        }
+
+        CurrencyField component = componentsFactory.createComponent(CurrencyField.class);
+        setDatasource(component, context);
+        return component;
+    }
+
+    protected Field createFileUploadField(MetaContext context) {
+        FileUploadField fileUploadField = (FileUploadField) componentsFactory.createComponent(FileUploadField.NAME);
+        fileUploadField.setMode(FileUploadField.FileStoragePutMode.IMMEDIATE);
+
+        fileUploadField.setUploadButtonCaption(null);
+        fileUploadField.setUploadButtonDescription(messages.getMainMessage("upload.submit"));
+        fileUploadField.setUploadButtonIcon("icons/upload.png");
+
+        fileUploadField.setClearButtonCaption(null);
+        fileUploadField.setClearButtonDescription(messages.getMainMessage("upload.clear"));
+        fileUploadField.setClearButtonIcon("icons/remove.png");
+
+        fileUploadField.setShowFileName(true);
+        fileUploadField.setShowClearButton(true);
+
+        setDatasource(fileUploadField, context);
+
+        return fileUploadField;
     }
 
     protected Component createEntityField(MetaContext context, MetaPropertyPath mpp) {

@@ -22,27 +22,22 @@ import org.springframework.core.Ordered;
 
 import javax.annotation.Nullable;
 
-@org.springframework.stereotype.Component(FieldGroupMetaComponentStrategy.NAME)
-public class FieldGroupMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
-    public static final String NAME = "cuba_FieldGroupMetaComponentStrategy";
+@org.springframework.stereotype.Component(DefaultMetaComponentStrategy.NAME)
+public class DefaultMetaComponentStrategy extends AbstractMetaComponentStrategy implements Ordered {
+    public static final String NAME = "cuba_DefaultMetaComponentStrategy";
 
-    public FieldGroupMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
+    public DefaultMetaComponentStrategy(Messages messages, ComponentsFactory componentsFactory) {
         super(messages, componentsFactory);
     }
 
     @Nullable
     @Override
     public Component createComponent(MetaContext context) {
-        if (context.getComponentClass() == null
-                || !FieldGroup.class.isAssignableFrom(context.getComponentClass())) {
-            return null;
-        }
-
         return createComponentInternal(context);
     }
 
     @Override
     public int getOrder() {
-        return HIGHEST_PLATFORM_PRECEDENCE + 10;
+        return LOWEST_PLATFORM_PRECEDENCE;
     }
 }
