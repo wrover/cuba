@@ -42,63 +42,8 @@ public class ComponentGenerationContext {
      * @param property  a property of meta class for which a component should be created
      */
     public ComponentGenerationContext(MetaClass metaClass, String property) {
-        this(metaClass, property, null, null, null, null);
-    }
-
-    /**
-     * Creates an instance of MetaContext.
-     *
-     * @param metaClass  an instance of {@link MetaClass} for which a component should be created
-     * @param property   a property of meta class for which a component should be created
-     * @param datasource a datasource that can be used to create the component
-     */
-    public ComponentGenerationContext(MetaClass metaClass, String property, @Nullable Datasource datasource) {
-        this(metaClass, property, datasource, null, null, null);
-    }
-
-    /**
-     * Creates an instance of MetaContext.
-     *
-     * @param metaClass      an instance of {@link MetaClass} for which a component should be created
-     * @param property       a property of meta class for which a component should be created
-     * @param componentClass a component class for which a component should be created
-     */
-    public ComponentGenerationContext(MetaClass metaClass, String property, @Nullable Class componentClass) {
-        this(metaClass, property, null, null, null, componentClass);
-    }
-
-    /**
-     * Creates an instance of MetaContext.
-     *
-     * @param metaClass      an instance of {@link MetaClass} for which a component should be created
-     * @param property       a property of meta class for which a component should be created
-     * @param datasource     a datasource that can be used to create the component
-     * @param componentClass a component class for which a component should be created
-     */
-    public ComponentGenerationContext(MetaClass metaClass, String property,
-                                      @Nullable Datasource datasource, @Nullable Class componentClass) {
-        this(metaClass, property, datasource, null, null, componentClass);
-    }
-
-    /**
-     * Creates an instance of MetaContext.
-     *
-     * @param metaClass         an instance of {@link MetaClass} for which a component should be created
-     * @param property          a property of meta class for which a component should be created
-     * @param datasource        a datasource that can be used to create the component
-     * @param optionsDatasource a datasource that can be used as optional to create the component
-     * @param xmlDescriptor     an XML descriptor which contains additional information
-     * @param componentClass    a component class for which a component should be created
-     */
-    public ComponentGenerationContext(MetaClass metaClass, String property, @Nullable Datasource datasource,
-                                      @Nullable CollectionDatasource optionsDatasource, @Nullable Element xmlDescriptor,
-                                      @Nullable Class componentClass) {
         this.metaClass = metaClass;
         this.property = property;
-        this.datasource = datasource;
-        this.optionsDatasource = optionsDatasource;
-        this.xmlDescriptor = xmlDescriptor;
-        this.componentClass = componentClass;
     }
 
     /**
@@ -109,10 +54,32 @@ public class ComponentGenerationContext {
     }
 
     /**
+     * Sets an instance of {@link MetaClass} for which a component should be created, using fluent API method.
+     *
+     * @param metaClass an instance of {@link MetaClass} for which a component should be created
+     * @return this object
+     */
+    public ComponentGenerationContext setMetaClass(MetaClass metaClass) {
+        this.metaClass = metaClass;
+        return this;
+    }
+
+    /**
      * @return a property of meta class for which a component should be created
      */
     public String getProperty() {
         return property;
+    }
+
+    /**
+     * Sets a property of meta class for which a component should be created, using fluent API method.
+     *
+     * @param property a property of meta class for which a component should be created
+     * @return this object
+     */
+    public ComponentGenerationContext setProperty(String property) {
+        this.property = property;
+        return this;
     }
 
     /**
@@ -124,11 +91,33 @@ public class ComponentGenerationContext {
     }
 
     /**
+     * Sets a datasource that can be used to create the component, using fluent API method.
+     *
+     * @param datasource a datasource that can be used to create the component
+     * @return this object
+     */
+    public ComponentGenerationContext setDatasource(Datasource datasource) {
+        this.datasource = datasource;
+        return this;
+    }
+
+    /**
      * @return a datasource that can be used as optional to create the component
      */
     @Nullable
     public CollectionDatasource getOptionsDatasource() {
         return optionsDatasource;
+    }
+
+    /**
+     * Sets a datasource that can be used as optional to create the component, using fluent API method.
+     *
+     * @param optionsDatasource a datasource that can be used as optional to create the component
+     * @return this object
+     */
+    public ComponentGenerationContext setOptionsDatasource(CollectionDatasource optionsDatasource) {
+        this.optionsDatasource = optionsDatasource;
+        return this;
     }
 
     /**
@@ -140,10 +129,32 @@ public class ComponentGenerationContext {
     }
 
     /**
+     * Sets an XML descriptor which contains additional information, using fluent API method.
+     *
+     * @param xmlDescriptor an XML descriptor which contains additional information
+     * @return this object
+     */
+    public ComponentGenerationContext setXmlDescriptor(Element xmlDescriptor) {
+        this.xmlDescriptor = xmlDescriptor;
+        return this;
+    }
+
+    /**
      * @return a component class for which a component should be created
      */
     @Nullable
     public Class getComponentClass() {
         return componentClass;
+    }
+
+    /**
+     * Sets a component class for which a component should be created, using fluent API method.
+     *
+     * @param componentClass a component class for which a component should be created
+     * @return this object
+     */
+    public ComponentGenerationContext setComponentClass(Class componentClass) {
+        this.componentClass = componentClass;
+        return this;
     }
 }

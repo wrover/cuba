@@ -201,7 +201,7 @@ public class WebComponentsFactory implements ComponentsFactory {
         return new WebTimer();
     }
 
-    public List<ComponentGenerationStrategy> getComponentGenerationStrategies() {
+    protected List<ComponentGenerationStrategy> getComponentGenerationStrategies() {
         return componentGenerationStrategies;
     }
 }

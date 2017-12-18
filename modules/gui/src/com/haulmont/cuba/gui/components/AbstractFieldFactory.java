@@ -35,8 +35,11 @@ public abstract class AbstractFieldFactory implements FieldFactory {
     public Component createField(Datasource datasource, String property, Element xmlDescriptor) {
         MetaClass metaClass = resolveMetaClass(datasource);
 
-        ComponentGenerationContext context = new ComponentGenerationContext(metaClass, property, datasource,
-                getOptionsDatasource(datasource, property), xmlDescriptor, Table.class);
+        ComponentGenerationContext context = new ComponentGenerationContext(metaClass, property)
+                .setDatasource(datasource)
+                .setOptionsDatasource(getOptionsDatasource(datasource, property))
+                .setXmlDescriptor(xmlDescriptor)
+                .setComponentClass(Table.class);
 
         return componentsFactory.createComponent(context);
     }

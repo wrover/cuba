@@ -164,7 +164,7 @@ public class DesktopComponentsFactory implements ComponentsFactory {
         return new DesktopTimer();
     }
 
-    public List<ComponentGenerationStrategy> getComponentGenerationStrategies() {
+    protected List<ComponentGenerationStrategy> getComponentGenerationStrategies() {
         return componentGenerationStrategies;
     }
 }
