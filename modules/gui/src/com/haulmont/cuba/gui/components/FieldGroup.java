@@ -471,6 +471,12 @@ public interface FieldGroup extends Component, Component.BelongToFrame, Componen
          * @param enabled true if field accepts context help text in HTML format
          */
         void setContextHelpTextHtmlEnabled(Boolean enabled);
+
+        // TODO: gg, java doc
+        void addContextHelpIconClickListener(ContextHelpIconClickListener listener);
+
+        // TODO: gg, java doc
+        void removeContextHelpIconClickListener(ContextHelpIconClickListener listener);
     }
 
     /**

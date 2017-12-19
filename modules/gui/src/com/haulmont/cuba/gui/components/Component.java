@@ -374,8 +374,10 @@ public interface Component {
          */
         void setContextHelpTextHtmlEnabled(boolean enabled);
 
+        // TODO: gg, java doc
         void addContextHelpIconClickListener(ContextHelpIconClickListener listener);
 
+        // TODO: gg, java doc
         void removeContextHelpIconClickListener(ContextHelpIconClickListener listener);
     }
 

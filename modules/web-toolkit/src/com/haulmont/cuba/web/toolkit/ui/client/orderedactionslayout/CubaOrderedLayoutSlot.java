@@ -20,12 +20,18 @@ package com.haulmont.cuba.web.toolkit.ui.client.orderedactionslayout;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.BrowserInfo;
+import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.StyleConstants;
+import com.vaadin.client.Util;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.ui.AbstractFieldConnector;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.orderedlayout.CaptionPosition;
 import com.vaadin.client.ui.orderedlayout.Slot;
@@ -33,12 +39,14 @@ import com.vaadin.client.ui.orderedlayout.VAbstractOrderedLayout;
 
 import java.util.List;
 
-public class CubaOrderedLayoutSlot extends Slot {
+public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
 
     public static final String CONTEXT_HELP_CLASSNAME = "c-context-help-button";
 
     protected Element contextHelpIcon;
     protected String contextHelpText;
+
+    protected HandlerRegistration clickHandlerRegistration = null;
 
     public CubaOrderedLayoutSlot(VAbstractOrderedLayout layout, Widget widget) {
         super(layout, widget);
@@ -155,10 +163,21 @@ public class CubaOrderedLayoutSlot extends Slot {
             }
             if (caption != null) {
                 caption.appendChild(contextHelpIcon);
+
+                if (clickHandlerRegistration == null) {
+                    clickHandlerRegistration = addDomHandler(this, ClickEvent.getType());
+                }
             }
-        } else if (this.contextHelpIcon != null) {
-            this.contextHelpIcon.removeFromParent();
-            this.contextHelpIcon = null;
+        } else {
+            if (this.contextHelpIcon != null) {
+                this.contextHelpIcon.removeFromParent();
+                this.contextHelpIcon = null;
+            }
+
+            if (clickHandlerRegistration != null) {
+                clickHandlerRegistration.removeHandler();
+                clickHandlerRegistration = null;
+            }
         }
 
         // Error
@@ -236,6 +255,17 @@ public class CubaOrderedLayoutSlot extends Slot {
                     focusTimer.run();
                 }
             }
+        }
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+        Element target = Element.as(event.getNativeEvent().getEventTarget());
+        ComponentConnector componentConnector = Util.findConnectorFor(getWidget());
+
+        if (target == contextHelpIcon &&
+                componentConnector instanceof AbstractFieldConnector) {
+            ((AbstractFieldConnector) componentConnector).contextHelpIconClick(event);
         }
     }
 }

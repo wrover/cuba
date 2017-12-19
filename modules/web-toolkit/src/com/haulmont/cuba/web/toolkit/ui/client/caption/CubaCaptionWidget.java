@@ -46,7 +46,7 @@ public class CubaCaptionWidget extends VCaption implements ClickHandler {
 
     protected CaptionHolder captionHolder = null;
 
-    private HandlerRegistration clickHandlerRegistration = null;
+    protected HandlerRegistration clickHandlerRegistration = null;
 
     public CubaCaptionWidget(ComponentConnector component, ApplicationConnection client) {
         super(component, client);
