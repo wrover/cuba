@@ -35,10 +35,7 @@ import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.ValueListener;
 import com.haulmont.cuba.gui.data.impl.WeakItemChangeListener;
 import com.haulmont.cuba.web.gui.data.ItemWrapper;
-import com.haulmont.cuba.web.toolkit.ui.client.hascontexthelp.HasContextHelpServerRpc;
-import com.vaadin.shared.MouseEventDetails;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.security.access.method.P;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.metadata.BeanDescriptor;
@@ -46,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static com.haulmont.cuba.gui.ComponentsHelper.handleFilteredAttributes;
 
@@ -451,26 +447,30 @@ public abstract class WebAbstractField<T extends com.vaadin.ui.AbstractField>
         component.setContextHelpTextHtmlEnabled(enabled);
     }
 
-    HasContextHelpServerRpc contextHelpServerRpc;
+    protected com.vaadin.ui.Component.HasContextHelp.ContextHelpIconClickListener contextHelpIconClickListener;
 
     @Override
     public void addContextHelpIconClickListener(ContextHelpIconClickListener listener) {
-        getEventRouter().addListener(ContextHelpIconClickListener.class, listener);
+        addListener(ContextHelpIconClickListener.class, listener);
 
-        if (contextHelpServerRpc == null) {
-            contextHelpServerRpc = new HasContextHelpServerRpc() {
-                @Override
-                public void click(com.vaadin.shared.MouseEventDetails mouseEventDetails) {
-                    // TODO: gg,
-                }
+        if (contextHelpIconClickListener == null) {
+            contextHelpIconClickListener =
+                    (com.vaadin.ui.Component.HasContextHelp.ContextHelpIconClickListener) e -> {
+                ContextHelpIconClickEvent event = new ContextHelpIconClickEvent(WebAbstractField.this);
+                fireEvent(ContextHelpIconClickListener.class, ContextHelpIconClickListener::iconClick, event);
             };
 
-            component.
+            component.addContextHelpIconClickListener(contextHelpIconClickListener);
         }
     }
 
     @Override
     public void removeContextHelpIconClickListener(ContextHelpIconClickListener listener) {
-        getEventRouter().removeListener(ContextHelpIconClickListener.class, listener);
+        removeListener(ContextHelpIconClickListener.class, listener);
+
+        if (!hasListeners(ContextHelpIconClickListener.class)) {
+            component.removeContextHelpIconClickListener(contextHelpIconClickListener);
+            contextHelpIconClickListener = null;
+        }
     }
 }

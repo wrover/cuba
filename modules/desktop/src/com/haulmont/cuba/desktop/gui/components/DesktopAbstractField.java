@@ -330,4 +330,14 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
             }
         }
     }
+
+    @Override
+    public void addContextHelpIconClickListener(ContextHelpIconClickListener listener) {
+        // TODO: gg, implement
+    }
+
+    @Override
+    public void removeContextHelpIconClickListener(ContextHelpIconClickListener listener) {
+        // TODO: gg, implement
+    }
 }

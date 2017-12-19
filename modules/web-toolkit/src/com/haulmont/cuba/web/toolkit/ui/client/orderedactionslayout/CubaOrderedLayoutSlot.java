@@ -144,8 +144,7 @@ public class CubaOrderedLayoutSlot extends Slot {
         if (contextHelpText != null && !contextHelpText.isEmpty()) {
             if (contextHelpIcon == null) {
                 contextHelpIcon = DOM.createSpan();
-                // TODO decide something better (e.g. use CSS to insert the
-                // character)
+                // TODO decide something better (e.g. use CSS to insert the character)
                 contextHelpIcon.setInnerHTML("?");
                 contextHelpIcon.setClassName(CONTEXT_HELP_CLASSNAME);
 
