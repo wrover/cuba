@@ -20,21 +20,26 @@ package com.haulmont.cuba.web.toolkit.ui.client.fieldgrouplayout;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.haulmont.cuba.web.toolkit.ui.client.caption.CaptionHolder;
 import com.haulmont.cuba.web.toolkit.ui.client.caption.CubaCaptionWidget;
 import com.haulmont.cuba.web.toolkit.ui.client.gridlayout.CubaGridLayoutSlot;
 import com.vaadin.client.ComponentConnector;
+import com.vaadin.client.Util;
 import com.vaadin.client.VCaption;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.ui.AbstractFieldConnector;
 import com.vaadin.client.ui.ManagedLayout;
 import com.vaadin.client.ui.VCheckBox;
+import com.vaadin.shared.AbstractFieldState;
 import com.vaadin.shared.ui.AlignmentInfo;
 
 /**
  * Component slot with horizontal layout for caption and component
- *
  */
-public class CubaFieldGroupLayoutComponentSlot extends CubaGridLayoutSlot implements CaptionHolder {
+public class CubaFieldGroupLayoutComponentSlot extends CubaGridLayoutSlot
+        implements CaptionHolder, EventListener {
 
     protected static final String INDICATORS_CLASSNAME = "caption-indicators";
 
@@ -369,9 +374,15 @@ public class CubaFieldGroupLayoutComponentSlot extends CubaGridLayoutSlot implem
             captionWidget.getContextHelpIndicatorElement().removeFromParent();
             contextHelpIndicatorElement = captionWidget.getContextHelpIndicatorElement();
             rightCaption.appendChild(contextHelpIndicatorElement);
-        } else if (contextHelpIndicatorElement != null) {
-            contextHelpIndicatorElement.removeFromParent();
-            contextHelpIndicatorElement = null;
+
+            DOM.sinkEvents(contextHelpIndicatorElement, Event.ONCLICK);
+            DOM.setEventListener(contextHelpIndicatorElement, this);
+        } else {
+            if (contextHelpIndicatorElement != null) {
+                contextHelpIndicatorElement.removeFromParent();
+                DOM.setEventListener(contextHelpIndicatorElement, null);
+                contextHelpIndicatorElement = null;
+            }
         }
 
         if (captionWidget.getErrorIndicatorElement() != null) {
@@ -398,5 +409,21 @@ public class CubaFieldGroupLayoutComponentSlot extends CubaGridLayoutSlot implem
         rightCaption.getStyle().setPosition(Style.Position.ABSOLUTE);
 
         return rightCaption;
+    }
+
+    @Override
+    public void onBrowserEvent(Event event) {
+        if (DOM.eventGetType(event) == Event.ONCLICK) {
+            Element target = Element.as(event.getEventTarget());
+            ComponentConnector componentConnector = Util.findConnectorFor(getWidget());
+            if (target == contextHelpIndicatorElement &&
+                    componentConnector instanceof AbstractFieldConnector) {
+                AbstractFieldConnector connector = (AbstractFieldConnector) componentConnector;
+                AbstractFieldState state = connector.getState();
+                if (!state.contextHelpTooltipEnabled) {
+                    connector.contextHelpIconClick(event);
+                }
+            }
+        }
     }
 }
