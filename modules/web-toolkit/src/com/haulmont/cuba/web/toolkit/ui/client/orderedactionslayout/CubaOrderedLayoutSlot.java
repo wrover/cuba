@@ -36,6 +36,7 @@ import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.orderedlayout.CaptionPosition;
 import com.vaadin.client.ui.orderedlayout.Slot;
 import com.vaadin.client.ui.orderedlayout.VAbstractOrderedLayout;
+import com.vaadin.shared.AbstractFieldState;
 
 import java.util.List;
 
@@ -44,7 +45,6 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
     public static final String CONTEXT_HELP_CLASSNAME = "c-context-help-button";
 
     protected Element contextHelpIcon;
-    protected String contextHelpText;
 
     protected HandlerRegistration clickHandlerRegistration = null;
 
@@ -52,7 +52,7 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
         super(layout, widget);
     }
 
-    public void setCaption(String captionText, String contextHelpText, Icon icon, List<String> styles,
+    public void setCaption(String captionText, boolean contextHelpIconEnabled, Icon icon, List<String> styles,
                            String error, boolean showError, boolean required, boolean enabled, boolean captionAsHtml) {
         // CAUTION copied from super
         // Caption wrappers
@@ -60,7 +60,7 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
         final Element focusedElement = WidgetUtil.getFocusedElement();
         // By default focus will not be lost
         boolean focusLost = false;
-        if (captionText != null || icon != null || error != null || required || contextHelpText != null) {
+        if (captionText != null || icon != null || error != null || required || contextHelpIconEnabled) {
             if (caption == null) {
                 caption = DOM.createDiv();
                 captionWrap = DOM.createDiv();
@@ -148,8 +148,7 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
 
         // Context Help
         // Haulmont API
-        this.contextHelpText = contextHelpText;
-        if (contextHelpText != null && !contextHelpText.isEmpty()) {
+        if (contextHelpIconEnabled) {
             if (contextHelpIcon == null) {
                 contextHelpIcon = DOM.createSpan();
                 // TODO decide something better (e.g. use CSS to insert the character)
@@ -265,7 +264,11 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
 
         if (target == contextHelpIcon &&
                 componentConnector instanceof AbstractFieldConnector) {
-            ((AbstractFieldConnector) componentConnector).contextHelpIconClick(event);
+            AbstractFieldConnector connector = (AbstractFieldConnector) componentConnector;
+            AbstractFieldState state = connector.getState();
+            if (!state.contextHelpTooltipEnabled) {
+                connector.contextHelpIconClick(event);
+            }
         }
     }
 }

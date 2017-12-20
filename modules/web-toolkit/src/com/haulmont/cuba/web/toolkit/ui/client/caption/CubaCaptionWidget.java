@@ -184,7 +184,7 @@ public class CubaCaptionWidget extends VCaption implements ClickHandler {
         if (owner.getState() instanceof AbstractFieldState) {
             AbstractFieldState state = (AbstractFieldState) owner
                     .getState();
-            if (state.contextHelpText != null && !state.contextHelpText.isEmpty()) {
+            if (state.contextHelpIconEnabled) {
                 if (contextHelpIndicatorElement == null) {
                     contextHelpIndicatorElement = DOM.createDiv();
                     contextHelpIndicatorElement.setClassName(CONTEXT_HELP_CLASSNAME);
@@ -244,7 +244,11 @@ public class CubaCaptionWidget extends VCaption implements ClickHandler {
 
         if (target == contextHelpIndicatorElement &&
                 getOwner() instanceof AbstractFieldConnector) {
-            ((AbstractFieldConnector) getOwner()).contextHelpIconClick(event);
+            AbstractFieldConnector connector = (AbstractFieldConnector) getOwner();
+            AbstractFieldState state = connector.getState();
+            if (!state.contextHelpTooltipEnabled) {
+                connector.contextHelpIconClick(event);
+            }
         }
     }
 

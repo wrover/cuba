@@ -84,13 +84,13 @@ public class CubaOrderedActionsLayoutConnector extends AbstractOrderedLayoutConn
         }
 
         // Haulmont API
-        String contextHelpText = null;
+        boolean contextHelpIconEnabled = false;
         if (child.getState() instanceof AbstractFieldState) {
-            contextHelpText = ((AbstractFieldState) child.getState()).contextHelpText;
+            contextHelpIconEnabled = ((AbstractFieldState) child.getState()).contextHelpIconEnabled;
         }
 
         // Haulmont API
-        slot.setCaption(caption, contextHelpText, icon, styles, error, showError, required,
+        slot.setCaption(caption, contextHelpIconEnabled, icon, styles, error, showError, required,
                 enabled, child.getState().captionAsHtml);
 
         AriaHelper.handleInputRequired(child.getWidget(), required);
