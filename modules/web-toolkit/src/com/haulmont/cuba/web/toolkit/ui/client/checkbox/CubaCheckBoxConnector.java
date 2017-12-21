@@ -19,6 +19,7 @@ package com.haulmont.cuba.web.toolkit.ui.client.checkbox;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -55,18 +56,23 @@ public class CubaCheckBoxConnector extends CheckBoxConnector {
         super.onStateChanged(stateChangeEvent);
 
         if (!getWidget().captionManagedByLayout
-                && getState().contextHelpText != null
-                && !getState().contextHelpText.isEmpty()) {
-            getWidget().contextHelpIcon = DOM.createSpan();
-            getWidget().contextHelpIcon.setInnerHTML("?");
-            getWidget().contextHelpIcon.setClassName(CONTEXT_HELP_CLASSNAME);
-            Roles.getTextboxRole().setAriaHiddenState(getWidget().contextHelpIcon, true);
+                && getState().contextHelpIconEnabled) {
+            if (getWidget().contextHelpIcon == null) {
+                getWidget().contextHelpIcon = DOM.createSpan();
+                getWidget().contextHelpIcon.setInnerHTML("?");
+                getWidget().contextHelpIcon.setClassName(CONTEXT_HELP_CLASSNAME);
+                Roles.getTextboxRole().setAriaHiddenState(getWidget().contextHelpIcon, true);
 
-            getWidget().getElement().appendChild(getWidget().contextHelpIcon);
-            DOM.sinkEvents(getWidget().contextHelpIcon, VTooltip.TOOLTIP_EVENTS | Event.ONCLICK);
+                getWidget().getElement().appendChild(getWidget().contextHelpIcon);
+                DOM.sinkEvents(getWidget().contextHelpIcon, VTooltip.TOOLTIP_EVENTS | Event.ONCLICK);
+            } else {
+                getWidget().contextHelpIcon.getStyle().clearDisplay();
+            }
         } else if (getWidget().contextHelpIcon != null) {
-            getWidget().contextHelpIcon.removeFromParent();
-            getWidget().contextHelpIcon = null;
+            getWidget().contextHelpIcon.getStyle()
+                    .setDisplay(Style.Display.NONE);
+
+            getWidget().setAriaInvalid(false);
         }
     }
 
@@ -76,7 +82,9 @@ public class CubaCheckBoxConnector extends CheckBoxConnector {
 
         Element target = Element.as(event.getNativeEvent().getEventTarget());
         if (target == getWidget().contextHelpIcon) {
-            contextHelpIconClick(event);
+            if (!getState().contextHelpTooltipEnabled) {
+                contextHelpIconClick(event);
+            }
         }
     }
 }
