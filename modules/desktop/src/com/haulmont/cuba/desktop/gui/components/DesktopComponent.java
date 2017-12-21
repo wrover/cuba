@@ -30,4 +30,12 @@ public interface DesktopComponent extends Component {
     void setContainer(DesktopContainer container);
 
     void setExpanded(boolean expanded);
+
+    // TODO: gg, JavaDoc
+    interface HasContextHelpClickListeners extends HasContextHelp {
+        // TODO: gg, JavaDoc
+        boolean hasContextHelpIconClickListeners();
+        // TODO: gg, JavaDoc
+        void fireContextHelpIconClickEvent(Component.ContextHelpIconClickEvent event);
+    }
 }

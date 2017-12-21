@@ -48,8 +48,7 @@ public class CubaGridLayoutConnector extends GridLayoutConnector implements Pain
         AbstractComponentState state = childConnector.getState();
         if (VCaption.isNeeded(state)
                 || (state instanceof AbstractFieldState
-                && ((AbstractFieldState) state).contextHelpText != null
-                && !((AbstractFieldState) state).contextHelpText.isEmpty())) {
+                && ((AbstractFieldState) state).contextHelpIconEnabled)) {
             VLayoutSlot layoutSlot = cell.slot;
             VCaption caption = layoutSlot.getCaption();
             if (caption == null) {
