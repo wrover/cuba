@@ -29,6 +29,7 @@ import com.vaadin.client.StyleConstants;
 import com.vaadin.client.VCaption;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.AbstractFieldConnector;
+import com.vaadin.client.ui.HasContextHelpConnector;
 import com.vaadin.client.ui.ImageIcon;
 import com.vaadin.client.ui.aria.AriaHelper;
 import com.vaadin.shared.AbstractFieldState;
@@ -242,10 +243,12 @@ public class CubaCaptionWidget extends VCaption implements ClickHandler {
     public void onClick(ClickEvent event) {
         Element target = Element.as(event.getNativeEvent().getEventTarget());
 
-        if (target == contextHelpIndicatorElement &&
-                getOwner() instanceof AbstractFieldConnector) {
-            AbstractFieldConnector connector = (AbstractFieldConnector) getOwner();
-            AbstractFieldState state = connector.getState();
+
+        if (target == contextHelpIndicatorElement
+                && getOwner() instanceof HasContextHelpConnector
+                && getOwner().getState() instanceof AbstractFieldState) {
+            HasContextHelpConnector connector = (HasContextHelpConnector) getOwner();
+            AbstractFieldState state = (AbstractFieldState) getOwner().getState();
             if (!state.contextHelpTooltipEnabled) {
                 connector.contextHelpIconClick(event);
             }

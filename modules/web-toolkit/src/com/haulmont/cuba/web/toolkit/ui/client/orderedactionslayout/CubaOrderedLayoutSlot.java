@@ -32,6 +32,7 @@ import com.vaadin.client.StyleConstants;
 import com.vaadin.client.Util;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.AbstractFieldConnector;
+import com.vaadin.client.ui.HasContextHelpConnector;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.orderedlayout.CaptionPosition;
 import com.vaadin.client.ui.orderedlayout.Slot;
@@ -262,10 +263,11 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
         Element target = Element.as(event.getNativeEvent().getEventTarget());
         ComponentConnector componentConnector = Util.findConnectorFor(getWidget());
 
-        if (target == contextHelpIcon &&
-                componentConnector instanceof AbstractFieldConnector) {
-            AbstractFieldConnector connector = (AbstractFieldConnector) componentConnector;
-            AbstractFieldState state = connector.getState();
+        if (target == contextHelpIcon
+                && componentConnector instanceof HasContextHelpConnector
+                && componentConnector.getState() instanceof AbstractFieldState) {
+            HasContextHelpConnector connector = (HasContextHelpConnector) componentConnector;
+            AbstractFieldState state = (AbstractFieldState) componentConnector.getState();
             if (!state.contextHelpTooltipEnabled) {
                 connector.contextHelpIconClick(event);
             }
