@@ -31,11 +31,21 @@ public interface DesktopComponent extends Component {
 
     void setExpanded(boolean expanded);
 
-    // TODO: gg, JavaDoc
+    /**
+     * A sub-interface implemented by components that provide additional
+     * capabilities for components that have {@link ContextHelpIconClickListener}.
+     */
     interface HasContextHelpClickListeners extends HasContextHelp {
-        // TODO: gg, JavaDoc
+        /**
+         * @return {@code true} if a component has listeners, {@code false} otherwise
+         */
         boolean hasContextHelpIconClickListeners();
-        // TODO: gg, JavaDoc
+
+        /**
+         * Fires a {@link Component.ContextHelpIconClickEvent} for all listeners.
+         *
+         * @param event event to be fired
+         */
         void fireContextHelpIconClickEvent(Component.ContextHelpIconClickEvent event);
     }
 }

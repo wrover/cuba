@@ -374,20 +374,44 @@ public interface Component {
          */
         void setContextHelpTextHtmlEnabled(boolean enabled);
 
-        // TODO: gg, java doc
+        /**
+         * Registers a new context help icon click listener
+         *
+         * @param listener the listener to register
+         */
         void addContextHelpIconClickListener(ContextHelpIconClickListener listener);
 
-        // TODO: gg, java doc
+        /**
+         * Removes a previously registered context help icon click listener
+         *
+         * @param listener the listener to remove
+         */
         void removeContextHelpIconClickListener(ContextHelpIconClickListener listener);
     }
 
+    /**
+     * Listener for context help icon click events.
+     */
     @FunctionalInterface
     interface ContextHelpIconClickListener {
+        /**
+         * Called when the context help icon click happens.
+         *
+         * @param event en event providing more information
+         */
         void iconClick(ContextHelpIconClickEvent event);
     }
 
+    /**
+     * Describes context help icon click event.
+     */
     class ContextHelpIconClickEvent extends EventObject {
 
+        /**
+         * Constructor for a context help icon click event.
+         *
+         * @param component the Component from which this event originates
+         */
         public ContextHelpIconClickEvent(HasContextHelp component) {
             super(component);
         }

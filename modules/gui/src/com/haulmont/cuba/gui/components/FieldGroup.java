@@ -472,10 +472,18 @@ public interface FieldGroup extends Component, Component.BelongToFrame, Componen
          */
         void setContextHelpTextHtmlEnabled(Boolean enabled);
 
-        // TODO: gg, java doc
+        /**
+         * Registers a new context help icon click listener
+         *
+         * @param listener the listener to register
+         */
         void addContextHelpIconClickListener(ContextHelpIconClickListener listener);
 
-        // TODO: gg, java doc
+        /**
+         * Removes a previously registered context help icon click listener
+         *
+         * @param listener the listener to remove
+         */
         void removeContextHelpIconClickListener(ContextHelpIconClickListener listener);
     }
 
