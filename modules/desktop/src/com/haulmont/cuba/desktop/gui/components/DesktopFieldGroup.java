@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -448,7 +449,7 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
 
                 ToolTipButton toolTipButton = fci.getToolTipButton();
                 if (fci.getToolTipButton() != null) {
-                    updateTooltipButton(fci, fieldComponent.isVisible());
+                    updateTooltipButton(fci, fieldComponent);
 
                     DesktopToolTipManager.getInstance().registerTooltip(toolTipButton);
                     impl.add(toolTipButton, new CC().cell(colIndex * 3 + 2, insertRowIndex, 1, 1).alignY("top"));
@@ -487,8 +488,9 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         DesktopAbstractComponent fieldImpl = (DesktopAbstractComponent) fci.getComponentNN();
         fci.setComposition(fieldImpl);
 
-        if (StringUtils.isNotEmpty(fci.getContextHelpText())) {
-            updateTooltipButton(fci, fci.getComponentNN().isVisible());
+        if (StringUtils.isNotEmpty(fci.getContextHelpText())
+                || hasContextHelpIconClickListeners(fci.getComponentNN())) {
+            updateTooltipButton(fci, fci.getComponentNN());
         }
 
         if (fieldImpl.getCaption() != null) {
@@ -971,17 +973,50 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
 
         FieldConfigImpl fci = (FieldConfigImpl) field;
         if (fci != null) {
-            updateTooltipButton(fci, child.isVisible());
+            updateTooltipButton(fci, child);
         }
     }
 
-    protected void updateTooltipButton(FieldConfigImpl fci, boolean componentVisible) {
+    protected void updateTooltipButton(FieldConfigImpl fci, Component component) {
         ToolTipButton toolTipButton = fci.getToolTipButton();
+
+        boolean hasContextHelpIconClickListeners = hasContextHelpIconClickListeners(component);
         String contextHelpText = DesktopComponentsHelper.getContextHelpText(
                 fci.getContextHelpText(),
                 BooleanUtils.isTrue(fci.isContextHelpTextHtmlEnabled()));
-        toolTipButton.setToolTipText(contextHelpText);
-        toolTipButton.setVisible(componentVisible && StringUtils.isNotEmpty(contextHelpText));
+
+        ActionListener toolTipButtonActionListener = fci.getToolTipButtonActionListener();
+        if (hasContextHelpIconClickListeners) {
+            if (toolTipButtonActionListener == null) {
+                toolTipButtonActionListener = e ->
+                        fireContextHelpIconClickEvent(component);
+                toolTipButton.addActionListener(toolTipButtonActionListener);
+            }
+
+            toolTipButton.setToolTipText(null);
+        } else {
+            if (toolTipButtonActionListener != null) {
+                toolTipButton.removeActionListener(toolTipButtonActionListener);
+                fci.setToolTipButtonActionListener(null);
+            }
+
+            toolTipButton.setToolTipText(contextHelpText);
+        }
+
+        toolTipButton.setVisible(component.isVisible()
+                && (StringUtils.isNotEmpty(contextHelpText) || hasContextHelpIconClickListeners));
+    }
+
+    protected boolean hasContextHelpIconClickListeners(Component component) {
+        return component instanceof HasContextHelpClickListeners
+                && ((HasContextHelpClickListeners) component).hasContextHelpIconClickListeners();
+    }
+
+    protected void fireContextHelpIconClickEvent(Component component) {
+        if (component instanceof HasContextHelpClickListeners) {
+            ContextHelpIconClickEvent event = new ContextHelpIconClickEvent((HasContextHelp) component);
+            ((HasContextHelpClickListeners) component).fireContextHelpIconClickEvent(event);
+        }
     }
 
     @Override
@@ -1069,6 +1104,8 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         protected Boolean targetContextHelpTextHtmlEnabled;
         protected Formatter targetFormatter;
         protected boolean isTargetCustom;
+
+        protected ActionListener toolTipButtonActionListener;
 
         protected List<Field.Validator> targetValidators = new ArrayList<>(0);
         protected List<ContextHelpIconClickListener> targetContextHelpIconClickListeners = new ArrayList<>(0);
@@ -1563,6 +1600,14 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
 
         public void setManaged(boolean managed) {
             this.managed = managed;
+        }
+
+        public ActionListener getToolTipButtonActionListener() {
+            return toolTipButtonActionListener;
+        }
+
+        public void setToolTipButtonActionListener(ActionListener toolTipButtonActionListener) {
+            this.toolTipButtonActionListener = toolTipButtonActionListener;
         }
 
         public String getTargetWidth() {
