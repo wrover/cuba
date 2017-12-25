@@ -27,7 +27,6 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.BeanValidation;
 import com.haulmont.cuba.core.global.MessageTools;
 import com.haulmont.cuba.core.global.MetadataTools;
-import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Field;
 import com.haulmont.cuba.gui.components.RequiredValueMissingException;
 import com.haulmont.cuba.gui.components.ValidationException;
@@ -47,10 +46,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public abstract class DesktopAbstractField<C extends JComponent> extends DesktopAbstractComponent<C>
-        implements Field, DesktopComponent.HasContextHelpClickListeners {
+        implements Field, DesktopComponent.HasContextHelpClickHandler {
 
     protected List<ValueChangeListener> listeners = new ArrayList<>();
 
@@ -72,6 +73,8 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
     protected MetaPropertyPath metaPropertyPath;
     
     protected EditableChangeListener parentEditableChangeListener;
+
+    protected Consumer<ContextHelpIconClickEvent> contextHelpIconClickHandler;
 
     @Override
     public void addListener(ValueListener listener) {
@@ -337,26 +340,16 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
         }
     }
 
-    protected List<ContextHelpIconClickListener> contextHelpIconClickListeners = new ArrayList<>();
-
     @Override
-    public void addContextHelpIconClickListener(ContextHelpIconClickListener listener) {
-        Preconditions.checkNotNullArgument(listener);
-
-        if (!contextHelpIconClickListeners.contains(listener)) {
-            if (contextHelpIconClickListeners.add(listener)) {
-                requestContainerUpdate();
-
-                if (parent instanceof DesktopFieldGroup) {
-                    ((DesktopFieldGroup) parent).updateContextHelp(this);
-                }
-            }
-        }
+    public Consumer<ContextHelpIconClickEvent> getContextHelpIconClickHandler() {
+        return contextHelpIconClickHandler;
     }
 
     @Override
-    public void removeContextHelpIconClickListener(ContextHelpIconClickListener listener) {
-        if (contextHelpIconClickListeners.remove(listener)) {
+    public void setContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> handler) {
+        if (!Objects.equals(this.contextHelpIconClickHandler, handler)) {
+            this.contextHelpIconClickHandler = handler;
+
             requestContainerUpdate();
 
             if (parent instanceof DesktopFieldGroup) {
@@ -366,14 +359,9 @@ public abstract class DesktopAbstractField<C extends JComponent> extends Desktop
     }
 
     @Override
-    public boolean hasContextHelpIconClickListeners() {
-        return !contextHelpIconClickListeners.isEmpty();
-    }
-
-    @Override
-    public void fireContextHelpIconClickEvent(Component.ContextHelpIconClickEvent event) {
-        for (Component.ContextHelpIconClickListener listener : contextHelpIconClickListeners) {
-            listener.iconClick(event);
+    public void fireContextHelpIconClickEvent(ContextHelpIconClickEvent event) {
+        if (contextHelpIconClickHandler != null) {
+            contextHelpIconClickHandler.accept(event);
         }
     }
 }

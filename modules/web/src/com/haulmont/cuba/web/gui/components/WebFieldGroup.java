@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -332,8 +333,8 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
             if (fci.getTargetContextHelpTextHtmlEnabled() != null) {
                 cubaField.setContextHelpTextHtmlEnabled(fci.getTargetContextHelpTextHtmlEnabled());
             }
-            for (ContextHelpIconClickListener listener : fci.getTargetContextHelpIconClickListeners()) {
-                cubaField.addContextHelpIconClickListener(listener);
+            if (fci.getTargetContextHelpIconClickHandler() != null) {
+                cubaField.setContextHelpIconClickHandler(fci.getTargetContextHelpIconClickHandler());
             }
             if (fci.getTargetEditable() != null) {
                 cubaField.setEditable(fci.getTargetEditable());
@@ -829,7 +830,7 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
         protected boolean isTargetCustom;
 
         protected List<Field.Validator> targetValidators = new ArrayList<>(0);
-        protected List<ContextHelpIconClickListener> targetContextHelpIconClickListeners = new ArrayList<>(0);
+        protected Consumer<ContextHelpIconClickEvent> targetContextHelpIconClickHandler;
         protected FieldAttachMode attachMode = FieldAttachMode.APPLY_DEFAULTS;
 
         public FieldConfigImpl(String id) {
@@ -1266,22 +1267,20 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
         }
 
         @Override
-        public void addContextHelpIconClickListener(ContextHelpIconClickListener listener) {
+        public Consumer<ContextHelpIconClickEvent> getContextHelpIconClickHandler() {
             if (component instanceof Field) {
-                ((Field) component).addContextHelpIconClickListener(listener);
-            } else {
-                if (!targetContextHelpIconClickListeners.contains(listener)) {
-                    targetContextHelpIconClickListeners.add(listener);
-                }
+                return ((Field) component).getContextHelpIconClickHandler();
             }
+            return targetContextHelpIconClickHandler;
         }
 
         @Override
-        public void removeContextHelpIconClickListener(ContextHelpIconClickListener listener) {
+        public void setContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> handler) {
             if (component instanceof Field) {
-                ((Field) component).removeContextHelpIconClickListener(listener);
+                ((Field) component).setContextHelpIconClickHandler(handler);
+            } else {
+                this.targetContextHelpIconClickHandler = handler;
             }
-            targetContextHelpIconClickListeners.remove(listener);
         }
 
         @Override
@@ -1452,13 +1451,12 @@ public class WebFieldGroup extends WebAbstractComponent<CubaFieldGroupLayout>
             this.targetContextHelpTextHtmlEnabled = targetContextHelpTextHtmlEnabled;
         }
 
-        public List<ContextHelpIconClickListener> getTargetContextHelpIconClickListeners() {
-            return targetContextHelpIconClickListeners;
+        public Consumer<ContextHelpIconClickEvent> getTargetContextHelpIconClickHandler() {
+            return targetContextHelpIconClickHandler;
         }
 
-        public void setTargetContextHelpIconClickListeners(List<ContextHelpIconClickListener>
-                                                                   targetContextHelpIconClickListeners) {
-            this.targetContextHelpIconClickListeners = targetContextHelpIconClickListeners;
+        public void setTargetContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> targetContextHelpIconClickHandler) {
+            this.targetContextHelpIconClickHandler = targetContextHelpIconClickHandler;
         }
 
         public CollectionDatasource getTargetOptionsDatasource() {

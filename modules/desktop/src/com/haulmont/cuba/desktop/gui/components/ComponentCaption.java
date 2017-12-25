@@ -17,7 +17,7 @@
 
 package com.haulmont.cuba.desktop.gui.components;
 
-import com.haulmont.cuba.desktop.gui.components.DesktopComponent.HasContextHelpClickListeners;
+import com.haulmont.cuba.desktop.gui.components.DesktopComponent.HasContextHelpClickHandler;
 import com.haulmont.cuba.desktop.sys.DesktopToolTipManager;
 import com.haulmont.cuba.desktop.sys.layout.BoxLayoutAdapter;
 import com.haulmont.cuba.desktop.sys.vcl.ToolTipButton;
@@ -104,14 +104,14 @@ public class ComponentCaption extends JPanel {
     }
 
     protected boolean hasContextHelpIconClickListeners() {
-        return owner instanceof HasContextHelpClickListeners
-                && ((HasContextHelpClickListeners) owner).hasContextHelpIconClickListeners();
+        return owner instanceof HasContextHelpClickHandler
+                && ((HasContextHelpClickHandler) owner).getContextHelpIconClickHandler() != null;
     }
 
     protected void fireContextHelpIconClickEvent() {
-        if (owner instanceof HasContextHelpClickListeners) {
+        if (owner instanceof HasContextHelpClickHandler) {
             ContextHelpIconClickEvent event = new ContextHelpIconClickEvent((HasContextHelp) owner);
-            ((HasContextHelpClickListeners) owner).fireContextHelpIconClickEvent(event);
+            ((HasContextHelpClickHandler) owner).fireContextHelpIconClickEvent(event);
         }
     }
 

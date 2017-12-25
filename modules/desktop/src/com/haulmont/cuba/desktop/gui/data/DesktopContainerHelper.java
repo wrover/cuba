@@ -19,7 +19,7 @@ package com.haulmont.cuba.desktop.gui.data;
 
 import com.haulmont.cuba.desktop.gui.components.DesktopCheckBox;
 import com.haulmont.cuba.desktop.gui.components.DesktopComponent;
-import com.haulmont.cuba.desktop.gui.components.DesktopComponent.HasContextHelpClickListeners;
+import com.haulmont.cuba.desktop.gui.components.DesktopComponent.HasContextHelpClickHandler;
 import com.haulmont.cuba.desktop.gui.components.DesktopContainer;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Component.HasContextHelp;
@@ -66,8 +66,8 @@ public class DesktopContainerHelper {
         if (component instanceof HasContextHelp) {
             final String contextHelp = ((HasContextHelp) component).getContextHelpText();
             return StringUtils.isNotEmpty(contextHelp)
-                    || component instanceof HasContextHelpClickListeners
-                    && ((HasContextHelpClickListeners) component).hasContextHelpIconClickListeners();
+                    || component instanceof HasContextHelpClickHandler
+                    && ((HasContextHelpClickHandler) component).getContextHelpIconClickHandler() != null;
         }
         return false;
     }

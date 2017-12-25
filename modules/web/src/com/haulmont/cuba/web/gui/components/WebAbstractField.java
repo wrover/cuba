@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import static com.haulmont.cuba.gui.ComponentsHelper.handleFilteredAttributes;
 
@@ -66,6 +68,8 @@ public abstract class WebAbstractField<T extends com.vaadin.ui.AbstractField>
     protected Datasource.ItemChangeListener<Entity> securityItemChangeListener;
     protected WeakItemChangeListener securityWeakItemChangeListener;
     protected EditableChangeListener parentEditableChangeListener;
+
+    protected Consumer<ContextHelpIconClickEvent> contextHelpIconClickHandler;
 
     @Override
     public Datasource getDatasource() {
@@ -447,30 +451,33 @@ public abstract class WebAbstractField<T extends com.vaadin.ui.AbstractField>
         component.setContextHelpTextHtmlEnabled(enabled);
     }
 
-    protected com.vaadin.ui.Component.HasContextHelp.ContextHelpIconClickListener contextHelpIconClickListener;
-
     @Override
-    public void addContextHelpIconClickListener(ContextHelpIconClickListener listener) {
-        addListener(ContextHelpIconClickListener.class, listener);
-
-        if (contextHelpIconClickListener == null) {
-            contextHelpIconClickListener =
-                    (com.vaadin.ui.Component.HasContextHelp.ContextHelpIconClickListener) e -> {
-                ContextHelpIconClickEvent event = new ContextHelpIconClickEvent(WebAbstractField.this);
-                fireEvent(ContextHelpIconClickListener.class, ContextHelpIconClickListener::iconClick, event);
-            };
-
-            component.addContextHelpIconClickListener(contextHelpIconClickListener);
-        }
+    public Consumer<ContextHelpIconClickEvent> getContextHelpIconClickHandler() {
+        return contextHelpIconClickHandler;
     }
 
     @Override
-    public void removeContextHelpIconClickListener(ContextHelpIconClickListener listener) {
-        removeListener(ContextHelpIconClickListener.class, listener);
+    public void setContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> handler) {
+        if (!Objects.equals(this.contextHelpIconClickHandler, handler)) {
+            this.contextHelpIconClickHandler = handler;
 
-        if (!hasListeners(ContextHelpIconClickListener.class)) {
-            component.removeContextHelpIconClickListener(contextHelpIconClickListener);
-            contextHelpIconClickListener = null;
+            if (handler == null) {
+                component.setContextHelpIconClickHandler(null);
+            } else {
+                if (component.getContextHelpIconClickHandler() == null) {
+                    component.setContextHelpIconClickHandler(
+                            (com.vaadin.ui.Component.HasContextHelp.ContextHelpIconClickHandler) e -> {
+                                ContextHelpIconClickEvent event = new ContextHelpIconClickEvent(WebAbstractField.this);
+                                fireContextHelpIconClick(event);
+                            });
+                }
+            }
+        }
+    }
+
+    protected void fireContextHelpIconClick(ContextHelpIconClickEvent event) {
+        if (contextHelpIconClickHandler != null) {
+            contextHelpIconClickHandler.accept(event);
         }
     }
 }

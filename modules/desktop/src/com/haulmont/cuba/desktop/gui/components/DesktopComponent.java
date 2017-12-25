@@ -33,14 +33,9 @@ public interface DesktopComponent extends Component {
 
     /**
      * A sub-interface implemented by components that provide additional
-     * capabilities for components that have {@link ContextHelpIconClickListener}.
+     * capabilities for components that have context help icon click handler.
      */
-    interface HasContextHelpClickListeners extends HasContextHelp {
-        /**
-         * @return {@code true} if a component has listeners, {@code false} otherwise
-         */
-        boolean hasContextHelpIconClickListeners();
-
+    interface HasContextHelpClickHandler extends HasContextHelp {
         /**
          * Fires a {@link Component.ContextHelpIconClickEvent} for all listeners.
          *

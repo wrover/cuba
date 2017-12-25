@@ -148,11 +148,11 @@ public class ConstraintEditor extends AbstractEditor<Constraint> {
             }
         });
 
-        joinClause.addContextHelpIconClickListener(event ->
+        joinClause.setContextHelpIconClickHandler(event ->
                 getJoinClauseHelp());
-        whereClause.addContextHelpIconClickListener(event ->
+        whereClause.setContextHelpIconClickHandler(event ->
                 getWhereClauseHelp());
-        groovyScript.addContextHelpIconClickListener(event ->
+        groovyScript.setContextHelpIconClickHandler(event ->
                 getGroovyScriptHelp());
     }
 

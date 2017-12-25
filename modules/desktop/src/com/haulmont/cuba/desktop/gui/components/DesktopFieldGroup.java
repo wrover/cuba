@@ -48,6 +48,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -532,8 +533,8 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             if (fci.getTargetContextHelpTextHtmlEnabled() != null) {
                 cubaField.setContextHelpTextHtmlEnabled(fci.getTargetContextHelpTextHtmlEnabled());
             }
-            for (ContextHelpIconClickListener listener : fci.getTargetContextHelpIconClickListeners()) {
-                cubaField.addContextHelpIconClickListener(listener);
+            if (fci.getTargetContextHelpIconClickHandler() != null) {
+                cubaField.setContextHelpIconClickHandler(fci.getTargetContextHelpIconClickHandler());
             }
             if (fci.getTargetEditable() != null) {
                 cubaField.setEditable(fci.getTargetEditable());
@@ -1008,14 +1009,14 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
     }
 
     protected boolean hasContextHelpIconClickListeners(Component component) {
-        return component instanceof HasContextHelpClickListeners
-                && ((HasContextHelpClickListeners) component).hasContextHelpIconClickListeners();
+        return component instanceof HasContextHelpClickHandler
+                && ((HasContextHelpClickHandler) component).getContextHelpIconClickHandler() != null;
     }
 
     protected void fireContextHelpIconClickEvent(Component component) {
-        if (component instanceof HasContextHelpClickListeners) {
+        if (component instanceof HasContextHelpClickHandler) {
             ContextHelpIconClickEvent event = new ContextHelpIconClickEvent((HasContextHelp) component);
-            ((HasContextHelpClickListeners) component).fireContextHelpIconClickEvent(event);
+            ((HasContextHelpClickHandler) component).fireContextHelpIconClickEvent(event);
         }
     }
 
@@ -1108,7 +1109,7 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         protected ActionListener toolTipButtonActionListener;
 
         protected List<Field.Validator> targetValidators = new ArrayList<>(0);
-        protected List<ContextHelpIconClickListener> targetContextHelpIconClickListeners = new ArrayList<>(0);
+        protected Consumer<ContextHelpIconClickEvent> targetContextHelpIconClickHandler;
         protected FieldAttachMode attachMode = FieldAttachMode.APPLY_DEFAULTS;
 
         public FieldConfigImpl(String id) {
@@ -1498,22 +1499,20 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
         }
 
         @Override
-        public void addContextHelpIconClickListener(ContextHelpIconClickListener listener) {
+        public Consumer<ContextHelpIconClickEvent> getContextHelpIconClickHandler() {
             if (component instanceof Field) {
-                ((Field) component).addContextHelpIconClickListener(listener);
-            } else {
-                if (!targetContextHelpIconClickListeners.contains(listener)) {
-                    targetContextHelpIconClickListeners.add(listener);
-                }
+                return ((Field) component).getContextHelpIconClickHandler();
             }
+            return targetContextHelpIconClickHandler;
         }
 
         @Override
-        public void removeContextHelpIconClickListener(ContextHelpIconClickListener listener) {
+        public void setContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> handler) {
             if (component instanceof Field) {
-                ((Field) component).removeContextHelpIconClickListener(listener);
+                ((Field) component).setContextHelpIconClickHandler(handler);
+            } else {
+                this.targetContextHelpIconClickHandler = handler;
             }
-            targetContextHelpIconClickListeners.remove(listener);
         }
 
         @Override
@@ -1702,12 +1701,12 @@ public class DesktopFieldGroup extends DesktopAbstractComponent<JPanel>
             this.targetContextHelpTextHtmlEnabled = targetContextHelpTextHtmlEnabled;
         }
 
-        public List<ContextHelpIconClickListener> getTargetContextHelpIconClickListeners() {
-            return targetContextHelpIconClickListeners;
+        public Consumer<ContextHelpIconClickEvent> getTargetContextHelpIconClickHandler() {
+            return targetContextHelpIconClickHandler;
         }
 
-        public void setTargetContextHelpIconClickListeners(List<ContextHelpIconClickListener> targetContextHelpIconClickListeners) {
-            this.targetContextHelpIconClickListeners = targetContextHelpIconClickListeners;
+        public void setTargetContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> targetContextHelpIconClickHandler) {
+            this.targetContextHelpIconClickHandler = targetContextHelpIconClickHandler;
         }
 
         public CollectionDatasource getTargetOptionsDatasource() {

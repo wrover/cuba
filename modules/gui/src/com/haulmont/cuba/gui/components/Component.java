@@ -375,31 +375,16 @@ public interface Component {
         void setContextHelpTextHtmlEnabled(boolean enabled);
 
         /**
-         * Registers a new context help icon click listener
-         *
-         * @param listener the listener to register
+         * @return a context help icon click handler
          */
-        void addContextHelpIconClickListener(ContextHelpIconClickListener listener);
+        Consumer<ContextHelpIconClickEvent> getContextHelpIconClickHandler();
 
         /**
-         * Removes a previously registered context help icon click listener
+         * Sets a context help icon click handler
          *
-         * @param listener the listener to remove
+         * @param handler the handler to set
          */
-        void removeContextHelpIconClickListener(ContextHelpIconClickListener listener);
-    }
-
-    /**
-     * Listener for context help icon click events.
-     */
-    @FunctionalInterface
-    interface ContextHelpIconClickListener {
-        /**
-         * Called when the context help icon click happens.
-         *
-         * @param event en event providing more information
-         */
-        void iconClick(ContextHelpIconClickEvent event);
+        void setContextHelpIconClickHandler(Consumer<ContextHelpIconClickEvent> handler);
     }
 
     /**
