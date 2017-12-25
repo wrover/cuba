@@ -37,6 +37,7 @@ public abstract class DesktopAbstractUploadField<T extends JComponent> extends D
 
     // just stub
     protected DropZone dropZone;
+    protected DropZone pasteZone;
     protected String dropZonePrompt;
 
     @Override
@@ -94,6 +95,16 @@ public abstract class DesktopAbstractUploadField<T extends JComponent> extends D
 
     @Override
     public DropZone getDropZone() {
+        return dropZone;
+    }
+
+    @Override
+    public void setPasteZone(DropZone pasteZone) {
+        this.pasteZone = pasteZone;
+    }
+
+    @Override
+    public DropZone getPasteZone() {
         return dropZone;
     }
 
