@@ -150,17 +150,18 @@ public interface UploadField extends Component, Component.HasCaption, Component.
     void setDropZone(DropZone dropZone);
 
     /**
-     * Set paste zone reference to this upload component. Images from the clipboard can be paste to component
-     * of the paste zone using key combination.
+     * Set paste zone reference to this upload component. Images from the clipboard can be pasted to upload component
+     * using a key combination. It only works when some text input field in the given container
+     * is in focus. <br/> It is supported by Chromium-based browsers.
      *
-     * @param pasteZone paste zone descriptor
+     * @param pasteZone paste zone container
      */
-    void setPasteZone(DropZone pasteZone);
+    void setPasteZone(Container pasteZone);
 
     /**
-     * @return current paste zone
+     * @return current paste zone container
      */
-    DropZone getPasteZone();
+    Container getPasteZone();
 
     /**
      * @return current drop zone prompt
@@ -175,7 +176,7 @@ public interface UploadField extends Component, Component.HasCaption, Component.
     void setDropZonePrompt(String dropZonePrompt);
 
     /**
-     * Drop zone descriptor. BoxLayout or Window can be used as drop or paste zone for an upload component.
+     * Drop zone descriptor. BoxLayout or Window can be used as drop zone for an upload component.
      */
     class DropZone {
         protected BoxLayout layout;

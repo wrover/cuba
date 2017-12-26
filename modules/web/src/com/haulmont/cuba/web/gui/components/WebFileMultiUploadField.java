@@ -430,19 +430,14 @@ public class WebFileMultiUploadField extends WebAbstractUploadComponent<CubaAbst
     }
 
     @Override
-    public void setPasteZone(DropZone pasteZone) {
+    public void setPasteZone(Container pasteZone) {
         super.setPasteZone(pasteZone);
 
         if (component instanceof CubaFileUpload) {
             if (pasteZone == null) {
                 ((CubaFileUpload) component).setPasteZone(null);
             } else {
-                com.haulmont.cuba.gui.components.Component target = pasteZone.getTarget();
-                if (target instanceof Window.Wrapper) {
-                    target = ((Window.Wrapper) target).getWrappedWindow();
-                }
-
-                Component vComponent = target.unwrapComposition(Component.class);
+                Component vComponent = pasteZone.unwrapComposition(Component.class);
                 ((CubaFileUpload) component).setPasteZone(vComponent);
             }
         }

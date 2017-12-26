@@ -51,6 +51,8 @@ public abstract class AbstractUploadFieldLoader<T extends UploadField> extends A
         loadPermittedExtensions(resultComponent, element);
 
         loadDropZone(resultComponent, element);
+        loadPasteZone(resultComponent, element);
+
         loadResponsive(resultComponent, element);
 
         String fileSizeLimit = element.attributeValue("fileSizeLimit");
@@ -85,6 +87,16 @@ public abstract class AbstractUploadFieldLoader<T extends UploadField> extends A
         String dropZonePrompt = element.attributeValue("dropZonePrompt");
         if (StringUtils.isNotEmpty(dropZonePrompt)) {
             uploadField.setDropZonePrompt(loadResourceString(dropZonePrompt));
+        }
+    }
+
+    protected void loadPasteZone(UploadField uploadField, Element element) {
+        String pasteZoneId = element.attributeValue("pasteZone");
+        if (StringUtils.isNotEmpty(pasteZoneId)) {
+            Component pasteZone = context.getFrame().getComponent(pasteZoneId);
+            if (pasteZone instanceof Component.Container) {
+                uploadField.setPasteZone((Component.Container) pasteZone);
+            }
         }
     }
 }
