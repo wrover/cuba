@@ -86,9 +86,9 @@ public abstract class AbstractUploadFieldLoader<T extends UploadField> extends A
             if (dropZone instanceof BoxLayout) {
                 uploadField.setDropZone(new UploadField.DropZone((BoxLayout) dropZone));
             } else if (dropZone != null) {
-                log.warn("Unsupported class {} by DropZone", dropZone.getClass().getName());
+                log.warn("Unsupported dropZone class {}", dropZone.getClass().getName());
             } else {
-                log.warn("Not found component with id: {} for DropZone", dropZoneId);
+                log.warn("Unable to find dropZone component with id: {}", dropZoneId);
             }
         }
 
@@ -105,9 +105,9 @@ public abstract class AbstractUploadFieldLoader<T extends UploadField> extends A
             if (pasteZone instanceof Component.Container) {
                 uploadField.setPasteZone((Component.Container) pasteZone);
             } else if (pasteZone != null) {
-                log.warn("Unsupported class {} by PasteZone", pasteZone.getClass().getName());
+                log.warn("Unsupported pasteZone class {}", pasteZone.getClass().getName());
             } else {
-                log.warn("Not found component with id: {} for PasteZone", pasteZoneId);
+                log.warn("Unable to find pasteZone component with id: {}", pasteZoneId);
             }
         }
     }

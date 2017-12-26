@@ -152,7 +152,8 @@ public interface UploadField extends Component, Component.HasCaption, Component.
     /**
      * Set paste zone reference to this upload component. PasteZone handles paste shortcut when a text input field
      * in the container is focused.
-     * <br> It is supported by Chromium-based browsers.
+     * <br>
+     * It is supported by Chromium-based browsers.
      *
      * @param pasteZone paste zone container
      */
