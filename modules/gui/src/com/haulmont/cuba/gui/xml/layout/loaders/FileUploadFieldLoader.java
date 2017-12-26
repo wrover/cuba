@@ -22,11 +22,16 @@ import com.haulmont.cuba.gui.components.FileUploadField;
 import com.haulmont.cuba.gui.components.UploadField;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashSet;
 
 public class FileUploadFieldLoader extends AbstractFieldLoader<FileUploadField> {
+
+    private final Logger log = LoggerFactory.getLogger(AbstractUploadFieldLoader.class);
+
     @Override
     public void loadComponent() {
         assignFrame(resultComponent);
@@ -156,6 +161,10 @@ public class FileUploadFieldLoader extends AbstractFieldLoader<FileUploadField> 
             Component dropZone = context.getFrame().getComponent(dropZoneId);
             if (dropZone instanceof BoxLayout) {
                 uploadField.setDropZone(new UploadField.DropZone((BoxLayout) dropZone));
+            }  else if (dropZone != null) {
+                log.warn("Unsupported class {} by DropZone", dropZone.getClass().getName());
+            } else {
+                log.warn("Not found component with id: {} for DropZone", dropZoneId);
             }
         }
 
@@ -171,6 +180,10 @@ public class FileUploadFieldLoader extends AbstractFieldLoader<FileUploadField> 
             Component pasteZone = context.getFrame().getComponent(pasteZoneId);
             if (pasteZone instanceof Component.Container) {
                 uploadField.setPasteZone((Component.Container) pasteZone);
+            }  else if (pasteZone != null) {
+                log.warn("Unsupported class {} by PasteZone", pasteZone.getClass().getName());
+            } else {
+                log.warn("Not found component with id: {} for PasteZone", pasteZoneId);
             }
         }
     }
