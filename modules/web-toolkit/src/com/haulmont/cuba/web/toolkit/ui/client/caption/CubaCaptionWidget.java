@@ -34,6 +34,7 @@ import com.vaadin.client.ui.ImageIcon;
 import com.vaadin.client.ui.aria.AriaHelper;
 import com.vaadin.shared.AbstractFieldState;
 import com.vaadin.shared.ComponentConstants;
+import com.vaadin.shared.communication.SharedState;
 import com.vaadin.shared.ui.ComponentStateUtil;
 
 public class CubaCaptionWidget extends VCaption implements ClickHandler {
@@ -182,30 +183,26 @@ public class CubaCaptionWidget extends VCaption implements ClickHandler {
             requiredFieldIndicator = null;
         }
 
-        if (owner.getState() instanceof AbstractFieldState) {
-            AbstractFieldState state = (AbstractFieldState) owner
-                    .getState();
-            if (state.contextHelpIconEnabled) {
-                if (contextHelpIndicatorElement == null) {
-                    contextHelpIndicatorElement = DOM.createDiv();
-                    contextHelpIndicatorElement.setClassName(CONTEXT_HELP_CLASSNAME);
+        if (isContextHelpIconEnabled(owner.getState())) {
+            if (contextHelpIndicatorElement == null) {
+                contextHelpIndicatorElement = DOM.createDiv();
+                contextHelpIndicatorElement.setClassName(CONTEXT_HELP_CLASSNAME);
 
-                    DOM.insertChild(getElement(), contextHelpIndicatorElement, getContextHelpInsertPosition());
+                DOM.insertChild(getElement(), contextHelpIndicatorElement, getContextHelpInsertPosition());
 
-                    if (clickHandlerRegistration == null) {
-                        clickHandlerRegistration = addClickHandler(this);
-                    }
+                if (clickHandlerRegistration == null) {
+                    clickHandlerRegistration = addClickHandler(this);
                 }
-            } else {
-                if (contextHelpIndicatorElement != null) {
-                    contextHelpIndicatorElement.removeFromParent();
-                    contextHelpIndicatorElement = null;
-                }
+            }
+        } else {
+            if (contextHelpIndicatorElement != null) {
+                contextHelpIndicatorElement.removeFromParent();
+                contextHelpIndicatorElement = null;
+            }
 
-                if (clickHandlerRegistration != null) {
-                    clickHandlerRegistration.removeHandler();
-                    clickHandlerRegistration = null;
-                }
+            if (clickHandlerRegistration != null) {
+                clickHandlerRegistration.removeHandler();
+                clickHandlerRegistration = null;
             }
         }
 
@@ -243,16 +240,25 @@ public class CubaCaptionWidget extends VCaption implements ClickHandler {
     public void onClick(ClickEvent event) {
         Element target = Element.as(event.getNativeEvent().getEventTarget());
 
-
         if (target == contextHelpIndicatorElement
-                && getOwner() instanceof HasContextHelpConnector
-                && getOwner().getState() instanceof AbstractFieldState) {
+                && getOwner() instanceof HasContextHelpConnector) {
             HasContextHelpConnector connector = (HasContextHelpConnector) getOwner();
-            AbstractFieldState state = (AbstractFieldState) getOwner().getState();
-            if (!state.contextHelpTooltipEnabled) {
+            if (hasContextHelpIconListeners(getOwner().getState())) {
                 connector.contextHelpIconClick(event);
             }
         }
+    }
+
+    protected boolean isContextHelpIconEnabled(SharedState state) {
+        return hasContextHelpIconListeners(state)
+                || (state instanceof AbstractFieldState)
+                && ((AbstractFieldState) state).contextHelpText != null
+                && !((AbstractFieldState) state).contextHelpText.isEmpty();
+    }
+
+    protected boolean hasContextHelpIconListeners(SharedState state) {
+        return state.registeredEventListeners != null
+                && state.registeredEventListeners.contains(AbstractFieldState.CONTEXT_HELP_ICON_CLICK_EVENT);
     }
 
     @Override

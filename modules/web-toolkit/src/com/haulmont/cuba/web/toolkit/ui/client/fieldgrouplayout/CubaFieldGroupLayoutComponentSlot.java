@@ -29,11 +29,11 @@ import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.Util;
 import com.vaadin.client.VCaption;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.AbstractFieldConnector;
 import com.vaadin.client.ui.HasContextHelpConnector;
 import com.vaadin.client.ui.ManagedLayout;
 import com.vaadin.client.ui.VCheckBox;
 import com.vaadin.shared.AbstractFieldState;
+import com.vaadin.shared.communication.SharedState;
 import com.vaadin.shared.ui.AlignmentInfo;
 
 /**
@@ -418,14 +418,17 @@ public class CubaFieldGroupLayoutComponentSlot extends CubaGridLayoutSlot
             Element target = Element.as(event.getEventTarget());
             ComponentConnector componentConnector = Util.findConnectorFor(getWidget());
             if (target == contextHelpIndicatorElement
-                    && componentConnector instanceof HasContextHelpConnector
-                    && componentConnector.getState() instanceof AbstractFieldState) {
+                    && componentConnector instanceof HasContextHelpConnector) {
                 HasContextHelpConnector connector = (HasContextHelpConnector) componentConnector;
-                AbstractFieldState state = (AbstractFieldState) componentConnector.getState();
-                if (!state.contextHelpTooltipEnabled) {
+                if (hasContextHelpIconListeners(componentConnector.getState())) {
                     connector.contextHelpIconClick(event);
                 }
             }
         }
+    }
+
+    protected boolean hasContextHelpIconListeners(SharedState state) {
+        return state.registeredEventListeners != null
+                && state.registeredEventListeners.contains(AbstractFieldState.CONTEXT_HELP_ICON_CLICK_EVENT);
     }
 }

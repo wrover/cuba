@@ -31,13 +31,13 @@ import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.StyleConstants;
 import com.vaadin.client.Util;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.AbstractFieldConnector;
 import com.vaadin.client.ui.HasContextHelpConnector;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.orderedlayout.CaptionPosition;
 import com.vaadin.client.ui.orderedlayout.Slot;
 import com.vaadin.client.ui.orderedlayout.VAbstractOrderedLayout;
 import com.vaadin.shared.AbstractFieldState;
+import com.vaadin.shared.communication.SharedState;
 
 import java.util.List;
 
@@ -264,13 +264,16 @@ public class CubaOrderedLayoutSlot extends Slot implements ClickHandler {
         ComponentConnector componentConnector = Util.findConnectorFor(getWidget());
 
         if (target == contextHelpIcon
-                && componentConnector instanceof HasContextHelpConnector
-                && componentConnector.getState() instanceof AbstractFieldState) {
+                && componentConnector instanceof HasContextHelpConnector) {
             HasContextHelpConnector connector = (HasContextHelpConnector) componentConnector;
-            AbstractFieldState state = (AbstractFieldState) componentConnector.getState();
-            if (!state.contextHelpTooltipEnabled) {
+            if (hasContextHelpIconListeners(componentConnector.getState())) {
                 connector.contextHelpIconClick(event);
             }
         }
+    }
+
+    protected boolean hasContextHelpIconListeners(SharedState state) {
+        return state.registeredEventListeners != null
+                && state.registeredEventListeners.contains(AbstractFieldState.CONTEXT_HELP_ICON_CLICK_EVENT);
     }
 }
