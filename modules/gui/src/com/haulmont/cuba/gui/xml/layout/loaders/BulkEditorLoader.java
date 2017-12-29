@@ -97,8 +97,19 @@ public class BulkEditorLoader extends AbstractComponentLoader<BulkEditor> {
         }
 
         String exclude = element.attributeValue("exclude");
+        String includeProperties = element.attributeValue("includeProperties");
+
+        if (StringUtils.isNotBlank(exclude) && StringUtils.isNotBlank(includeProperties)) {
+            throw new GuiDevelopmentException("BulkEditor cannot define simultaneously exclude and includeProperties attributes",
+                    getContext().getCurrentFrameId());
+        }
+
         if (StringUtils.isNotBlank(exclude)) {
             resultComponent.setExcludePropertiesRegex(exclude.replace(" ", ""));
+        }
+
+        if (StringUtils.isNotBlank(includeProperties)) {
+            resultComponent.setIncludeProperties(includeProperties.replace(" ", ""));
         }
 
         String listComponent = element.attributeValue("for");

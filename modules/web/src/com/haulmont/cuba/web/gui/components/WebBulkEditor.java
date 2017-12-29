@@ -31,6 +31,7 @@ import java.util.Map;
 public class WebBulkEditor extends WebButton implements BulkEditor {
 
     protected String exclude;
+    protected String includeProperties;
     protected WindowManager.OpenType openType = WindowManager.OpenType.DIALOG;
     protected BulkEditAction bulkEditAction;
     protected ListComponent listComponent;
@@ -66,6 +67,19 @@ public class WebBulkEditor extends WebButton implements BulkEditor {
     }
 
     @Override
+    public String getIncludeProperties() {
+        return includeProperties;
+    }
+
+    @Override
+    public void setIncludeProperties(String includeProperties) {
+        this.includeProperties = includeProperties;
+        if (bulkEditAction != null) {
+            bulkEditAction.setIncludeProperties(includeProperties);
+        }
+    }
+
+    @Override
     public ListComponent getListComponent() {
         return listComponent;
     }
@@ -91,6 +105,10 @@ public class WebBulkEditor extends WebButton implements BulkEditor {
 
             if (exclude != null) {
                 bulkEditAction.setExcludePropertyRegex(exclude);
+            }
+
+            if (includeProperties != null) {
+                bulkEditAction.setIncludeProperties(includeProperties);
             }
 
             if (fieldValidators != null) {
