@@ -24,9 +24,7 @@ import com.haulmont.cuba.gui.components.ListComponent;
 import com.haulmont.cuba.gui.components.actions.BulkEditAction;
 import com.haulmont.cuba.security.entity.ConstraintOperationType;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WebBulkEditor extends WebButton implements BulkEditor {
 
@@ -67,8 +65,8 @@ public class WebBulkEditor extends WebButton implements BulkEditor {
     }
 
     @Override
-    public String getIncludeProperties() {
-        return includeProperties;
+    public List<String> getIncludeProperties() {
+        return Arrays.asList(includeProperties.split(","));
     }
 
     @Override

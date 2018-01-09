@@ -24,6 +24,7 @@ import com.haulmont.cuba.gui.components.ListComponent;
 import com.haulmont.cuba.gui.components.actions.BulkEditAction;
 import com.haulmont.cuba.security.entity.ConstraintOperationType;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +72,8 @@ public class DesktopBulkEditor extends DesktopButton implements BulkEditor {
     }
 
     @Override
-    public String getIncludeProperties() {
-        return includeProperties;
+    public List<String> getIncludeProperties() {
+        return Arrays.asList(includeProperties.split(","));
     }
 
     @Override
