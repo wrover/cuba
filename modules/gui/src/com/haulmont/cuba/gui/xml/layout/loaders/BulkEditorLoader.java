@@ -27,10 +27,7 @@ import com.haulmont.cuba.gui.components.ListComponent;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BulkEditorLoader extends AbstractComponentLoader<BulkEditor> {
 
@@ -109,7 +106,8 @@ public class BulkEditorLoader extends AbstractComponentLoader<BulkEditor> {
         }
 
         if (StringUtils.isNotBlank(includeProperties)) {
-            resultComponent.setIncludeProperties(includeProperties.replace(" ", ""));
+            includeProperties = includeProperties.replace(" ", "");
+            resultComponent.setIncludeProperties(Arrays.asList(includeProperties.split(",")));
         }
 
         String listComponent = element.attributeValue("for");

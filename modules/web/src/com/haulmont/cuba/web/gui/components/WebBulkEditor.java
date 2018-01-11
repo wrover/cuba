@@ -29,7 +29,7 @@ import java.util.*;
 public class WebBulkEditor extends WebButton implements BulkEditor {
 
     protected String exclude;
-    protected String includeProperties;
+    protected List<String> includeProperties;
     protected WindowManager.OpenType openType = WindowManager.OpenType.DIALOG;
     protected BulkEditAction bulkEditAction;
     protected ListComponent listComponent;
@@ -66,11 +66,11 @@ public class WebBulkEditor extends WebButton implements BulkEditor {
 
     @Override
     public List<String> getIncludeProperties() {
-        return Arrays.asList(includeProperties.split(","));
+        return includeProperties;
     }
 
     @Override
-    public void setIncludeProperties(String includeProperties) {
+    public void setIncludeProperties(List<String> includeProperties) {
         this.includeProperties = includeProperties;
         if (bulkEditAction != null) {
             bulkEditAction.setIncludeProperties(includeProperties);

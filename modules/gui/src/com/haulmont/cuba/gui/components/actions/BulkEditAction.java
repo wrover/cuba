@@ -46,7 +46,7 @@ public class BulkEditAction extends ItemTrackingAction implements Action.HasBefo
 
     protected OpenType openType = OpenType.DIALOG;
     protected String exclude;
-    protected String includeProperties;
+    protected List<String> includeProperties;
     protected Map<String, Field.Validator> fieldValidators;
     protected List<Field.Validator> modelValidators;
     protected Boolean loadDynamicAttributes;
@@ -90,11 +90,11 @@ public class BulkEditAction extends ItemTrackingAction implements Action.HasBefo
         this.exclude = exclude;
     }
 
-    public String getIncludeProperties() {
+    public List<String> getIncludeProperties() {
         return includeProperties;
     }
 
-    public void setIncludeProperties(String includeProperties) {
+    public void setIncludeProperties(List<String> includeProperties) {
         this.includeProperties = includeProperties;
     }
 
@@ -150,16 +150,11 @@ public class BulkEditAction extends ItemTrackingAction implements Action.HasBefo
                     .setResizable(true);
         }
 
-        List<String> includeList = null;
-        if (!Strings.isNullOrEmpty(includeProperties)) {
-            includeList = Arrays.asList(includeProperties.split(","));
-        }
-
         Map<String, Object> params = new HashMap<>();
         params.put("metaClass", target.getDatasource().getMetaClass());
         params.put("selected", target.getSelected());
         params.put("exclude", exclude);
-        params.put("includeProperties", includeList != null ? includeList : Collections.EMPTY_LIST);
+        params.put("includeProperties", includeProperties != null ? includeProperties : Collections.EMPTY_LIST);
         params.put("fieldValidators", fieldValidators);
         params.put("modelValidators", modelValidators);
         params.put("loadDynamicAttributes", loadDynamicAttributes);
