@@ -17,7 +17,7 @@
 
 package com.haulmont.cuba.gui.components.actions;
 
-import com.google.common.base.Strings;
+import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.WindowManager.OpenType;
@@ -150,16 +150,17 @@ public class BulkEditAction extends ItemTrackingAction implements Action.HasBefo
                     .setResizable(true);
         }
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("metaClass", target.getDatasource().getMetaClass());
-        params.put("selected", target.getSelected());
-        params.put("exclude", exclude);
-        params.put("includeProperties", includeProperties != null ? includeProperties : Collections.EMPTY_LIST);
-        params.put("fieldValidators", fieldValidators);
-        params.put("modelValidators", modelValidators);
-        params.put("loadDynamicAttributes", loadDynamicAttributes);
+        Map<String, Object> params = ParamsMap.of()
+                .pair("metaClass", target.getDatasource().getMetaClass())
+                .pair("selected", target.getSelected())
+                .pair("exclude", exclude)
+                .pair("includeProperties", includeProperties != null ? includeProperties : Collections.EMPTY_LIST)
+                .pair("fieldValidators", fieldValidators)
+                .pair("modelValidators", modelValidators)
+                .pair("loadDynamicAttributes", loadDynamicAttributes)
+                .create();
 
-        Window bulkEditor = target.getFrame().openWindow("bulkEditor", openType, Collections.unmodifiableMap(params));
+        Window bulkEditor = target.getFrame().openWindow("bulkEditor", openType, params);
         bulkEditor.addCloseListener(actionId -> {
             if (Window.COMMIT_ACTION_ID.equals(actionId)) {
                 target.getDatasource().refresh();
