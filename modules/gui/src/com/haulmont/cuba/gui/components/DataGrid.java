@@ -1036,6 +1036,7 @@ public interface DataGrid<E extends Entity> extends ListComponent<E>, Component.
          * @param entity an entity instance represented by the current row
          * @return the details for the given row, or {@code null} to leave the details empty.
          */
+        @Nullable
         Component getDetails(E entity);
     }
 
