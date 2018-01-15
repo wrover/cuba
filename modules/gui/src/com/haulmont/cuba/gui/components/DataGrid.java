@@ -1027,6 +1027,7 @@ public interface DataGrid<E extends Entity> extends ListComponent<E>, Component.
      *
      * @param <E> DataGrid data type
      */
+    @FunctionalInterface
     interface DetailsGenerator<E extends Entity> {
 
         /**

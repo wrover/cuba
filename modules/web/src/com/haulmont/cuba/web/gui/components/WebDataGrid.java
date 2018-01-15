@@ -2526,7 +2526,7 @@ public class WebDataGrid<E extends Entity> extends WebAbstractComponent<CubaGrid
             //noinspection unchecked
             E item = (E) datasource.getItem(rowReference.getItemId());
             com.haulmont.cuba.gui.components.Component component = detailsGenerator.getDetails(item);
-            return WebComponentsHelper.getComposition(component);
+            return component.unwrapComposition(Component.class);
         };
     }
 
