@@ -46,7 +46,7 @@ public class BulkEditAction extends ItemTrackingAction implements Action.HasBefo
 
     protected OpenType openType = OpenType.DIALOG;
     protected String exclude;
-    protected List<String> includeProperties;
+    protected List<String> includeProperties = Collections.emptyList();
     protected Map<String, Field.Validator> fieldValidators;
     protected List<Field.Validator> modelValidators;
     protected Boolean loadDynamicAttributes;

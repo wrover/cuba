@@ -17,6 +17,7 @@
 
 package com.haulmont.cuba.gui.xml.layout.loaders;
 
+import com.google.common.base.Splitter;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.cuba.gui.GuiDevelopmentException;
 import com.haulmont.cuba.gui.WindowManager;
@@ -106,8 +107,9 @@ public class BulkEditorLoader extends AbstractComponentLoader<BulkEditor> {
         }
 
         if (StringUtils.isNotBlank(includeProperties)) {
-            includeProperties = includeProperties.replace(" ", "");
-            resultComponent.setIncludeProperties(Arrays.asList(includeProperties.split(",")));
+            resultComponent.setIncludeProperties(
+                    Splitter.on(',').omitEmptyStrings().trimResults().splitToList(includeProperties)
+            );
         }
 
         String listComponent = element.attributeValue("for");

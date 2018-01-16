@@ -29,7 +29,7 @@ import java.util.*;
 public class WebBulkEditor extends WebButton implements BulkEditor {
 
     protected String exclude;
-    protected List<String> includeProperties;
+    protected List<String> includeProperties = Collections.emptyList();
     protected WindowManager.OpenType openType = WindowManager.OpenType.DIALOG;
     protected BulkEditAction bulkEditAction;
     protected ListComponent listComponent;
