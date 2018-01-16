@@ -291,6 +291,13 @@ public interface WebConfig extends Config {
     boolean getUsePushLongPolling();
 
     /**
+     * @return push timeout in milliseconds
+     */
+    @Property("cuba.web.pushLongPollingSuspendTimeoutMs")
+    @DefaultInt(-1)
+    int getPushLongPollingSuspendTimeoutMs();
+
+    /**
      * @return true if push is enabled
      */
     @Property("cuba.web.pushEnabled")
