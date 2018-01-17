@@ -381,7 +381,7 @@ public class CubaVaadinServletService extends VaadinServletService {
         }
 
         @Override
-        protected int getHushLongPollingSuspendTimeout() {
+        protected int getPushLongPollingSuspendTimeout() {
             Configuration configuration = AppBeans.get(Configuration.NAME);
             WebConfig webConfig = configuration.getConfig(WebConfig.class);
 
