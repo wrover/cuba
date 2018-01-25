@@ -83,7 +83,7 @@
       content: attr(empty-data-message);
     }
 
-    table, div, textarea {
+    > * {
       display: none;
     }
   }
