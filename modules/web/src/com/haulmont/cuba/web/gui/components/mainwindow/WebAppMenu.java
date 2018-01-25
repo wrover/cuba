@@ -24,7 +24,7 @@ import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.gui.components.WebAbstractComponent;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.haulmont.cuba.web.sys.MenuBuilder;
-import com.haulmont.cuba.web.toolkit.ui.CubaMenuBar;
+import com.haulmont.cuba.web.widgets.CubaMenuBar;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.ui.MenuBar;
 import org.apache.commons.lang.StringUtils;

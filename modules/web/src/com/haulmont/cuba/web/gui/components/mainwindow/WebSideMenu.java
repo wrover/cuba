@@ -26,7 +26,7 @@ import com.haulmont.cuba.web.gui.components.WebAbstractComponent;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.haulmont.cuba.web.sys.SideMenuBuilder;
 import com.haulmont.cuba.web.theme.HaloTheme;
-import com.haulmont.cuba.web.toolkit.ui.CubaSideMenu;
+import com.haulmont.cuba.web.widgets.CubaSideMenu;
 import com.vaadin.server.ClientConnector;
 
 import javax.annotation.Nullable;
