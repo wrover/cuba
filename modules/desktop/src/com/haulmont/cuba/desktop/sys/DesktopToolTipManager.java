@@ -185,9 +185,11 @@ public class DesktopToolTipManager extends MouseAdapter {
             return;
         }
 
-        Point currentScreenPosition = getCurrentScreenPosition(pointerInfo);
-
         Point mouseLocation = pointerInfo.getLocation();
+        Rectangle bounds = getDeviceBounds(pointerInfo.getDevice());
+
+        Point currentScreenPosition = getCurrentScreenPosition(mouseLocation, bounds);
+
         // Location to display tooltip
         Point location = new Point(mouseLocation);
         // Add indentation
@@ -215,10 +217,7 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private Point getCurrentScreenPosition(PointerInfo pointerInfo) {
-        Point mouseLocation = pointerInfo.getLocation();
-        Rectangle bounds = getDeviceBounds(pointerInfo.getDevice());
-
+    private Point getCurrentScreenPosition(Point mouseLocation, Rectangle bounds) {
         Point point = new Point(mouseLocation);
         // Subtract the x/y position of the device
         point.x -= bounds.x;
