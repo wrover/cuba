@@ -185,24 +185,14 @@ public class DesktopToolTipManager extends MouseAdapter {
             return;
         }
 
+        Point currentScreenPosition = getCurrentScreenPosition(pointerInfo);
+
         Point mouseLocation = pointerInfo.getLocation();
-        Point location = new Point();
-
-        GraphicsConfiguration gc;
-        gc = field.getGraphicsConfiguration();
-        Rectangle sBounds = gc.getBounds();
-        Insets screenInsets = Toolkit.getDefaultToolkit()
-                .getScreenInsets(gc);
-
-        sBounds.x += screenInsets.left;
-        sBounds.y += screenInsets.top;
-        sBounds.width -= (screenInsets.left + screenInsets.right);
-        sBounds.height -= (screenInsets.top + screenInsets.bottom);
-
-        location.x = mouseLocation.x + 15;
-        location.y = mouseLocation.y + 15;
-        int x = location.x;
-        int y = location.y;
+        // Location to display tooltip
+        Point location = new Point(mouseLocation);
+        // Add indentation
+        location.x += 15;
+        location.y += 15;
 
         if (toolTipWindow != null) {
             hideTooltip();
@@ -212,7 +202,8 @@ public class DesktopToolTipManager extends MouseAdapter {
 
         final JToolTip toolTip = new CubaToolTip();
         toolTip.setTipText(text);
-        final Popup tooltipContainer = PopupFactory.getSharedInstance().getPopup(field, toolTip, x, y);
+        final Popup tooltipContainer = PopupFactory.getSharedInstance().getPopup(field, toolTip,
+                location.x, location.y);
         tooltipContainer.show();
         window = tooltipContainer;
         toolTipWindow = toolTip;
@@ -222,6 +213,29 @@ public class DesktopToolTipManager extends MouseAdapter {
             toolTip.addMouseListener(this);
             field.addMouseListener(this);
         }
+    }
+
+    private Point getCurrentScreenPosition(PointerInfo pointerInfo) {
+        Point mouseLocation = pointerInfo.getLocation();
+        Rectangle bounds = getDeviceBounds(pointerInfo.getDevice());
+
+        Point point = new Point(mouseLocation);
+        // Subtract the x/y position of the device
+        point.x -= bounds.x;
+        point.y -= bounds.y;
+        // Clip negative values...
+        if (point.x < 0) {
+            point.x *= -1;
+        }
+        if (point.y < 0) {
+            point.y *= -1;
+        }
+        return point;
+    }
+
+    public Rectangle getDeviceBounds(GraphicsDevice device) {
+        GraphicsConfiguration gc = device.getDefaultConfiguration();
+        return gc.getBounds();
     }
 
     protected class CubaToolTip extends JToolTip {
