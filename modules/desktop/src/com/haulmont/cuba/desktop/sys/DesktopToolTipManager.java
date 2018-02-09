@@ -185,17 +185,6 @@ public class DesktopToolTipManager extends MouseAdapter {
             return;
         }
 
-        Point mouseLocation = pointerInfo.getLocation();
-        Rectangle bounds = getDeviceBounds(pointerInfo.getDevice());
-
-        Point currentScreenPosition = getCurrentScreenPosition(mouseLocation, bounds);
-
-        // Location to display tooltip
-        Point location = new Point(mouseLocation);
-        // Add indentation
-        location.x += 15;
-        location.y += 15;
-
         if (toolTipWindow != null) {
             hideTooltip();
         }
@@ -204,6 +193,10 @@ public class DesktopToolTipManager extends MouseAdapter {
 
         final JToolTip toolTip = new CubaToolTip();
         toolTip.setTipText(text);
+
+        // Location to display tooltip
+        Point location = getToolTipLocation(pointerInfo, text, toolTip.getFont());
+
         final Popup tooltipContainer = PopupFactory.getSharedInstance().getPopup(field, toolTip,
                 location.x, location.y);
         tooltipContainer.show();
@@ -217,7 +210,38 @@ public class DesktopToolTipManager extends MouseAdapter {
         }
     }
 
-    private Point getCurrentScreenPosition(Point mouseLocation, Rectangle bounds) {
+    protected Point getToolTipLocation(PointerInfo pointerInfo, String text, Font font) {
+        Point mouseLocation = pointerInfo.getLocation();
+        Rectangle bounds = getDeviceBounds(pointerInfo.getDevice());
+
+        // Location on the current screen (suitable if there is more than one screen)
+        Point currentScreenMouseLocation = getCurrentScreenMouseLocation(mouseLocation, bounds);
+
+        // Location to display tooltip
+        Point location = new Point(mouseLocation);
+
+        int actualTextWidth = getActualTextWidth(text, font);
+        int maxTooltipWidth = getMaxTooltipWidth();
+        int textWidth = actualTextWidth > maxTooltipWidth ? maxTooltipWidth : actualTextWidth;
+
+        int defaultHorizontalIndentation = 15;
+        int defaultVerticalIndentation = 15;
+
+        // if tooltip doesn't fit the screen width ...
+        if ((currentScreenMouseLocation.x + textWidth) > bounds.width) {
+            // Shift tooltip to the left
+            location.x -= textWidth;
+            location.x -= defaultHorizontalIndentation;
+        } else {
+            // otherwise add default indentation
+            location.x += defaultHorizontalIndentation;
+        }
+        location.y += defaultVerticalIndentation;
+
+        return location;
+    }
+
+    protected Point getCurrentScreenMouseLocation(Point mouseLocation, Rectangle bounds) {
         Point point = new Point(mouseLocation);
         // Subtract the x/y position of the device
         point.x -= bounds.x;
@@ -232,7 +256,21 @@ public class DesktopToolTipManager extends MouseAdapter {
         return point;
     }
 
-    public Rectangle getDeviceBounds(GraphicsDevice device) {
+    protected int getActualTextWidth(String tipText, Font font) {
+        FontMetrics fontMetrics = StyleContext.getDefaultStyleContext().getFontMetrics(font);
+        return SwingUtilities.computeStringWidth(fontMetrics, tipText);
+    }
+
+    protected int getMaxTooltipWidth() {
+        UIDefaults lafDefaults = UIManager.getLookAndFeelDefaults();
+        int maxTooltipWidth = lafDefaults.getInt("Tooltip.maxWidth");
+        if (maxTooltipWidth == 0) {
+            maxTooltipWidth = DesktopComponentsHelper.TOOLTIP_WIDTH;
+        }
+        return maxTooltipWidth;
+    }
+
+    protected Rectangle getDeviceBounds(GraphicsDevice device) {
         GraphicsConfiguration gc = device.getDefaultConfiguration();
         return gc.getBounds();
     }
@@ -240,14 +278,8 @@ public class DesktopToolTipManager extends MouseAdapter {
     protected class CubaToolTip extends JToolTip {
         @Override
         public void setTipText(String tipText) {
-            UIDefaults lafDefaults = UIManager.getLookAndFeelDefaults();
-            int maxTooltipWidth = lafDefaults.getInt("Tooltip.maxWidth");
-            if (maxTooltipWidth == 0) {
-                maxTooltipWidth = DesktopComponentsHelper.TOOLTIP_WIDTH;
-            }
-
-            FontMetrics fontMetrics = StyleContext.getDefaultStyleContext().getFontMetrics(getFont());
-            int actualWidth = SwingUtilities.computeStringWidth(fontMetrics, tipText);
+            int maxTooltipWidth = getMaxTooltipWidth();
+            int actualWidth = getActualTextWidth(tipText, getFont());
 
             if (actualWidth < maxTooltipWidth) {
                 tipText = "<html>" + tipText + "</html>";
