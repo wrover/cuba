@@ -189,6 +189,30 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
     @Override
     public void groupBy(Object[] properties) {
         component.groupBy(properties);
+
+        List<Object> groupPropsList = new ArrayList<>(Arrays.asList(properties));
+
+        //noinspection unchecked
+        List<Object> allProps = new ArrayList<>(containerDatasource.getContainerPropertyIds());
+
+        allProps.removeAll(groupPropsList);
+
+        groupPropsList.addAll(allProps);
+
+        component.setColumnOrder(groupPropsList.toArray());
+    }
+
+    @Override
+    public void groupBy(String[] properties) {
+        if (properties == null || properties.length == 0
+                || datasource == null) {
+            return;
+        }
+
+        Object[] groupProperties = Arrays.stream(properties)
+                .map(p -> datasource.getMetaClass().getPropertyPath(p))
+                .toArray();
+        groupBy(groupProperties);
     }
 
     @Override
