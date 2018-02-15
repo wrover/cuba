@@ -34,11 +34,23 @@ public interface GroupTable<E extends Entity> extends Table<E> {
     void groupBy(Object[] properties);
 
     /**
-     * Performs grouping by the given {@code properties}.
+     * Performs grouping by the given {@code columnIds}.
      *
-     * @param properties an array of String properties
+     * @param columnIds a list of column ids
      */
-    void groupBy(String[] properties);
+    void groupBy(List<String> columnIds);
+
+    /**
+     * Performs grouping by the given {@code columnIds}.
+     *
+     * @param columnIds a list of column ids
+     */
+    void ungroupBy(List<String> columnIds);
+
+    /**
+     * Resets grouping at all.
+     */
+    void ungroupAll();
 
     boolean getColumnGroupAllowed(String columnId);
     void setColumnGroupAllowed(String columnId, boolean allowed);

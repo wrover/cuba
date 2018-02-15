@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2016 Haulmont.
+ * Copyright (c) 2008-2018 Haulmont.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package com.haulmont.cuba.desktop.gui.components;
@@ -23,6 +22,7 @@ import com.haulmont.cuba.gui.data.GroupDatasource;
 import com.haulmont.cuba.gui.data.GroupInfo;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class DesktopGroupTable<E extends Entity>
@@ -41,8 +41,19 @@ public class DesktopGroupTable<E extends Entity>
     public void groupBy(Object[] properties) {
     }
 
+    // stub
     @Override
-    public void groupBy(String[] properties) {
+    public void groupBy(List<String> columnIds) {
+    }
+
+    // stub
+    @Override
+    public void ungroupBy(List<String> columnIds) {
+    }
+
+    // stub
+    @Override
+    public void ungroupAll() {
     }
 
     @Override
