@@ -39,6 +39,7 @@ import com.haulmont.cuba.web.toolkit.data.GroupTableContainer;
 import com.haulmont.cuba.web.toolkit.ui.CubaGroupTable;
 import com.vaadin.data.Item;
 import com.vaadin.server.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
@@ -217,10 +218,19 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
 
     @Override
     public void ungroupBy(List<String> columnIds) {
+        List<Object> ungroupCols = columnIds.stream()
+                .map(id -> getColumn(id).getId())
+                .collect(Collectors.toList());
+
+        Object[] remainingGroups = CollectionUtils.removeAll(component.getGroupProperties(), ungroupCols)
+                .toArray();
+
+        groupBy(remainingGroups);
     }
 
     @Override
     public void ungroupAll() {
+        groupBy(new Object[]{});
     }
 
     @Override
