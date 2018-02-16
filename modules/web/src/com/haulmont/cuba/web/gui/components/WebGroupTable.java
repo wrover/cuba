@@ -199,7 +199,7 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
         return newGroupProps.toArray();
     }
 
-    protected List<Object> collectPropertiesByColumns(List<String> columnIds) {
+    protected List<Object> collectPropertiesByColumns(String... columnIds) {
         List<Object> properties = new ArrayList<>();
 
         for (String columnId : columnIds) {
@@ -224,14 +224,14 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
     }
 
     @Override
-    public void groupBy(List<String> columnIds) {
+    public void groupBy(String... columnIds) {
         Preconditions.checkNotNullArgument(columnIds);
 
         groupBy(collectPropertiesByColumns(columnIds).toArray());
     }
 
     @Override
-    public void ungroupBy(List<String> columnIds) {
+    public void ungroupBy(String... columnIds) {
         Preconditions.checkNotNullArgument(columnIds);
 
         Object[] remainingGroups = CollectionUtils

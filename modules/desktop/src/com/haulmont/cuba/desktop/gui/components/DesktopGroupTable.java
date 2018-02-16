@@ -22,7 +22,6 @@ import com.haulmont.cuba.gui.data.GroupDatasource;
 import com.haulmont.cuba.gui.data.GroupInfo;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class DesktopGroupTable<E extends Entity>
@@ -43,12 +42,12 @@ public class DesktopGroupTable<E extends Entity>
 
     // stub
     @Override
-    public void groupBy(List<String> columnIds) {
+    public void groupBy(String... columnIds) {
     }
 
     // stub
     @Override
-    public void ungroupBy(List<String> columnIds) {
+    public void ungroupBy(String... columnIds) {
     }
 
     // stub

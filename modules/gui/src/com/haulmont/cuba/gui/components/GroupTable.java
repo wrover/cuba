@@ -42,16 +42,16 @@ public interface GroupTable<E extends Entity> extends Table<E> {
     /**
      * Performs grouping by the given ids of table columns.
      *
-     * @param columnIds a list of column ids
+     * @param columnIds column ids
      */
-    void groupBy(List<String> columnIds);
+    void groupBy(String... columnIds);
 
     /**
      * Resets grouping by the given ids of table columns.
      *
-     * @param columnIds a list of column ids
+     * @param columnIds column ids
      */
-    void ungroupBy(List<String> columnIds);
+    void ungroupBy(String... columnIds);
 
     /**
      * Resets grouping at all.
