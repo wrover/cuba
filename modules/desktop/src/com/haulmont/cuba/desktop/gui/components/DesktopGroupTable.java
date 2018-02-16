@@ -53,7 +53,7 @@ public class DesktopGroupTable<E extends Entity>
 
     // stub
     @Override
-    public void ungroupAll() {
+    public void ungroup() {
     }
 
     @Override

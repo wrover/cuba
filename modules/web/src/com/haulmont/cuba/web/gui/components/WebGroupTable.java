@@ -16,6 +16,7 @@
  */
 package com.haulmont.cuba.web.gui.components;
 
+import com.haulmont.bali.util.Preconditions;
 import com.haulmont.chile.core.model.Instance;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaPropertyPath;
@@ -187,49 +188,61 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
         }
     }
 
-    @Override
-    public void groupBy(Object[] properties) {
-        component.groupBy(properties);
-
-        List<Object> groupPropsList = new ArrayList<>(Arrays.asList(properties));
-
+    protected Object[] getNewColumnOrder(Object[] newGroupProperties) {
         //noinspection unchecked
         List<Object> allProps = new ArrayList<>(containerDatasource.getContainerPropertyIds());
+        List<Object> newGroupProps = new ArrayList<>(Arrays.asList(newGroupProperties));
 
-        allProps.removeAll(groupPropsList);
+        allProps.removeAll(newGroupProps);
+        newGroupProps.addAll(allProps);
 
-        groupPropsList.addAll(allProps);
+        return newGroupProps.toArray();
+    }
 
-        component.setColumnOrder(groupPropsList.toArray());
+    protected List<Object> collectPropertiesByColumns(List<String> columnIds) {
+        List<Object> properties = new ArrayList<>();
+
+        for (String columnId : columnIds) {
+            Column column = getColumn(columnId);
+
+            if (column == null) {
+                throw new IllegalArgumentException("There is no column with the given id: " + columnId);
+            }
+
+            properties.add(column.getId());
+        }
+
+        return properties;
+    }
+
+    @Override
+    public void groupBy(Object[] properties) {
+        Preconditions.checkNotNullArgument(properties);
+
+        component.groupBy(properties);
+        component.setColumnOrder(getNewColumnOrder(properties));
     }
 
     @Override
     public void groupBy(List<String> columnIds) {
-        if (columnIds == null || columnIds.isEmpty()
-                || datasource == null) {
-            return;
-        }
+        Preconditions.checkNotNullArgument(columnIds);
 
-        Object[] ids = columnIds.stream()
-                .map(id -> getColumn(id).getId())
-                .toArray();
-        groupBy(ids);
+        groupBy(collectPropertiesByColumns(columnIds).toArray());
     }
 
     @Override
     public void ungroupBy(List<String> columnIds) {
-        List<Object> ungroupCols = columnIds.stream()
-                .map(id -> getColumn(id).getId())
-                .collect(Collectors.toList());
+        Preconditions.checkNotNullArgument(columnIds);
 
-        Object[] remainingGroups = CollectionUtils.removeAll(component.getGroupProperties(), ungroupCols)
+        Object[] remainingGroups = CollectionUtils
+                .removeAll(component.getGroupProperties(), collectPropertiesByColumns(columnIds))
                 .toArray();
 
         groupBy(remainingGroups);
     }
 
     @Override
-    public void ungroupAll() {
+    public void ungroup() {
         groupBy(new Object[]{});
     }
 
