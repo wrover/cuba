@@ -49,6 +49,8 @@ import com.haulmont.cuba.web.toolkit.ui.CubaTimer;
 import com.haulmont.cuba.web.toolkit.ui.CubaTree;
 import com.vaadin.event.Action;
 import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ShortcutAction;
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
@@ -460,8 +462,15 @@ public class CubaFoldersPane extends VerticalLayout {
 
         appFoldersTree = new CubaTree();
         appFoldersTree.setCubaId("appFoldersTree");
-        appFoldersTree.setSelectable(false);
+        appFoldersTree.setSelectable(true);
         appFoldersTree.setItemStyleGenerator(new FolderTreeStyleProvider());
+        appFoldersTree.addShortcutListener(new ShortcutListener("applyAppFolder", ShortcutAction.KeyCode.ENTER, (int[]) null) {
+            @Override
+            public void handleAction(Object sender, Object target) {
+                AbstractSearchFolder folder = (AbstractSearchFolder) appFoldersTree.getValue();
+                openFolder(folder);
+            }
+        });
         appFoldersTree.addExpandListener(new Tree.ExpandListener() {
             @Override
             public void nodeExpand(Tree.ExpandEvent event) {
@@ -492,6 +501,7 @@ public class CubaFoldersPane extends VerticalLayout {
         for (Object itemId : appFoldersTree.rootItemIds()) {
             appFoldersTree.expandItemsRecursively(itemId);
         }
+        appFoldersTree.setValue(appFoldersTree.rootItemIds().iterator().next());
 
         return appFoldersTree;
     }
@@ -503,8 +513,15 @@ public class CubaFoldersPane extends VerticalLayout {
     protected Component createSearchFoldersPane() {
         searchFoldersTree = new CubaTree();
         searchFoldersTree.setCubaId("searchFoldersTree");
-        searchFoldersTree.setSelectable(false);
+        searchFoldersTree.setSelectable(true);
         searchFoldersTree.setItemStyleGenerator(new FolderTreeStyleProvider());
+        searchFoldersTree.addShortcutListener(new ShortcutListener("applySearchFolder", ShortcutAction.KeyCode.ENTER, (int[]) null) {
+            @Override
+            public void handleAction(Object sender, Object target) {
+                AbstractSearchFolder folder = (AbstractSearchFolder) searchFoldersTree.getValue();
+                openFolder(folder);
+            }
+        });
 
         List<SearchFolder> searchFolders = foldersService.loadSearchFolders();
         searchFoldersRoot = messages.getMainMessage("folders.searchFoldersRoot");
@@ -517,6 +534,11 @@ public class CubaFoldersPane extends VerticalLayout {
         for (Object itemId : searchFoldersTree.rootItemIds()) {
             searchFoldersTree.expandItemsRecursively(itemId);
         }
+
+        if (!searchFoldersTree.rootItemIds().isEmpty()) {
+            searchFoldersTree.setValue(searchFoldersTree.rootItemIds().iterator().next());
+        }
+
         return searchFoldersTree;
     }
 
