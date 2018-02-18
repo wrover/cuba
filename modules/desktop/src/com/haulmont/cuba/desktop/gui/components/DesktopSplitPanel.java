@@ -384,18 +384,27 @@ public class DesktopSplitPanel extends DesktopAbstractComponent<JSplitPane> impl
     // stub
     @Override
     public void setDockable(boolean dockable) {
+        if (impl.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+            throw new IllegalStateException("Docking is not available for the vertically oriented SplitPanel.");
+        }
         this.dockable = dockable;
     }
 
     // stub
     @Override
     public boolean isDockable() {
+        if (impl.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+            return false;
+        }
         return dockable;
     }
 
     // stub
     @Override
     public void setDockMode(DockMode dockMode) {
+        if (impl.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+            throw new IllegalStateException("Docking is not available for the vertically oriented SplitPanel.");
+        }
         this.dockMode = dockMode;
     }
 
@@ -403,6 +412,9 @@ public class DesktopSplitPanel extends DesktopAbstractComponent<JSplitPane> impl
     @Nullable
     @Override
     public DockMode getDockMode() {
+        if (impl.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+            return null;
+        }
         return dockMode;
     }
 }
