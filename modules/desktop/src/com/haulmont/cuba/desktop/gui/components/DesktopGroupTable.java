@@ -42,12 +42,12 @@ public class DesktopGroupTable<E extends Entity>
 
     // stub
     @Override
-    public void groupBy(String... columnIds) {
+    public void groupByColumns(String... columnIds) {
     }
 
     // stub
     @Override
-    public void ungroupBy(String... columnIds) {
+    public void ungroupByColumns(String... columnIds) {
     }
 
     // stub

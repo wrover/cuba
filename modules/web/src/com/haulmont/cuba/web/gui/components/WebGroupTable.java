@@ -215,45 +215,32 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
         return properties;
     }
 
-    protected Object[] processProperties(Object[] properties) {
-        List<Object> processed = new ArrayList<>();
-
-        for (Object p : properties) {
-            if (p instanceof String) {
-                Column column = getColumn((String) p);
-                if (column == null) {
-                    throw new IllegalArgumentException("There is no column with the given id: " + p);
-                }
-                processed.add(column.getId());
-            } else if (p instanceof MetaPropertyPath) {
-                processed.add(p);
-            } else {
-                throw new IllegalArgumentException("Unable to group by an instance of: " + p.getClass().getName());
+    protected void validateProperties(Object[] properties) {
+        for (Object property : properties) {
+            if (!(property instanceof MetaPropertyPath)) {
+                throw new IllegalArgumentException("Only MetaPropertyPaths are supported by the \"groupBy\" method.");
             }
         }
-
-        return processed.toArray();
     }
 
     @Override
     public void groupBy(Object[] properties) {
         Preconditions.checkNotNullArgument(properties);
+        validateProperties(properties);
 
-        Object[] processedProps = processProperties(properties);
-
-        component.groupBy(processedProps);
-        component.setColumnOrder(getNewColumnOrder(processedProps));
+        component.groupBy(properties);
+        component.setColumnOrder(getNewColumnOrder(properties));
     }
 
     @Override
-    public void groupBy(String... columnIds) {
+    public void groupByColumns(String... columnIds) {
         Preconditions.checkNotNullArgument(columnIds);
 
         groupBy(collectPropertiesByColumns(columnIds).toArray());
     }
 
     @Override
-    public void ungroupBy(String... columnIds) {
+    public void ungroupByColumns(String... columnIds) {
         Preconditions.checkNotNullArgument(columnIds);
 
         Object[] remainingGroups = CollectionUtils
