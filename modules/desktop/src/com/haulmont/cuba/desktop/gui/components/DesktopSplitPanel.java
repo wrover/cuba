@@ -43,6 +43,10 @@ public class DesktopSplitPanel extends DesktopAbstractComponent<JSplitPane> impl
     protected Collection<Component> ownComponents = new LinkedHashSet<>();
     protected boolean settingsEnabled = true;
     protected boolean locked = false;
+    // stub
+    protected boolean dockable = false;
+    // stub
+    private DockMode dockMode = null;
 
     public DesktopSplitPanel() {
         impl = new JSplitPane() {
@@ -375,5 +379,30 @@ public class DesktopSplitPanel extends DesktopAbstractComponent<JSplitPane> impl
     @Override
     public void setDescription(String description) {
         impl.setToolTipText(description);
+    }
+
+    // stub
+    @Override
+    public void setDockable(boolean dockable) {
+        this.dockable = dockable;
+    }
+
+    // stub
+    @Override
+    public boolean isDockable() {
+        return dockable;
+    }
+
+    // stub
+    @Override
+    public void setDockMode(DockMode dockMode) {
+        this.dockMode = dockMode;
+    }
+
+    // stub
+    @Nullable
+    @Override
+    public DockMode getDockMode() {
+        return dockMode;
     }
 }
