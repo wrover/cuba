@@ -215,12 +215,34 @@ public class WebGroupTable<E extends Entity> extends WebAbstractTable<CubaGroupT
         return properties;
     }
 
+    protected Object[] processProperties(Object[] properties) {
+        List<Object> processed = new ArrayList<>();
+
+        for (Object p : properties) {
+            if (p instanceof String) {
+                Column column = getColumn((String) p);
+                if (column == null) {
+                    throw new IllegalArgumentException("There is no column with the given id: " + p);
+                }
+                processed.add(column.getId());
+            } else if (p instanceof MetaPropertyPath) {
+                processed.add(p);
+            } else {
+                throw new IllegalArgumentException("Unable to group by an instance of: " + p.getClass().getName());
+            }
+        }
+
+        return processed.toArray();
+    }
+
     @Override
     public void groupBy(Object[] properties) {
         Preconditions.checkNotNullArgument(properties);
 
-        component.groupBy(properties);
-        component.setColumnOrder(getNewColumnOrder(properties));
+        Object[] processedProps = processProperties(properties);
+
+        component.groupBy(processedProps);
+        component.setColumnOrder(getNewColumnOrder(processedProps));
     }
 
     @Override
