@@ -468,7 +468,9 @@ public class CubaFoldersPane extends VerticalLayout {
             @Override
             public void handleAction(Object sender, Object target) {
                 AbstractSearchFolder folder = (AbstractSearchFolder) appFoldersTree.getValue();
-                openFolder(folder);
+                if (folder != null) {
+                    openFolder(folder);
+                }
             }
         });
         appFoldersTree.addExpandListener(new Tree.ExpandListener() {
@@ -501,7 +503,6 @@ public class CubaFoldersPane extends VerticalLayout {
         for (Object itemId : appFoldersTree.rootItemIds()) {
             appFoldersTree.expandItemsRecursively(itemId);
         }
-        appFoldersTree.setValue(appFoldersTree.rootItemIds().iterator().next());
 
         return appFoldersTree;
     }
@@ -519,7 +520,9 @@ public class CubaFoldersPane extends VerticalLayout {
             @Override
             public void handleAction(Object sender, Object target) {
                 AbstractSearchFolder folder = (AbstractSearchFolder) searchFoldersTree.getValue();
-                openFolder(folder);
+                if (folder != null) {
+                    openFolder(folder);
+                }
             }
         });
 
@@ -533,10 +536,6 @@ public class CubaFoldersPane extends VerticalLayout {
 
         for (Object itemId : searchFoldersTree.rootItemIds()) {
             searchFoldersTree.expandItemsRecursively(itemId);
-        }
-
-        if (!searchFoldersTree.rootItemIds().isEmpty()) {
-            searchFoldersTree.setValue(searchFoldersTree.rootItemIds().iterator().next());
         }
 
         return searchFoldersTree;
