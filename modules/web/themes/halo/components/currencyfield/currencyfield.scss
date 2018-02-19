@@ -23,29 +23,53 @@
     width: $v-default-field-width;
 
     &.huge {
+      height: $v-unit-size--huge;
+
       .#{$primary-stylename}-text {
         @include valo-textfield-style($unit-size: $v-unit-size--huge, $states: normal, $background-color: null, $border: null, $gradient: null, $bevel: null, $shadow: null);
+        font-size: $v-font-size--huge;
+      }
+
+      .#{$primary-stylename}-currency {
         font-size: $v-font-size--huge;
       }
     }
 
     &.large {
+      height: $v-unit-size--large;
+
       .#{$primary-stylename}-text {
         @include valo-textfield-style($unit-size: $v-unit-size--large, $states: normal, $background-color: null, $border: null, $gradient: null, $bevel: null, $shadow: null);
+        font-size: $v-font-size--large;
+      }
+
+      .#{$primary-stylename}-currency {
         font-size: $v-font-size--large;
       }
     }
 
     &.small {
+      height: $v-unit-size--small;
+
       .#{$primary-stylename}-text {
         @include valo-textfield-style($unit-size: $v-unit-size--small, $states: normal, $background-color: null, $border: null, $gradient: null, $bevel: null, $shadow: null);
+        font-size: $v-font-size--small;
+      }
+
+      .#{$primary-stylename}-currency {
         font-size: $v-font-size--small;
       }
     }
 
     &.tiny {
+      height: $v-unit-size--tiny;
+
       .#{$primary-stylename}-text {
         @include valo-textfield-style($unit-size: $v-unit-size--tiny, $states: normal, $background-color: null, $border: null, $gradient: null, $bevel: null, $shadow: null);
+        font-size: $v-font-size--tiny;
+      }
+
+      .#{$primary-stylename}-currency {
         font-size: $v-font-size--tiny;
       }
     }
